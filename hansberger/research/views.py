@@ -30,6 +30,6 @@ class ResearchDetailView(DetailView):
 
 class ResearchListView(ListView):
     model = Research
+    context_object_name = 'research_list'
     paginate_by = 5
     queryset = Research.objects.all()
-    context_object_name = 'research_list'
