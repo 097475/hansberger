@@ -12,13 +12,17 @@ class ResearchCreateView(CreateView):
     model = Research
     fields = ['name', 'description']
 
+    template_name = "research/research_form.html"
+
 
 class ResearchDeleteView(DeleteView):
     model = Research
     context_object_name = 'research'
     slug_field = 'slug'
     slug_url_kwarg = 'research_slug'
-    success_url = reverse_lazy('research: research-list')
+    success_url = reverse_lazy('research:research-list')
+
+    template_name = "research/research_confirm_delete.html"
 
 
 class ResearchDetailView(DetailView):
@@ -27,9 +31,13 @@ class ResearchDetailView(DetailView):
     slug_field = 'slug'
     slug_url_kwarg = 'research_slug'
 
+    template_name = "research/research_detail.html"
+
 
 class ResearchListView(ListView):
     model = Research
     context_object_name = 'research_list'
     paginate_by = 5
     queryset = Research.objects.all()
+
+    template_name = "research/research_list.html"
