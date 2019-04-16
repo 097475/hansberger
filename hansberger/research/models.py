@@ -7,7 +7,7 @@ class Research(models.Model):
     slug = models.SlugField(
         db_index=True,
         unique=True,
-        max_length=110,
+        max_length=150,
         blank=True,
         null=True,
     )
