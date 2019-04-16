@@ -2,6 +2,7 @@ from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
+    ListView,
 )
 from django.urls import reverse_lazy
 from .models import Research
@@ -25,3 +26,10 @@ class ResearchDetailView(DetailView):
     context_object_name = 'research'
     slug_field = 'slug'
     slug_url_kwarg = 'research_slug'
+
+
+class ResearchListView(ListView):
+    model = Research
+    paginate_by = 5
+    queryset = Research.objects.all()
+    context_object_name = 'research_list'
