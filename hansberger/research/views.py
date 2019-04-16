@@ -78,7 +78,7 @@ class DatasetListView(ListView):
     model = Dataset
     context_object_name = 'datasets'
     paginate_by = 10
-    
+
     template_name = "research/datasets/dataset_list.html"
 
     def get_context_data(self, **kwargs):
