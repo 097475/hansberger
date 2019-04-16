@@ -33,6 +33,12 @@ class ResearchDetailView(DetailView):
 
     template_name = "research/research_detail.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        datasets = self.object.datasets.all()
+        context['datasets'] = datasets
+        return context
+
 
 class ResearchListView(ListView):
     model = Research
