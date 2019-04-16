@@ -14,5 +14,15 @@
       {% endif %}
     </div>
   </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>Datasets</h2>
+      <div class="list-group">
+        {% for dataset in datasets %}
+        <h4 class="list-group-item-heading">{{ dataset.name }} - {{ dataset.creation_date }}</h4>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock content %}
