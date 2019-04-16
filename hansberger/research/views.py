@@ -5,7 +5,8 @@ from django.views.generic import (
     ListView,
 )
 from django.urls import reverse_lazy
-from .models import Research
+from django.shortcuts import get_object_or_404
+from .models import Research, Dataset
 
 
 class ResearchCreateView(CreateView):
@@ -47,3 +48,49 @@ class ResearchListView(ListView):
     queryset = Research.objects.all()
 
     template_name = "research/research_list.html"
+
+
+class DatasetDetailView(DetailView):
+    model = Dataset
+    context_object_name = 'dataset'
+    slug_field = 'slug'
+    slug_url_kwarg = 'dataset_slug'
+
+    template_name = "research/datasets/dataset_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        return context
+
+    def get_object(self):
+        return get_object_or_404(
+            Dataset,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['dataset_slug']
+        )
+
+
+class DatasetListView(ListView):
+    model = Dataset
+    context_object_name = 'datasets'
+    paginate_by = 10
+    
+    template_name = "research/datasets/dataset_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        return context
+
+    def get_queryset(self):
+        datasets = Dataset.objects.filter(
+            research__slug=self.kwargs['research_slug']
+        )
+        return datasets
