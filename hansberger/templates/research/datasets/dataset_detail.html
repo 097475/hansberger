@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ dataset.name }} | {{ research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ dataset.name }}</h2>
+      {% if dataset.description %}
+        <p>{{ dataset.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+  </div>
+</div>
+{% endblock content %}

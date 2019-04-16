@@ -19,7 +19,9 @@
       <h2>Datasets</h2>
       <div class="list-group">
         {% for dataset in datasets %}
-        <h4 class="list-group-item-heading">{{ dataset.name }} - {{ dataset.creation_date }}</h4>
+        <a href="{% url 'research:dataset-detail' research.slug dataset.slug %}" class="list-group-item">
+          <h4 class="list-group-item-heading">{{ dataset.name }} - {{ dataset.creation_date }}</h4>
+        </a>        
         {% endfor %}
       </div>
     </div>
