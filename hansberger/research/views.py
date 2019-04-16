@@ -1,6 +1,7 @@
 from django.views.generic import (
     CreateView,
     DeleteView,
+    DetailView,
 )
 from django.urls import reverse_lazy
 from .models import Research
@@ -17,3 +18,10 @@ class ResearchDeleteView(DeleteView):
     slug_field = 'slug'
     slug_url_kwarg = 'research_slug'
     success_url = reverse_lazy('research: research-list')
+
+
+class ResearchDetailView(DetailView):
+    model = Research
+    context_object_name = 'research'
+    slug_field = 'slug'
+    slug_url_kwarg = 'research_slug'
