@@ -17,7 +17,7 @@ class Research(models.Model):
     class Meta:
         ordering = ['-creation_date']
         verbose_name = 'research'
-        verbose_name_plural = "research"
+        verbose_name_plural = 'research'
 
     def __str__(self):
         return self.name
@@ -29,4 +29,4 @@ class Research(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('research:research-detail', (), {'research_slug': self.slug})
+        return ("research:research-detail", (), {'research_slug': self.slug})
