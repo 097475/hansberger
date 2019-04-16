@@ -3,7 +3,17 @@ from django.db import models
 from django.utils.text import slugify
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from enum import Enum
 from .research import Research
+
+
+class FileType(Enum):
+    TEXT = "Text file"
+    EDF = "EDF file"
+
+    @classmethod
+    def all(self):
+        return [FileType.TEXT, FileType.EDF]
 
 
 class Dataset(models.Model):
@@ -22,8 +32,32 @@ class Dataset(models.Model):
         related_name='datasets',
         related_query_name='dataset',
     )
-    file = models.FileField(upload_to=f"research/{research}/{slug}")
+    file = models.FileField(upload_to="research/datasets/")
+    file_type = models.CharField(
+        max_length=10,
+        choices=[(type.value, type.name) for type in FileType.all()]
+    )
+    values_delimiter_character = models.CharField(
+        max_length=5,
+        null=True,
+        blank=False,
+        default=',',
+        verbose_name='delimiter character of the values in the file'
+    )
+    row_id_column_index = models.IntegerField(
+        null=True,
+        blank=False,
+        default=0,
+        verbose_name='column number that identifies the progressive number of rows in the file'
+    )
+    header_row_index = models.IntegerField(
+        null=True,
+        blank=False,
+        default=0,
+        verbose_name='row number that identifies the column in the file'
+    )
     data = JSONField(blank=True, null=True)
+    data_image = models.ImageField(upload_to="research/datasets/images", blank=True, null=True)
 
     class Meta:
         ordering = ['-creation_date']
