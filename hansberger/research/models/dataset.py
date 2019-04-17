@@ -12,6 +12,7 @@ from os.path import join
 from django.conf import settings
 from django.db.models import signals
 
+
 class FileType(Enum):
     TEXT = "Text file"
     EDF = "EDF file"
@@ -45,19 +46,16 @@ class Dataset(models.Model):
     values_delimiter_character = models.CharField(
         max_length=5,
         null=True,
-        blank=False,
         default=',',
         verbose_name='delimiter character of the values in the file'
     )
     row_id_column_index = models.IntegerField(
         null=True,
-        blank=False,
         default=0,
         verbose_name='column number that identifies the progressive number of rows in the file'
     )
     header_row_index = models.IntegerField(
         null=True,
-        blank=False,
         default=0,
         verbose_name='row number that identifies the column in the file'
     )
@@ -96,6 +94,11 @@ class Dataset(models.Model):
         return ("research:dataset-detail", (), {"dataset_slug": self.slug, "research_slug": self.research.slug})
 
 
+@receiver(post_delete, sender=Dataset)
+def submission_delete(sender, instance, **kwargs):
+    instance.file.delete(False)
+
+
 @receiver(post_save, sender=Dataset)
 def my_handler(sender, instance, **kwargs):
     df = instance.getDataFrameFromText()
@@ -104,3 +107,4 @@ def my_handler(sender, instance, **kwargs):
     signals.post_save.disconnect(my_handler, sender=Dataset)
     instance.save()
     signals.post_save.connect(my_handler, sender=Dataset)
+
