@@ -6,11 +6,12 @@ from django.dispatch import receiver
 from enum import Enum
 from .research import Research
 
-import matplotlib.pyplot as plt
-import pandas as pd
+
+from .utils import edfmodule, csvmodule
 from os.path import join
 from django.conf import settings
 from django.db.models import signals
+import json
 
 
 class FileType(Enum):
@@ -76,19 +77,6 @@ class Dataset(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-    def getDataFrameFromText(self):
-        return pd.read_csv(self.file.path, index_col=self.row_id_column_index,
-                           sep=self.values_delimiter_character,
-                           header=self.header_row_index)
-
-    def plotDF(self, data):
-        plt.plot(data)
-        path = join(settings.MEDIA_ROOT, 'research', 'datasets', 'images', self.slug+'_image.svg')
-        plt.savefig(path, format='svg')
-
-    def getMatrixFromDataFrame(self, data):
-        return data.values
-
     @models.permalink
     def get_absolute_url(self):
         return ("research:dataset-detail", (), {"dataset_slug": self.slug, "research_slug": self.research.slug})
@@ -101,10 +89,18 @@ def submission_delete(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Dataset)
 def my_handler(sender, instance, **kwargs):
-    df = instance.getDataFrameFromText()
-    instance.plotDF(df)
+    path = join(settings.MEDIA_ROOT, 'research', 'datasets', 'images', instance.slug+'_image.svg')
+    if instance.file_type == FileType.TEXT.value:
+        df = csvmodule.getDataFrameFromText(instance.file.path, index=instance.row_id_column_index,
+                                            delim=instance.values_delimiter_character,
+                                            header_index=instance.header_row_index)
+        csvmodule.plotDF(df, path)
+        instance.data = json.dumps(csvmodule.getMatrixFromDataFrame(df))
+    elif instance.file_type == FileType.EDF.value:
+        df = edfmodule.readEDF(instance.file.path)
+        edfmodule.plotEDF(df, path)
+        instance.data = json.dumps(edfmodule.edfToMatrix(df))
     instance.data_image = join('research', 'datasets', 'images', instance.slug+'_image.svg')
     signals.post_save.disconnect(my_handler, sender=Dataset)
     instance.save()
     signals.post_save.connect(my_handler, sender=Dataset)
-
