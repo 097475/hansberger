@@ -1,11 +1,16 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from enum import Enum
 from .research import Research
 
+import matplotlib.pyplot as plt
+import pandas as pd
+from os.path import join
+from django.conf import settings
+from django.db.models import signals
 
 class FileType(Enum):
     TEXT = "Text file"
@@ -73,11 +78,29 @@ class Dataset(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+    def getDataFrameFromText(self):
+        return pd.read_csv(self.file.path, index_col=self.row_id_column_index,
+                           sep=self.values_delimiter_character,
+                           header=self.header_row_index)
+
+    def plotDF(self, data):
+        plt.plot(data)
+        path = join(settings.MEDIA_ROOT, 'research', 'datasets', 'images', self.slug+'_image.svg')
+        plt.savefig(path, format='svg')
+
+    def getMatrixFromDataFrame(self, data):
+        return data.values
+
     @models.permalink
     def get_absolute_url(self):
         return ("research:dataset-detail", (), {"dataset_slug": self.slug, "research_slug": self.research.slug})
 
 
-@receiver(post_delete, sender=Dataset)
-def submission_delete(sender, instance, **kwargs):
-    instance.file.delete(False)
+@receiver(post_save, sender=Dataset)
+def my_handler(sender, instance, **kwargs):
+    df = instance.getDataFrameFromText()
+    instance.plotDF(df)
+    instance.data_image = join('research', 'datasets', 'images', instance.slug+'_image.svg')
+    signals.post_save.disconnect(my_handler, sender=Dataset)
+    instance.save()
+    signals.post_save.connect(my_handler, sender=Dataset)
