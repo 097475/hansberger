@@ -47,7 +47,7 @@ class FiltrationAnalysis(Analysis):
     max_distances_considered = models.FloatField(default=math.inf)
     coeff = models.IntegerField(default=2)
     do_cocycles = models.BooleanField(default=False)
-    n_perm = models.IntegerField(default=None)
+    n_perm = models.IntegerField(default=None, null=True)
 
     result = JSONField()
 
@@ -62,7 +62,36 @@ class FiltrationAnalysis(Analysis):
 
 class MapperAnalysis(Analysis):
     # TODO: Inserire parametri
+    class ProjectionChoice(Enum):
+        SUM = 'Sum'
+        MEAN = 'Mean'
+        MEDIAN = 'Median'
+        MAX = 'Max'
+        MIN = 'Min'
+        STD = 'Std'
+        DIST_MEAN = 'Dist_mean'
+        L2NORM = 'L2norm'
+        KNN_DISTANCE = 'knn_distance'  # TODO knn_distance, add scikit classes
 
+    class ScalerChoice(Enum):
+        NONE = 'None'
+        MINMAXSCALER = 'MinMaxScaler'
+
+    # fit_transform parameters
+    projection = models.CharField(
+                max_length=50,
+                choices=[(type.name, type.value) for type in ProjectionChoice]
+                )
+    scaler = models.CharField(
+                max_length=50,
+                choices=[(type.name, type.value) for type in ScalerChoice]
+    )
+    # map parameters
+    class ClustererChoice(Enum):
+        KMEANS = 'K-Means'
+        AFFPROP
+    use_original_data = models.BooleanField(default=False)
+    clusterer
     class Meta(Analysis.Meta):
         verbose_name = "mapper algorithm analysis"
         verbose_name_plural = "mapper algoritms analysis"
