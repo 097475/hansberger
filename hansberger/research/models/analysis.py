@@ -12,6 +12,8 @@ import kmapper
 import ripser
 import json
 import matplotlib.pyplot as plt
+from os.path import join
+from django.conf import settings
 
 
 class Analysis(models.Model):
@@ -58,20 +60,22 @@ class FiltrationAnalysis(Analysis):
     n_perm = models.IntegerField(default=None, null=True)
 
     result = JSONField(blank=True, null=True)
-    plot = models.ImageField(upload_to)
+    plot = models.ImageField(upload_to="research/datasets/images", blank=True, null=True)
 
     class Meta(Analysis.Meta):
         verbose_name = f"{type} analysis"
         verbose_name_plural = f"{type}s analysis"
 
+    # TODO: matrix is raw
     def execute(self, matrix, start_point=None, end_point=None):
-        image_path = join(settings.MEDIA_ROOT, 'research', 'datasets', 'images', instance.slug+'_image.svg')
+        image_path = join(settings.MEDIA_ROOT, 'research', self.research.slug, self.slug, self.slug+'_image.svg')
         rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=self.max_distances_considered, coeff=self.coeff,
                            do_cocycles=self.do_cocycles, n_perm=self.n_perm)
         result = rips.fit_transform(matrix, distance_matrix=True)
         rips.plot(result)
-        plt.savefig()
+        plt.savefig(image_path)
         self.result = json.dumps(result)
+        self.plot = join('research', self.research.slug, self.slug, self.slug+'_image.svg')
         self.save()
 
 
@@ -123,8 +127,8 @@ class MapperAnalysis(Analysis):
                 max_length=50,
                 choices=[(type.name, type.value) for type in ScalerChoice]
     )
-    # map parameters; not implemented : clusterer params, cover limits
 
+    # map parameters; not implemented : clusterer params, cover limits
     class ClustererChoice(Enum):
         KMEANS = 'K-Means'
         AFFINITYPROPAGATION = 'Affinity propagation'
@@ -146,10 +150,23 @@ class MapperAnalysis(Analysis):
     graph_nerve_min_intersection = models.IntegerField(default=1)
     remove_duplicate_nodes = models.BooleanField(default=False)
 
+    graph = models.TextField(blank=True, null=True)
+
     class Meta(Analysis.Meta):
         verbose_name = "mapper algorithm analysis"
         verbose_name_plural = "mapper algoritms analysis"
 
-    def execute(self, distances_matrix):
-        # TODO: Implementare
-        raise NotImplementedError()
+    # TODO: matrix is raw
+    def execute(self, matrix):
+        mapper = kmapper.KeplerMapper()
+        mycover = kmapper.Cover(n_cubes=self.cover_n_cubes, perc_overlap=self.cover_perc_overlap)
+        mynerve = kmapper.GraphNerve(min_intersection=self.graph_nerve_min_intersection)
+        original_data = matrix if self.use_original_data else None
+        projected_data = mapper.fit_transform(matrix, projection=self.projection,
+                                              scaler=MapperAnalysis.scalers[self.scaler], distance_matrix=False)
+        graph = mapper.map(projected_data, X=original_data, clusterer=MapperAnalysis.clusterers[self.clusterer],
+                           cover=mycover, nerve=mynerve, precomputed=False,
+                           remove_duplicate_nodes=self.remove_duplicate_nodes)
+        output_graph = mapper.visualize(graph, save_file=False)
+        self.graph = output_graph
+        self.save()
