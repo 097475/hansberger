@@ -8,6 +8,8 @@ from .research import Research
 import sklearn.preprocessing
 import sklearn.cluster
 import sklearn.mixture
+import kmapper
+import ripser
 
 
 class Analysis(models.Model):
@@ -60,8 +62,10 @@ class FiltrationAnalysis(Analysis):
         verbose_name_plural = f"{type}s analysis"
 
     def execute(self, matrix, start_point=None, end_point=None):
-        # TODO: Implementare
-        raise NotImplementedError()
+        rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=self.max_distances_considered, coeff=self.coeff,
+                           do_cocycles=self.do_cocycles, n_perm=self.n_perm)
+        result = rips.fit_transform(matrix, distance_matrix=True)
+        
 
 
 class MapperAnalysis(Analysis):
