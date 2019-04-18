@@ -5,6 +5,10 @@ from enum import Enum
 import math
 from .research import Research
 
+import sklearn.preprocessing
+import sklearn.cluster
+import sklearn.mixture
+
 
 class Analysis(models.Model):
     name = models.CharField(max_length=100)
@@ -61,23 +65,45 @@ class FiltrationAnalysis(Analysis):
 
 
 class MapperAnalysis(Analysis):
+    scalers = {
+        'None': None,
+        'MinMaxScaler': sklearn.preprocessing.MinMaxScaler(),
+        'MaxAbsScaler': sklearn.preprocessing.MaxAbsScaler(),
+        'RobustScaler': sklearn.preprocessing.RobustScaler(),
+        'StandardScaler': sklearn.preprocessing.StandardScaler()
+    }
+
+    clusterers = {
+        'K-Means': sklearn.cluster.KMeans(),
+        'Affinity propagation': sklearn.cluster.AffinityPropagation(),
+        'Mean-shift': sklearn.cluster.MeanShift(),
+        'Spectral clustering': sklearn.cluster.SpectralClustering(),
+        'Agglomerative clustering': sklearn.cluster.AgglomerativeClustering(),
+        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=3),
+        'Gaussian mixtures': sklearn.mixture.GaussianMixture(),
+        'Birch': sklearn.cluster.Birch()
+    }
     # TODO: Inserire parametri
+
     class ProjectionChoice(Enum):
-        SUM = 'Sum'
-        MEAN = 'Mean'
-        MEDIAN = 'Median'
-        MAX = 'Max'
-        MIN = 'Min'
-        STD = 'Std'
-        DIST_MEAN = 'Dist_mean'
-        L2NORM = 'L2norm'
-        KNN_DISTANCE = 'knn_distance'  # TODO knn_distance, add scikit classes
+        SUM = 'sum'
+        MEAN = 'mean'
+        MEDIAN = 'median'
+        MAX = 'max'
+        MIN = 'min'
+        STD = 'std'
+        DIST_MEAN = 'dist_mean'
+        L2NORM = 'l2norm'
+        KNN_DISTANCE = 'knn_distance_n'  # TODO knn_distance, add scikit classes
 
     class ScalerChoice(Enum):
         NONE = 'None'
         MINMAXSCALER = 'MinMaxScaler'
+        MAXABSSCALER = 'MaxAbsScaler'
+        ROBUSTSCALER = 'RobustScaler'
+        STANDARDSCALER = 'StandardScaler'
 
-    # fit_transform parameters
+    # fit_transform parameters; not implemented : scaler params, scikit projections
     projection = models.CharField(
                 max_length=50,
                 choices=[(type.name, type.value) for type in ProjectionChoice]
@@ -86,12 +112,29 @@ class MapperAnalysis(Analysis):
                 max_length=50,
                 choices=[(type.name, type.value) for type in ScalerChoice]
     )
-    # map parameters
+    # map parameters; not implemented : clusterer params, cover limits
+
     class ClustererChoice(Enum):
         KMEANS = 'K-Means'
-        AFFPROP
+        AFFINITYPROPAGATION = 'Affinity propagation'
+        MEANSHIFT = 'Mean-shift'
+        SPECTRALCLUSTERING = 'Spectral clustering'
+        WARDHC = 'Ward hierarchical clustering'
+        AGGLOMERATIVE = 'Agglomerative clustering'
+        DBSCAN = 'DBSCAN'
+        GAUSSIANMIXTURES = 'Gaussian mixtures'
+        BIRCH = 'Birch'
     use_original_data = models.BooleanField(default=False)
-    clusterer
+    clusterer = models.CharField(
+                max_length=50,
+                choices=[(type.name, type.value) for type in ClustererChoice],
+                default=ClustererChoice.DBSCAN
+                )
+    cover_n_cubes = models.IntegerField(default=10)
+    cover_perc_overlap = models.FloatField(default=0.5)
+    graph_nerve_min_intersection = models.IntegerField(default=1)
+    remove_duplicate_nodes = models.BooleanField(default=False)
+
     class Meta(Analysis.Meta):
         verbose_name = "mapper algorithm analysis"
         verbose_name_plural = "mapper algoritms analysis"
