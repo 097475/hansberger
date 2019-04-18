@@ -57,8 +57,8 @@ class FiltrationAnalysis(Analysis):
     do_cocycles = models.BooleanField(default=False)
     n_perm = models.IntegerField(default=None, null=True)
 
-    result = models.JSONField(blank=True, null=True)
-    plot = models.ImageField
+    result = JSONField(blank=True, null=True)
+    plot = models.ImageField(upload_to)
 
     class Meta(Analysis.Meta):
         verbose_name = f"{type} analysis"
