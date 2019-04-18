@@ -55,7 +55,7 @@ class FiltrationAnalysis(Analysis):
     do_cocycles = models.BooleanField(default=False)
     n_perm = models.IntegerField(default=None, null=True)
 
-    result = JSONField()
+    result = JSONField(blank=True, null=True)
 
     class Meta(Analysis.Meta):
         verbose_name = f"{type} analysis"
@@ -65,7 +65,7 @@ class FiltrationAnalysis(Analysis):
         rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=self.max_distances_considered, coeff=self.coeff,
                            do_cocycles=self.do_cocycles, n_perm=self.n_perm)
         result = rips.fit_transform(matrix, distance_matrix=True)
-        
+        self.result = 
 
 
 class MapperAnalysis(Analysis):
