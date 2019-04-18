@@ -85,22 +85,24 @@ class Dataset(models.Model):
 @receiver(post_delete, sender=Dataset)
 def submission_delete(sender, instance, **kwargs):
     instance.file.delete(False)
+    instance.data_image.delete(False)
 
 
 @receiver(post_save, sender=Dataset)
-def my_handler(sender, instance, **kwargs):
-    path = join(settings.MEDIA_ROOT, 'research', 'datasets', 'images', instance.slug+'_image.svg')
+def post_save_handler(sender, instance, **kwargs):
+    image_path = join(settings.MEDIA_ROOT, 'research', 'datasets', 'images', instance.slug+'_image.svg')
     if instance.file_type == FileType.TEXT.value:
-        df = csvmodule.getDataFrameFromText(instance.file.path, index=instance.row_id_column_index,
-                                            delim=instance.values_delimiter_character,
-                                            header_index=instance.header_row_index)
-        csvmodule.plotDF(df, path)
-        instance.data = json.dumps(csvmodule.getMatrixFromDataFrame(df))
+        dataframe = csvmodule.getDataFrameFromText(instance.file.path, index=instance.row_id_column_index,
+                                                   delim=instance.values_delimiter_character,
+                                                   header_index=instance.header_row_index)
+        csvmodule.plotDF(dataframe, image_path)
+        instance.data = json.dumps(csvmodule.getMatrixFromDataFrame(dataframe))
     elif instance.file_type == FileType.EDF.value:
-        df = edfmodule.readEDF(instance.file.path)
-        edfmodule.plotEDF(df, path)
-        instance.data = json.dumps(edfmodule.edfToMatrix(df))
+        dataframe = edfmodule.readEDF(instance.file.path)
+        edfmodule.plotEDF(dataframe, image_path)
+        instance.data = json.dumps(edfmodule.edfToMatrix(dataframe))
+
     instance.data_image = join('research', 'datasets', 'images', instance.slug+'_image.svg')
-    signals.post_save.disconnect(my_handler, sender=Dataset)
+    signals.post_save.disconnect(post_save_handler, sender=Dataset)
     instance.save()
-    signals.post_save.connect(my_handler, sender=Dataset)
+    signals.post_save.connect(post_save_handler, sender=Dataset)
