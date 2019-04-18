@@ -134,7 +134,6 @@ class MapperAnalysis(Analysis):
         AFFINITYPROPAGATION = 'Affinity propagation'
         MEANSHIFT = 'Mean-shift'
         SPECTRALCLUSTERING = 'Spectral clustering'
-        WARDHC = 'Ward hierarchical clustering'
         AGGLOMERATIVE = 'Agglomerative clustering'
         DBSCAN = 'DBSCAN'
         GAUSSIANMIXTURES = 'Gaussian mixtures'
