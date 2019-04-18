@@ -10,6 +10,8 @@ import sklearn.cluster
 import sklearn.mixture
 import kmapper
 import ripser
+import json
+import matplotlib.pyplot as plt
 
 
 class Analysis(models.Model):
@@ -65,7 +67,10 @@ class FiltrationAnalysis(Analysis):
         rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=self.max_distances_considered, coeff=self.coeff,
                            do_cocycles=self.do_cocycles, n_perm=self.n_perm)
         result = rips.fit_transform(matrix, distance_matrix=True)
-        self.result = 
+        rips.plot(result)
+        plt.savefig()
+        self.result = json.dumps(result)
+        self.save()
 
 
 class MapperAnalysis(Analysis):
