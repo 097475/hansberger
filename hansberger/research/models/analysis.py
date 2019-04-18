@@ -46,8 +46,8 @@ class FiltrationAnalysis(Analysis):
     max_homology_dimension = models.IntegerField(default=1)
     max_distances_considered = models.FloatField(default=math.inf)
     coeff = models.IntegerField(default=2)
-    do_cocycles = models.BooleanField()
-    n_perm = models.IntegerField()
+    do_cocycles = models.BooleanField(default=False)
+    n_perm = models.IntegerField(default=None)
 
     result = JSONField()
 
