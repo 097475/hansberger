@@ -1,9 +1,7 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
-from django.dispatch import receiver
-from django.db.models import signals
-from ..models import Research, Source
+from ..models import Research
 
 
 class Dataset(models.Model):
@@ -16,11 +14,6 @@ class Dataset(models.Model):
         on_delete=models.CASCADE,
         related_name='datasets',
         related_query_name='dataset',
-    )
-    source = models.OneToOneField(
-        Source,
-        on_delete=models.CASCADE,
-        related_name='source_of'
     )
     plot = models.ImageField()
     matrix = JSONField()
@@ -42,8 +35,3 @@ class Dataset(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('research:dataset-detail', (), {'dataset_slug': self.slug, 'research_slug': self.research.slug})
-
-
-@receiver(signals.post_delete, sender=Dataset)
-def submission_delete(sender, instance, **kwargs):
-    instance.file.delete(False)
