@@ -27,7 +27,7 @@ class Dataset(models.Model):
 
     class Meta:
         ordering = ['-creation_date']
-        unique_together = (("slug", "research"))
+        unique_together = (('slug', 'research'))
         verbose_name = 'dataset'
         verbose_name_plural = 'datasets'
 
@@ -41,7 +41,7 @@ class Dataset(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("research:dataset-detail", (), {"dataset_slug": self.slug, "research_slug": self.research.slug})
+        return ('research:dataset-detail', (), {'dataset_slug': self.slug, 'research_slug': self.research.slug})
 
 
 @receiver(signals.post_delete, sender=Dataset)
