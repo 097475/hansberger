@@ -18,7 +18,8 @@ class Dataset(models.Model):
         related_query_name='dataset',
     )
     file = models.FileField(upload_to='research/datasets/')
-    plot = models.ImageField(upload_to='research/datasets/plots/', blank=True, null=True)
+    PLOTS_DIR = 'research/datasets/plots/'
+    plot = models.ImageField(upload_to=PLOTS_DIR, blank=True, null=True)
     matrix = JSONField(blank=True, null=True)
 
     class Meta:
@@ -51,12 +52,7 @@ class EDFDataset(Dataset):
         proxy = True
 
     def execute(self):
-        pass
-
-
-@receiver(signals.post_save, sender=EDFDataset)
-def process_edf_file(sender, instance, **kwargs):
-    pass
+        raise(NotImplementedError)
 
 
 class TextDataset(Dataset):
@@ -65,9 +61,4 @@ class TextDataset(Dataset):
         proxy = True
 
     def execute(self, values_separator, header_row_index, identity_column_index):
-        pass
-
-
-@receiver(signals.post_save, sender=TextDataset)
-def process_text_file(sender, instance, **kwargs):
-    pass
+        raise(NotImplementedError)
