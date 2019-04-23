@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 class Research(models.Model):
     name = models.CharField(max_length=150)
-    slug = models.SlugField(db_index=True, unique=True, max_length=150, blank=True, null=True)
+    slug = models.SlugField(db_index=True, unique=True, max_length=150)
     description = models.TextField(max_length=500, blank=True, null=True)
     creation_date = models.DateField(auto_now_add=True)
 
