@@ -12,7 +12,9 @@
       {% if dataset.description %}
         <p>{{ dataset.description }}</p>
       {% endif %}
+      {% if dataset.plot %}
       <img src = "{{ dataset.plot.url }}">
+      {% endif %}
     </div>
   </div>
   </div>

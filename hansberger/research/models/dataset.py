@@ -43,7 +43,7 @@ class Dataset(models.Model):
 
 @receiver(signals.post_delete, sender=Dataset)
 def submission_delete(sender, instance, **kwargs):
-    instance.datasource.delete(False)
+    instance.file.delete(False)
 
 
 class EDFDataset(Dataset):
