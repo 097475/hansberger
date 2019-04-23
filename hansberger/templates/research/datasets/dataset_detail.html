@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ dataset.name }} | {{ dataset.research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ dataset.name }} : {{ dataset.research.name }}</h2>
+      {% if dataset.description %}
+        <p>{{ dataset.description }}</p>
+      {% endif %}
+      <img src = "{{ dataset.plot.url }}">
+    </div>
+  </div>
+  </div>
+</div>
+{% endblock content %}
