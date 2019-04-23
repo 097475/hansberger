@@ -3,7 +3,6 @@ from django.views.generic import (
     DeleteView,
     DetailView,
     ListView,
-    FormView,
 )
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
@@ -47,7 +46,7 @@ class ResearchListView(ListView):
     template_name = "research/research_list.html"
 
 
-class DatasetCreateView(FormView):
+class DatasetCreateView(CreateView):
     model = Dataset
     form_class = DatasetCreationForm
     template_name = "research/datasets/dataset_form.html"
