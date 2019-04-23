@@ -51,7 +51,7 @@ class EDFDataset(Dataset):
     class Meta:
         proxy = True
 
-    def execute(self):
+    def process_file(self):
         raise(NotImplementedError)
 
 
@@ -60,5 +60,5 @@ class TextDataset(Dataset):
     class Meta:
         proxy = True
 
-    def execute(self, values_separator, header_row_index, identity_column_index):
+    def process_file(self, values_separator, header_row_index, identity_column_index):
         raise(NotImplementedError)
