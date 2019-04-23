@@ -1,6 +1,8 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
+from django.dispatch import receiver
+from django.db.models import signals
 from ..models import Research
 
 
@@ -15,8 +17,9 @@ class Dataset(models.Model):
         related_name='datasets',
         related_query_name='dataset',
     )
-    plot = models.ImageField()
-    matrix = JSONField()
+    file = models.FileField(upload_to='research/datasets/')
+    plot = models.ImageField(upload_to='research/datasets/plots/', blank=True, null=True)
+    matrix = JSONField(blank=True, null=True)
 
     class Meta:
         ordering = ['-creation_date']
@@ -35,3 +38,36 @@ class Dataset(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('research:dataset-detail', (), {'dataset_slug': self.slug, 'research_slug': self.research.slug})
+
+
+@receiver(signals.post_delete, sender=Dataset)
+def submission_delete(sender, instance, **kwargs):
+    instance.datasource.delete(False)
+
+
+class EDFDataset(Dataset):
+
+    class Meta:
+        proxy = True
+
+    def execute(self):
+        pass
+
+
+@receiver(signals.post_save, sender=EDFDataset)
+def process_edf_file(sender, instance, **kwargs):
+    pass
+
+
+class TextDataset(Dataset):
+
+    class Meta:
+        proxy = True
+
+    def execute(self, values_separator, header_row_index, identity_column_index):
+        pass
+
+
+@receiver(signals.post_save, sender=TextDataset)
+def process_text_file(sender, instance, **kwargs):
+    pass
