@@ -7,6 +7,7 @@ from ..models import Research
 
 
 class Dataset(models.Model):
+    PLOTS_DIR = 'research/datasets/plots/'
     EDF = 'EDF'
     TEXT = 'TXT'
     FILE_TYPE_CHOICES = (
@@ -28,8 +29,7 @@ class Dataset(models.Model):
         max_length=3,
         choices=FILE_TYPE_CHOICES
     )
-    PLOTS_DIR = 'research/datasets/plots/'
-    plot = models.ImageField(upload_to=PLOTS_DIR, blank=True, null=True)
+    plot = models.ImageField(max_length=300, blank=True, null=True)
     matrix = JSONField(blank=True, null=True)
 
     class Meta:
