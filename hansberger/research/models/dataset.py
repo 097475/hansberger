@@ -54,3 +54,4 @@ class Dataset(models.Model):
 @receiver(signals.post_delete, sender=Dataset)
 def submission_delete(sender, instance, **kwargs):
     instance.file.delete(False)
+    instance.plot.delete(False)
