@@ -73,7 +73,7 @@ class DatasetCreateView(CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('research:dataset-detail', kwargs={
+        return reverse_lazy('research:dataset-process-redirect', kwargs={
             'research_slug': self.kwargs['research_slug'],
             'dataset_slug': self.dataset.slug
         })
