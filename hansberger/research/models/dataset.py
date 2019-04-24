@@ -54,21 +54,3 @@ class Dataset(models.Model):
 @receiver(signals.post_delete, sender=Dataset)
 def submission_delete(sender, instance, **kwargs):
     instance.file.delete(False)
-
-
-class EDFDataset(Dataset):
-
-    class Meta:
-        proxy = True
-
-    def process_file(self):
-        raise(NotImplementedError)
-
-
-class TextDataset(Dataset):
-
-    class Meta:
-        proxy = True
-
-    def process_file(self, values_separator, header_row_index, identity_column_index):
-        raise(NotImplementedError)
