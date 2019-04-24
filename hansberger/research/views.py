@@ -3,11 +3,13 @@ from django.views.generic import (
     DeleteView,
     DetailView,
     ListView,
+    FormView,
+    RedirectView,
 )
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404
-from .models import Research, Dataset
-from .forms import DatasetCreationForm
+from .models import Research, Dataset, TextDataset
+from .forms import DatasetCreationForm, TextDatasetProcessForm
 
 
 class ResearchCreateView(CreateView):
@@ -74,6 +76,44 @@ class DatasetCreateView(CreateView):
             'research_slug': self.kwargs['research_slug'],
             'dataset_slug': self.dataset.slug
         })
+
+
+class DatasetProcessRedirectView(RedirectView):
+
+    # TODO: Insert dataset type control for redirect
+    def get_redirect_url(*args, **kwargs):
+        return reverse('research:dataset-process-text', kwargs={
+            'research_slug': kwargs['research_slug'],
+            'dataset_slug': kwargs['dataset_slug'],
+        })
+
+
+class TextDatasetProcessFormView(FormView):
+    form_class = TextDatasetProcessForm
+    template_name = 'research/datasets/dataset_process_form.html'
+    success_url = '/cazzo'
+
+    def get_success_url(self):
+        return reverse(
+            'research:dataset-detail',
+            kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'dataset_slug': self.kwargs['dataset_slug'],
+            }
+        )
+
+    def form_valid(self, form):
+        dataset = get_object_or_404(
+            TextDataset,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['dataset_slug'],
+        )
+        dataset.process_file(
+            form.cleaned_data.get('values_separator_character'),
+            form.cleaned_data.get('identity_column_index'),
+            form.cleaned_data.get('header_row_index'),
+        )
+        return super().form_valid(form)
 
 
 class DatasetDeleteView(DeleteView):
