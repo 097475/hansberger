@@ -1,4 +1,5 @@
 from django.views.generic import (
+    View,
     CreateView,
     DeleteView,
     DetailView,
@@ -8,7 +9,7 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404
-from .models import Research, Dataset, TextDataset
+from .models import Research, Dataset, TextDataset, EDFDataset
 from .forms import DatasetCreationForm, TextDatasetProcessForm
 
 
@@ -80,18 +81,30 @@ class DatasetCreateView(CreateView):
 
 class DatasetProcessRedirectView(RedirectView):
 
-    # TODO: Insert dataset type control for redirect
-    def get_redirect_url(*args, **kwargs):
-        return reverse('research:dataset-process-text', kwargs={
-            'research_slug': kwargs['research_slug'],
-            'dataset_slug': kwargs['dataset_slug'],
-        })
+    process_routes = {
+        Dataset.TEXT: 'research:dataset-process-text',
+        Dataset.EDF: 'research:dataset-process-edf',
+    }
+
+    @property
+    def dataset_process_route(self):
+        dataset = get_object_or_404(
+            Dataset,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['dataset_slug']
+        )
+        return self.process_routes.get(dataset.file_type)
+
+    def get_redirect_url(self, **kwargs):
+        return reverse(
+            self.dataset_process_route,
+            kwargs={'research_slug': kwargs['research_slug'], 'dataset_slug': kwargs['dataset_slug']}
+        )
 
 
 class TextDatasetProcessFormView(FormView):
     form_class = TextDatasetProcessForm
     template_name = 'research/datasets/dataset_process_form.html'
-    success_url = '/cazzo'
 
     def get_success_url(self):
         return reverse(
@@ -114,6 +127,24 @@ class TextDatasetProcessFormView(FormView):
             form.cleaned_data.get('header_row_index'),
         )
         return super().form_valid(form)
+
+
+class EDFDatasetProcessView(View):
+
+    def get(self, request, **kwargs):
+        dataset = get_object_or_404(
+            EDFDataset,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['dataset_slug']
+        )
+        dataset.process_file()
+        return reverse(
+            'research:dataset-detail',
+            kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'dataset_slug': self.kwargs['dataset_slug'],
+            }
+        )
 
 
 class DatasetDeleteView(DeleteView):
@@ -142,7 +173,6 @@ class DatasetDetailView(DetailView):
     context_object_name = 'dataset'
     slug_field = 'slug'
     slug_url_kwarg = 'dataset_slug'
-
     template_name = "research/datasets/dataset_detail.html"
 
     def get_object(self):
@@ -157,7 +187,6 @@ class DatasetListView(ListView):
     model = Dataset
     context_object_name = 'datasets'
     paginate_by = 10
-
     template_name = "research/datasets/dataset_list.html"
 
     def get_context_data(self, **kwargs):
