@@ -3,19 +3,16 @@ from django.db import models
 from django.utils.text import slugify
 from django.dispatch import receiver
 from django.db.models import signals
-from enum import Enum
 from ..models import Research
 
 
 class Dataset(models.Model):
-    class FileType(Enum):
-        TEXT = "Text file"
-        EDF = "EDF file"
-
-        @classmethod
-        def all(self):
-            return [self.TEXT, self.EDF]
-
+    EDF = 'EDF'
+    TEXT = 'TXT'
+    FILE_TYPE_CHOICES = (
+        (EDF, 'EDF file'),
+        (TEXT, 'Text file'),
+    )
     name = models.CharField(max_length=150)
     slug = models.SlugField(db_index=True, max_length=150)
     description = models.TextField(max_length=500, blank=True, null=True)
@@ -28,8 +25,8 @@ class Dataset(models.Model):
     )
     file = models.FileField(upload_to='research/datasets/')
     file_type = models.CharField(
-        max_length=10,
-        choices=[(type.value, type.name) for type in FileType.all()]
+        max_length=3,
+        choices=FILE_TYPE_CHOICES
     )
     PLOTS_DIR = 'research/datasets/plots/'
     plot = models.ImageField(upload_to=PLOTS_DIR, blank=True, null=True)
