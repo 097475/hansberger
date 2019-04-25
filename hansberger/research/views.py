@@ -171,8 +171,6 @@ class DatasetDeleteView(DeleteView):
 class DatasetDetailView(DetailView):
     model = Dataset
     context_object_name = 'dataset'
-    slug_field = 'slug'
-    slug_url_kwarg = 'dataset_slug'
     template_name = "research/datasets/dataset_detail.html"
 
     def get_object(self):
