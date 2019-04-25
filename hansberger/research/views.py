@@ -7,7 +7,7 @@ from django.views.generic import (
     FormView,
     RedirectView,
 )
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from .models import Research, Dataset, TextDataset, EDFDataset
 from .forms import DatasetCreationForm, TextDatasetProcessForm
@@ -96,7 +96,7 @@ class DatasetProcessRedirectView(RedirectView):
         return self.process_routes.get(dataset.file_type)
 
     def get_redirect_url(self, **kwargs):
-        return reverse(
+        return reverse_lazy(
             self.dataset_process_route,
             kwargs={'research_slug': kwargs['research_slug'], 'dataset_slug': kwargs['dataset_slug']}
         )
@@ -107,7 +107,7 @@ class TextDatasetProcessFormView(FormView):
     template_name = 'research/datasets/dataset_process_form.html'
 
     def get_success_url(self):
-        return reverse(
+        return reverse_lazy(
             'research:dataset-detail',
             kwargs={
                 'research_slug': self.kwargs['research_slug'],
@@ -138,7 +138,7 @@ class EDFDatasetProcessView(View):
             slug=self.kwargs['dataset_slug']
         )
         dataset.process_file()
-        return reverse(
+        return reverse_lazy(
             'research:dataset-detail',
             kwargs={
                 'research_slug': self.kwargs['research_slug'],
