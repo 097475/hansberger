@@ -96,10 +96,10 @@ class DatasetProcessRedirectView(RedirectView):
         return self.process_routes.get(dataset.file_type)
 
     def get_redirect_url(self, **kwargs):
-        return reverse_lazy(
-            self.dataset_process_route,
-            kwargs={'research_slug': kwargs['research_slug'], 'dataset_slug': kwargs['dataset_slug']}
-        )
+        return reverse_lazy(self.dataset_process_route, kwargs={
+            'research_slug': kwargs['research_slug'],
+            'dataset_slug': kwargs['dataset_slug']
+        })
 
 
 class TextDatasetProcessFormView(FormView):
@@ -107,13 +107,10 @@ class TextDatasetProcessFormView(FormView):
     template_name = 'research/datasets/dataset_process_form.html'
 
     def get_success_url(self):
-        return reverse_lazy(
-            'research:dataset-detail',
-            kwargs={
+        return reverse_lazy('research:dataset-detail', kwargs={
                 'research_slug': self.kwargs['research_slug'],
                 'dataset_slug': self.kwargs['dataset_slug'],
-            }
-        )
+        })
 
     def form_valid(self, form):
         dataset = get_object_or_404(
@@ -138,13 +135,10 @@ class EDFDatasetProcessView(View):
             slug=self.kwargs['dataset_slug']
         )
         dataset.process_file()
-        return reverse_lazy(
-            'research:dataset-detail',
-            kwargs={
+        return reverse_lazy('research:dataset-detail', kwargs={
                 'research_slug': self.kwargs['research_slug'],
                 'dataset_slug': self.kwargs['dataset_slug'],
-            }
-        )
+        })
 
 
 class DatasetDeleteView(DeleteView):
@@ -160,12 +154,9 @@ class DatasetDeleteView(DeleteView):
         )
 
     def get_success_url(self):
-        return reverse_lazy(
-            'research:dataset-list',
-            kwargs={
+        return reverse_lazy('research:dataset-list', kwargs={
                 'research_slug': self.kwargs['research_slug']
-            }
-        )
+        })
 
 
 class DatasetDetailView(DetailView):
