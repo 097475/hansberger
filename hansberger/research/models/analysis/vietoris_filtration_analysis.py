@@ -5,7 +5,7 @@ import scipy.spatial.distance as dist
 import ripser
 import matplotlib.pyplot as plt
 import json
-from ..models import FiltrationAnalysis
+from . import FiltrationAnalysis
 
 
 class VietorisFiltrationManager(models.Manager):

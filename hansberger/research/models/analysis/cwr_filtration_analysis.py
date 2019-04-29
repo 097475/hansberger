@@ -5,7 +5,7 @@ import ripser
 import matplotlib.pyplot as plt
 import json
 import numpy
-from ..models import FiltrationAnalysis
+from . import FiltrationAnalysis
 
 
 class CWRFManager(models.Manager):
