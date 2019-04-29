@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.dispatch import receiver
 from django.db.models import signals
-from ..models import Research
+from ..research import Research
 
 
 class Dataset(models.Model):
