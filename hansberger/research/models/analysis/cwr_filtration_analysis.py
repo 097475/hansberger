@@ -16,6 +16,7 @@ class CWRFManager(models.Manager):
 
 
 class CliqueWeightedRankFiltrationAnalysis(FiltrationAnalysis):
+    objects = CWRFManager()
 
     class Meta:
         proxy = True
