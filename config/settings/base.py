@@ -73,6 +73,7 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     "hansberger.users.apps.UsersAppConfig",
+    "hansberger.research.apps.ResearchConfig",
     # Your stuff: custom apps go here
     "hansberger.research.apps.ResearchConfig",
 ]

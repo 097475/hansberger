@@ -1,19 +1,21 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
-from django.db.models.signals import post_delete
 from django.dispatch import receiver
-from .research import Research
+from django.db.models import signals
+from ..models import Research
 
 
 class Dataset(models.Model):
-    name = models.CharField(max_length=150)
-    slug = models.SlugField(
-        db_index=True,
-        max_length=150,
-        blank=True,
-        null=True,
+    PLOTS_DIR = 'research/datasets/plots/'
+    EDF = 'EDF'
+    TEXT = 'TXT'
+    FILE_TYPE_CHOICES = (
+        (EDF, 'EDF file'),
+        (TEXT, 'Text file'),
     )
+    name = models.CharField(max_length=150)
+    slug = models.SlugField(db_index=True, max_length=150)
     description = models.TextField(max_length=500, blank=True, null=True)
     creation_date = models.DateField(auto_now_add=True)
     research = models.ForeignKey(
@@ -22,12 +24,17 @@ class Dataset(models.Model):
         related_name='datasets',
         related_query_name='dataset',
     )
-    file = models.FileField(upload_to=f"research/{research}/{slug}")
-    data = JSONField(blank=True, null=True)
+    file = models.FileField(upload_to='research/datasets/')
+    file_type = models.CharField(
+        max_length=3,
+        choices=FILE_TYPE_CHOICES
+    )
+    plot = models.ImageField(max_length=300, blank=True, null=True)
+    matrix = JSONField(blank=True, null=True)
 
     class Meta:
         ordering = ['-creation_date']
-        unique_together = (("slug", "research"))
+        unique_together = (('slug', 'research'))
         verbose_name = 'dataset'
         verbose_name_plural = 'datasets'
 
@@ -41,9 +48,10 @@ class Dataset(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("research:dataset-detail", (), {"dataset_slug": self.slug, "research_slug": self.research.slug})
+        return ('research:dataset-detail', (), {'dataset_slug': self.slug, 'research_slug': self.research.slug})
 
 
-@receiver(post_delete, sender=Dataset)
+@receiver(signals.post_delete, sender=Dataset)
 def submission_delete(sender, instance, **kwargs):
     instance.file.delete(False)
+    instance.plot.delete(False)
