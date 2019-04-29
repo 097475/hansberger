@@ -1,2 +1,3 @@
-from .research import Research
-from .dataset import Dataset
+from .research import * # noqa
+from .dataset import * # noqa
+from .analysis import * # noqa
