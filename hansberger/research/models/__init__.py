@@ -1,7 +1,7 @@
 from .research import * # noqa
-from .dataset import * # noqa
-from .edf_dataset import * # noqa
-from .text_dataset import * # noqa
-from .analysis import * # noqa
-from .cwr_filtration_analysis import * # noqa
-from .vietoris_filtration_analysis import * # noqa
+from .dataset.dataset import * # noqa
+from .dataset.edf_dataset import * # noqa
+from .dataset.text_dataset import * # noqa
+from .analysis.analysis import * # noqa
+from .analysis.cwr_filtration_analysis import * # noqa
+from .analysis.vietoris_filtration_analysis import * # noqa
