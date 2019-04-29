@@ -8,7 +8,7 @@ import json
 from ..models import FiltrationAnalysis
 
 
-class CWRFManager(models.Manager):
+class VietorisFiltrationManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(
             filtration_type=FiltrationAnalysis.VIETORIS_RIPS_FILTRATION
@@ -16,6 +16,7 @@ class CWRFManager(models.Manager):
 
 
 class VietorisFiltrationAnalysis(FiltrationAnalysis):
+    objects = VietorisFiltrationManager()
 
     class Meta:
         proxy = True
