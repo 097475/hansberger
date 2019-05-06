@@ -9,8 +9,8 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
-from .models import Research, Dataset, TextDataset, EDFDataset
-from .forms import DatasetCreationForm, TextDatasetProcessForm
+from .models import Research, Dataset, TextDataset, EDFDataset, FiltrationAnalysis
+from .forms import DatasetCreationForm, TextDatasetProcessForm, FiltrationAnalysisCreationForm
 
 
 class ResearchCreateView(CreateView):
@@ -192,3 +192,50 @@ class DatasetListView(ListView):
             research=self.research
         ).only('name', 'creation_date', 'slug', 'research')
         return datasets
+
+
+class FiltrationAnalysisDetailView(DetailView):
+    model = FiltrationAnalysis
+    context_object_name = 'analysis'
+    template_name = "research/analysis/filtrationanalysis_detail.html"
+    
+    def get_object(self):
+        return get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['filtrationanalysis_slug']
+        )
+
+
+class FiltrationAnalysisCreateView(CreateView):
+    model = FiltrationAnalysis
+    form_class = FiltrationAnalysisCreationForm
+    template_name = "research/analysis/filtrationanalysis_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy('research:filtrationanalysis-detail', kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'filtrationanalysis_slug': self.filtrationanalysis.slug
+        })
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        self.research = get_object_or_404(
+         Research,
+         slug=self.kwargs['research_slug']
+        )
+        context['research'] = self.research
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        self.research = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        kwargs['research'] = self.research
+        return kwargs
+
+    def form_valid(self, form):
+        self.filtrationanalysis = form.save()
+        return super().form_valid(form)

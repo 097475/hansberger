@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import models
 import matplotlib.pyplot as plt
 import pandas as pd
-from . import Dataset
+from .dataset import Dataset
 
 
 class TextDatasetManager(models.Manager):

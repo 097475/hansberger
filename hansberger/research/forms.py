@@ -1,5 +1,5 @@
 from django import forms
-from .models import Dataset
+from .models import Dataset, FiltrationAnalysis
 
 
 class DatasetCreationForm(forms.ModelForm):
@@ -29,3 +29,14 @@ class TextDatasetProcessForm(forms.Form):
         required=False,
         label="row number that identifies the column in the file"
     )
+
+
+class FiltrationAnalysisCreationForm(forms.ModelForm):
+    def __init__(self, research, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['research'].initial = research
+
+    class Meta:
+        model = FiltrationAnalysis
+        exclude = ['slug', 'result_matrix', 'result_plot']
+        widgets = {'research': forms.HiddenInput}
