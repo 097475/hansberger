@@ -29,7 +29,7 @@ class Analysis(models.Model):
     )
     dataset = models.ForeignKey(
         Dataset,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name='analysis_set',
         related_query_name='analysis',
     )
@@ -96,7 +96,7 @@ class FiltrationAnalysis(Analysis):
     n_perm = models.IntegerField(default=None, null=True, blank=True)
 
     result_matrix = JSONField(blank=True, null=True)
-    result_plot = models.ImageField(blank=True, null=True)
+    result_plot = models.ImageField(max_length=300, blank=True, null=True)
 
     @models.permalink
     def get_absolute_url(self):
@@ -117,10 +117,9 @@ class FiltrationAnalysis(Analysis):
         absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
         if not os.path.exists(absolute_plot_dir):
             os.makedirs(absolute_plot_dir)
-        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
         rips.plot()
         plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
-        self.result_plot = relative_plot_dir
+        self.result_plot = os.path.join(relative_plot_dir, plot_filename)
 
     def __save_matrix_json(self, matrix):
         self.result_matrix = json.dumps(matrix)
