@@ -81,15 +81,6 @@ class FiltrationAnalysis(Analysis):
         ('yule', 'Yule'),
     )
 
-    '''
-    source_dataset = models.ForeignKey(
-        Dataset,
-        on_delete=models.PROTECT,
-        related_name='filtration_analysis_set',
-        related_query_name='filtration_analysis'
-    )
-    '''
-
     filtration_type = models.CharField(
         max_length=50,
         choices=FILTRATION_TYPE_CHOICES,
@@ -112,7 +103,7 @@ class FiltrationAnalysis(Analysis):
         return ('research:filtrationanalysis-detail', (), {'filtrationanalysis_slug': self.slug,
                 'research_slug': self.research.slug})
 
-    def execute(self, input_matrix):  # input_matrix must be ndarray
+    def execute(self, input_matrix):
         _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
         rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
                            do_cocycles=self.do_cocycles, n_perm=self.n_perm)
@@ -130,7 +121,7 @@ class FiltrationAnalysis(Analysis):
     def __save_matrix_json(self, matrix):
         self.result_matrix = json.dumps(matrix)
 
-# matrix must be numpy matrix
+
 @receiver(post_save, sender=FiltrationAnalysis)
 def run_ripser(sender, instance, **kwargs):
     input_matrix = numpy.array(instance.dataset.matrix)
