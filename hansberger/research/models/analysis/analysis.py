@@ -1,6 +1,9 @@
 import ripser
 import matplotlib.pyplot as plt
 import json
+import numpy
+import math
+import scipy.spatial.distance as dist
 from os.path import join
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -8,6 +11,9 @@ from django.db import models
 from django.utils.text import slugify
 from ..research import Research
 from ..dataset.dataset import Dataset
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db.models import signals
 
 
 class Analysis(models.Model):
@@ -106,20 +112,34 @@ class FiltrationAnalysis(Analysis):
         return ('research:filtrationanalysis-detail', (), {'filtrationanalysis_slug': self.slug,
                 'research_slug': self.research.slug})
 
-    def execute(self, input_matrix):
-        rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=self.max_distances_considered, coeff=self.coeff,
+    def execute(self, input_matrix):  # input_matrix must be ndarray
+        _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
+        rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
                            do_cocycles=self.do_cocycles, n_perm=self.n_perm)
         analysis_result_matrix = rips.fit_transform(input_matrix, distance_matrix=True)
-        self.__save_matrix_plot(rips, analysis_result_matrix)
+        self.__save_plot(rips)
         self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
-        self.save()
 
     def __save_plot(self, rips):
         relative_plot_path = join('research', self.research.slug, self.slug, self.slug+'_plot.svg')
         absolute_plot_path = join(settings.MEDIA_ROOT, relative_plot_path)
         rips.plot()
         plt.savefig(absolute_plot_path)
-        self.plot = relative_plot_path
+        self.result_plot = relative_plot_path
 
     def __save_matrix_json(self, matrix):
-        self.result = json.dumps(matrix)
+        self.result_matrix = json.dumps(matrix)
+
+# matrix must be numpy matrix
+@receiver(post_save, sender=FiltrationAnalysis)
+def run_ripser(sender, instance, **kwargs):
+    input_matrix = numpy.array(instance.dataset.matrix)
+    if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
+        ripser_input_matrix = dist.squareform(dist.pdist(input_matrix.transpose(),
+                                              metric=instance.distance_matrix_metric))
+    elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
+        ripser_input_matrix = numpy.corrcoef(input_matrix)
+    instance.execute(ripser_input_matrix)
+    signals.post_save.disconnect(run_ripser, sender=FiltrationAnalysis)
+    instance.save()
+    signals.post_save.connect(run_ripser, sender=FiltrationAnalysis)

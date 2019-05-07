@@ -198,7 +198,7 @@ class FiltrationAnalysisDetailView(DetailView):
     model = FiltrationAnalysis
     context_object_name = 'analysis'
     template_name = "research/analysis/filtrationanalysis_detail.html"
-    
+
     def get_object(self):
         return get_object_or_404(
             FiltrationAnalysis,
@@ -220,10 +220,6 @@ class FiltrationAnalysisCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        self.research = get_object_or_404(
-         Research,
-         slug=self.kwargs['research_slug']
-        )
         context['research'] = self.research
         return context
 
@@ -237,5 +233,5 @@ class FiltrationAnalysisCreateView(CreateView):
         return kwargs
 
     def form_valid(self, form):
-        self.filtrationanalysis = form.save()
+        self.filtrationanalysis = form.save(commit=False)
         return super().form_valid(form)
