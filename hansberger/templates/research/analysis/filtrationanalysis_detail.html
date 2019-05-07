@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ analysis.name }} : {{ analysis.research.name }}</h2>
+      {% if analysis.description %}
+        <p>{{ analysis.description }}</p>
+      {% endif %}
+      {% if analysis.result_plot %}
+      <img src = "{{ analysis.result_plot.url }}">
+      {% endif %}
+    </div>
+  </div>
+  </div>
+</div>
+{% endblock content %}

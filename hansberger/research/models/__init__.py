@@ -3,5 +3,3 @@ from .dataset.dataset import * # noqa
 from .dataset.edf_dataset import * # noqa
 from .dataset.text_dataset import * # noqa
 from .analysis.analysis import * # noqa
-from .analysis.cwr_filtration_analysis import * # noqa
-from .analysis.vietoris_filtration_analysis import * # noqa

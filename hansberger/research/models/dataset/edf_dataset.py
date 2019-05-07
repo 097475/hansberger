@@ -1,5 +1,5 @@
 from django.db import models
-from . import Dataset
+from .dataset import Dataset
 
 
 class EDFDatasetManager(models.Manager):
