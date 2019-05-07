@@ -4,16 +4,16 @@ import json
 import numpy
 import math
 import scipy.spatial.distance as dist
-from os.path import join
+import os.path
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
-from ..research import Research
-from ..dataset.dataset import Dataset
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import signals
+from ..research import Research
+from ..dataset.dataset import Dataset
 
 
 class Analysis(models.Model):
@@ -112,8 +112,10 @@ class FiltrationAnalysis(Analysis):
         self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
 
     def __save_plot(self, rips):
-        relative_plot_path = join('research', self.research.slug, self.slug, self.slug+'_plot.svg')
-        absolute_plot_path = join(settings.MEDIA_ROOT, relative_plot_path)
+        relative_plot_path = os.path.join('research', self.research.slug, self.slug, self.slug+'_plot.svg')
+        absolute_plot_path = os.path.join(settings.MEDIA_ROOT, relative_plot_path)
+        if not os.path.exists(absolute_plot_path):
+            os.makedirs(absolute_plot_path)
         rips.plot()
         plt.savefig(absolute_plot_path)
         self.result_plot = relative_plot_path

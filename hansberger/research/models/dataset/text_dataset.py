@@ -1,4 +1,4 @@
-from os.path import join
+import os.path
 from django.conf import settings
 from django.db import models
 import matplotlib.pyplot as plt
@@ -35,8 +35,10 @@ class TextDataset(Dataset):
 
     def __save_dataframe_plot(self, dataframe):
         dataframe.plot()
-        relative_plot_path = join('research', self.research.slug, 'datasets', self.slug, self.slug + '_plot.svg')
-        absolute_plot_path = join(settings.MEDIA_ROOT, relative_plot_path)
+        relative_plot_path = os.path.join('research', self.research.slug, 'datasets', self.slug, self.slug + '_plot.svg')
+        absolute_plot_path = os.path.join(settings.MEDIA_ROOT, relative_plot_path)
+        if not os.path.exists(absolute_plot_path):
+            os.makedirs(absolute_plot_path)
         plt.savefig(absolute_plot_path)
         self.plot = relative_plot_path
 
