@@ -7,7 +7,7 @@ from ..research import Research
 
 
 def dataset_directory_path(instance, filename):
-    return f'research/{instance.research.slug}/{instance.slug}/{filename}'
+    return f'research/{instance.research.slug}/datasets/{instance.slug}/{filename}'
 
 
 class Dataset(models.Model):

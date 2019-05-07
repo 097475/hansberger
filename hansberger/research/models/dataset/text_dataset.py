@@ -35,7 +35,7 @@ class TextDataset(Dataset):
 
     def __save_dataframe_plot(self, dataframe):
         dataframe.plot()
-        relative_plot_path = join('research', self.research.slug, self.slug, self.slug + '_plot.svg')
+        relative_plot_path = join('research', self.research.slug, 'datasets', self.slug, self.slug + '_plot.svg')
         absolute_plot_path = join(settings.MEDIA_ROOT, relative_plot_path)
         plt.savefig(absolute_plot_path)
         self.plot = relative_plot_path
