@@ -6,8 +6,11 @@ from django.db.models import signals
 from ..research import Research
 
 
+def dataset_directory_path(instance, filename):
+    return f'research/{instance.research.slug}/{instance.slug}/{filename}'
+
+
 class Dataset(models.Model):
-    PLOTS_DIR = 'research/datasets/plots/'
     EDF = 'EDF'
     TEXT = 'TXT'
     FILE_TYPE_CHOICES = (
@@ -24,7 +27,7 @@ class Dataset(models.Model):
         related_name='datasets',
         related_query_name='dataset',
     )
-    file = models.FileField(upload_to='research/datasets/')
+    file = models.FileField(upload_to=dataset_directory_path)
     file_type = models.CharField(
         max_length=3,
         choices=FILE_TYPE_CHOICES
