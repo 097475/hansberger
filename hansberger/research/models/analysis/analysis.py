@@ -112,13 +112,15 @@ class FiltrationAnalysis(Analysis):
         self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
 
     def __save_plot(self, rips):
-        relative_plot_path = os.path.join('research', self.research.slug, self.slug, self.slug+'_plot.svg')
-        absolute_plot_path = os.path.join(settings.MEDIA_ROOT, relative_plot_path)
-        if not os.path.exists(absolute_plot_path):
-            os.makedirs(absolute_plot_path)
+        plot_filename = self.slug + '_plot.svg'
+        relative_plot_dir = os.path.join('research', self.research.slug, 'analysis', self.slug)
+        absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
+        if not os.path.exists(absolute_plot_dir):
+            os.makedirs(absolute_plot_dir)
+        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
         rips.plot()
-        plt.savefig(absolute_plot_path)
-        self.result_plot = relative_plot_path
+        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
+        self.result_plot = relative_plot_dir
 
     def __save_matrix_json(self, matrix):
         self.result_matrix = json.dumps(matrix)
