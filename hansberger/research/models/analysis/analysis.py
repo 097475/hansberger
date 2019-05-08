@@ -114,6 +114,7 @@ class FiltrationAnalysis(Analysis):
         analysis_result_matrix = rips.fit_transform(input_matrix, distance_matrix=True)
         self.__save_plot(rips)
         self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
+        self.__save_entropy_json(analysis_result_matrix)
 
     def __save_plot(self, rips):
         plot_filename = self.slug + '_plot.svg'
@@ -127,6 +128,27 @@ class FiltrationAnalysis(Analysis):
 
     def __save_matrix_json(self, matrix):
         self.result_matrix = json.dumps(matrix)
+
+    def __save_entropy_json(self, analysis_result_matrix):
+        entropies = {}
+        i = 0
+        for ripser_matrix in analysis_result_matrix:
+            entropies["H"+str(i)] = FiltrationAnalysis.calculate_entropy(ripser_matrix)
+            i = i + 1
+        print(entropies)
+        self.result_entropy = json.dumps(entropies)
+
+    @staticmethod
+    def calculate_entropy(ripser_matrix):
+        if ripser_matrix.size == 0:
+            return 0
+        max_death = max(map((lambda x: x[1]), filter((lambda x: x[1] != math.inf), ripser_matrix))) + 1
+        li = list(map((lambda x: x[1]-x[0] if x[1] != math.inf else max_death - x[0]), ripser_matrix))
+        ltot = sum(li)
+        if ltot == 0:
+            return 0
+        else:
+            return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
 
 @receiver(post_save, sender=FiltrationAnalysis)
