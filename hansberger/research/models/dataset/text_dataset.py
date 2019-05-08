@@ -1,4 +1,4 @@
-from os.path import join
+import os.path
 from django.conf import settings
 from django.db import models
 import matplotlib.pyplot as plt
@@ -35,10 +35,13 @@ class TextDataset(Dataset):
 
     def __save_dataframe_plot(self, dataframe):
         dataframe.plot()
-        relative_plot_path = join(self.PLOTS_DIR, self.slug + '_plot.svg')
-        absolute_plot_path = join(settings.MEDIA_ROOT, relative_plot_path)
-        plt.savefig(absolute_plot_path)
-        self.plot = relative_plot_path
+        plot_filename = self.slug + '_plot.svg'
+        relative_plot_dir = os.path.join('research', self.research.slug, 'datasets', self.slug)
+        absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
+        if not os.path.exists(absolute_plot_dir):
+            os.makedirs(absolute_plot_dir)
+        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
+        self.plot = os.path.join(relative_plot_dir, plot_filename)
 
     def __save_dataframe_matrix(self, dataframe):
         self.matrix = dataframe.values.tolist()

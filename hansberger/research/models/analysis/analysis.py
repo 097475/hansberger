@@ -4,16 +4,16 @@ import json
 import numpy
 import math
 import scipy.spatial.distance as dist
-from os.path import join
+import os.path
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
-from ..research import Research
-from ..dataset.dataset import Dataset
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import signals
+from ..research import Research
+from ..dataset.dataset import Dataset
 
 
 class Analysis(models.Model):
@@ -29,10 +29,12 @@ class Analysis(models.Model):
     )
     dataset = models.ForeignKey(
         Dataset,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name='analysis_set',
         related_query_name='analysis',
     )
+    window_size = models.IntegerField(default=None, null=True, blank=True)  # default no window
+    window_overlap = models.IntegerField(default=0)
 
     class Meta:
         abstract = True
@@ -87,7 +89,8 @@ class FiltrationAnalysis(Analysis):
     )
     distance_matrix_metric = models.CharField(
         max_length=20,
-        choices=METRIC_CHOICES
+        choices=METRIC_CHOICES,
+        default='euclidean'
     )
     max_homology_dimension = models.IntegerField(default=1)
     max_distances_considered = models.FloatField(default=None, null=True, blank=True)  # None/Null means infinity
@@ -96,7 +99,8 @@ class FiltrationAnalysis(Analysis):
     n_perm = models.IntegerField(default=None, null=True, blank=True)
 
     result_matrix = JSONField(blank=True, null=True)
-    result_plot = models.ImageField(blank=True, null=True)
+    result_plot = models.ImageField(max_length=300, blank=True, null=True)
+    result_entropy = JSONField(blank=True, null=True)
 
     @models.permalink
     def get_absolute_url(self):
@@ -112,11 +116,14 @@ class FiltrationAnalysis(Analysis):
         self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
 
     def __save_plot(self, rips):
-        relative_plot_path = join('research', self.research.slug, self.slug, self.slug+'_plot.svg')
-        absolute_plot_path = join(settings.MEDIA_ROOT, relative_plot_path)
+        plot_filename = self.slug + '_plot.svg'
+        relative_plot_dir = os.path.join('research', self.research.slug, 'analysis', self.slug)
+        absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
+        if not os.path.exists(absolute_plot_dir):
+            os.makedirs(absolute_plot_dir)
         rips.plot()
-        plt.savefig(absolute_plot_path)
-        self.result_plot = relative_plot_path
+        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
+        self.result_plot = os.path.join(relative_plot_dir, plot_filename)
 
     def __save_matrix_json(self, matrix):
         self.result_matrix = json.dumps(matrix)
