@@ -38,5 +38,5 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
 
     class Meta:
         model = FiltrationAnalysis
-        exclude = ['slug', 'result_matrix', 'result_plot']
+        exclude = ['slug', 'result_matrix', 'result_plot', 'result_entropy']
         widgets = {'research': forms.HiddenInput}

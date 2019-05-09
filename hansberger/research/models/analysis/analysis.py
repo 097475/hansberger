@@ -135,7 +135,6 @@ class FiltrationAnalysis(Analysis):
         for ripser_matrix in analysis_result_matrix:
             entropies["H"+str(i)] = FiltrationAnalysis.calculate_entropy(ripser_matrix)
             i = i + 1
-        print(entropies)
         self.result_entropy = json.dumps(entropies)
 
     @staticmethod
@@ -151,9 +150,28 @@ class FiltrationAnalysis(Analysis):
             return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
 
+def splitMatrix(m, window, overlap):
+    '''
+    # for correlation matrix
+    if window != 0 and window < len(m):
+    raise ValueError("window must be >= the number of rows of input matrix")
+    '''
+    cols = len(m[0])
+    step = window - overlap
+    windows = 1 + (cols - window) // step
+
+    for i in range(windows):
+        tmp = m[:, window*i - overlap*i: window*(i+1) - overlap*i]
+        yield tmp
+
+
 @receiver(post_save, sender=FiltrationAnalysis)
 def run_ripser(sender, instance, **kwargs):
     input_matrix = numpy.array(instance.dataset.matrix)
+    '''
+    if instance.window_size is not None:  # add alert
+        windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
+    '''
     if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
         ripser_input_matrix = dist.squareform(dist.pdist(input_matrix.transpose(),
                                               metric=instance.distance_matrix_metric))
