@@ -78,16 +78,6 @@ def submission_delete(sender, instance, **kwargs):
     instance.plot.delete(False)
 
 
-class EDFDataset(Dataset):
-    objects = EDFDatasetManager()
-
-    class Meta:
-        proxy = True
-
-    def process_file(self):
-        raise(NotImplementedError)
-
-
 class TextDataset(Dataset):
     objects = TextDatasetManager()
 
@@ -120,3 +110,13 @@ class TextDataset(Dataset):
 
     def __save_dataframe_matrix(self, dataframe):
         self.matrix = dataframe.values.tolist()
+
+
+class EDFDataset(Dataset):
+    objects = EDFDatasetManager()
+
+    class Meta:
+        proxy = True
+
+    def process_file(self):
+        raise(NotImplementedError)
