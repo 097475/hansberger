@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from ..analysis.analysis import Analysis
+from .analysis import Analysis
 
 
 class Window(models.Model):

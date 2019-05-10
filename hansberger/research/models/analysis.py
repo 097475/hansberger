@@ -12,8 +12,8 @@ from django.utils.text import slugify
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import signals
-from ..research import Research
-from ..dataset.dataset import Dataset
+from .research import Research
+from .dataset import Dataset
 
 
 class Analysis(models.Model):
