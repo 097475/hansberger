@@ -7,6 +7,8 @@ from django.db.models import signals
 from django.conf import settings
 import matplotlib.pyplot as plt
 import pandas as pd
+import scipy.spatial.distance as distance
+import numpy
 from .research import Research
 
 
@@ -70,6 +72,21 @@ class Dataset(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('research:dataset-detail', (), {'dataset_slug': self.slug, 'research_slug': self.research.slug})
+
+    def get_distance_matrix(self, metric):
+        if self.matrix is None:
+            raise ValueError("The dataset matrix has not yet been processed")
+        return distance.squareform(
+            distance.pdist(
+                numpy.array(self.matrix.transpose()),
+                metric=metric
+            )
+        )
+
+    def get_correlation_matrix(self):
+        if self.matrix is None:
+            raise ValueError("The dataset matrix has not yet been processed")
+        return numpy.corrcoef(numpy.array(self.matrix.transpose))
 
 
 @receiver(signals.post_delete, sender=Dataset)
