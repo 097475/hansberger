@@ -1,9 +1,7 @@
 import ripser
 import matplotlib.pyplot as plt
 import json
-import numpy
 import math
-import scipy.spatial.distance as dist
 import os.path
 from django.conf import settings
 from django.db import models
@@ -106,18 +104,15 @@ class FiltrationAnalysis(Analysis):
             do_cocycles=self.do_cocycles,
             n_perm=self.n_perm,
         )
-        matrix_to_analyze = self.__get_matrix_by_type()
+
+        if self.filtration_type is self.VIETORIS_RIPS_FILTRATION:
+            matrix_to_analyze = self.dataset.get_distance_matrix(self.distance_matrix_metric)
+        elif self.filtration_type is self.CLIQUE_WEIGHTED_RANK_FILTRATION:
+            matrix_to_analyze = self.dataset.get_correlation_matrix()
+
         analysis_result_matrix = rips.fit_transform(matrix_to_analyze, distance_matrix=True)
         self.__save_plot(rips)
         self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
-
-    def __get_matrix_by_type(self):
-        elaborated_matrix = numpy.array(self.dataset.matrix)
-        if self.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
-            return dist.squareform(dist.pdist(elaborated_matrix.transpose(),
-                                              metric=self.distance_matrix_metric))
-        elif self.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
-            return numpy.corrcoef(elaborated_matrix)
 
     def __save_plot(self, rips):
         plot_filename = self.slug + '_plot.svg'
