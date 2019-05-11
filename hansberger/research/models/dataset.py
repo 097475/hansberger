@@ -31,6 +31,7 @@ def dataset_directory_path(instance, filename):
 
 
 class Dataset(models.Model):
+    RELATIVE_STORAGE_PATH = None
     EDF = 'EDF'
     TEXT = 'TXT'
     FILE_TYPE_CHOICES = (
@@ -68,6 +69,12 @@ class Dataset(models.Model):
         if not self.id:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        if self.RELATIVE_STORAGE_PATH is None:
+            self.RELATIVE_STORAGE_PATH = os.path.join(
+                self.research.RELATIVE_STORAGE_PATH,
+                'datasets',
+                self.slug,
+            )
 
     @models.permalink
     def get_absolute_url(self):
@@ -118,12 +125,11 @@ class TextDataset(Dataset):
     def __save_dataframe_plot(self, dataframe):
         dataframe.plot()
         plot_filename = self.slug + '_plot.svg'
-        relative_plot_dir = os.path.join('research', self.research.slug, 'datasets', self.slug)
-        absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
-        if not os.path.exists(absolute_plot_dir):
-            os.makedirs(absolute_plot_dir)
-        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
-        self.plot = os.path.join(relative_plot_dir, plot_filename)
+        absolute_storage_path = os.path.join(settings.MEDIA_ROOT, self.RELATIVE_STORAGE_PATH)
+        if not os.path.exists(absolute_storage_path):
+            os.makedirs(absolute_storage_path)
+        plt.savefig(os.path.join(absolute_storage_path, plot_filename))
+        self.plot = os.path.join(self.RELATIVE_STORAGE_PATH, plot_filename)
 
     def __save_dataframe_matrix(self, dataframe):
         self.matrix = dataframe.values.tolist()
