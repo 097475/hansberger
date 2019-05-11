@@ -6,7 +6,6 @@ import math
 import scipy.spatial.distance as dist
 import os.path
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
 from django.db.models.signals import post_save
@@ -95,13 +94,12 @@ class FiltrationAnalysis(Analysis):
     do_cocycles = models.BooleanField(default=False)
     n_perm = models.IntegerField(default=None, null=True, blank=True)
 
-    result_matrix = JSONField(blank=True, null=True)
-    result_plot = models.ImageField(max_length=300, blank=True, null=True)
-
     @models.permalink
     def get_absolute_url(self):
-        return ('research:filtrationanalysis-detail', (), {'filtrationanalysis_slug': self.slug,
-                'research_slug': self.research.slug})
+        return ('research:filtrationanalysis-detail', (), {
+            'filtrationanalysis_slug': self.slug,
+            'research_slug': self.research.slug,
+        })
 
     def execute(self, input_matrix):
         _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
