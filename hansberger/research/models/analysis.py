@@ -8,9 +8,6 @@ import os.path
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.db.models import signals
 from .research import Research
 from .dataset import Dataset
 
@@ -89,7 +86,7 @@ class FiltrationAnalysis(Analysis):
         choices=METRIC_CHOICES
     )
     max_homology_dimension = models.IntegerField(default=1)
-    max_distances_considered = models.FloatField(default=None, null=True, blank=True)  # None/Null means infinity
+    max_distances_considered = models.FloatField(default=math.inf)
     coeff = models.IntegerField(default=2)
     do_cocycles = models.BooleanField(default=False)
     n_perm = models.IntegerField(default=None, null=True, blank=True)
@@ -101,13 +98,26 @@ class FiltrationAnalysis(Analysis):
             'research_slug': self.research.slug,
         })
 
-    def execute(self, input_matrix):
-        _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
-        rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
-                           do_cocycles=self.do_cocycles, n_perm=self.n_perm)
-        analysis_result_matrix = rips.fit_transform(input_matrix, distance_matrix=True)
+    def execute(self):
+        rips = ripser.Rips(
+            maxdim=self.max_homology_dimension,
+            thresh=self.max_distances_considered,
+            coeff=self.coeff,
+            do_cocycles=self.do_cocycles,
+            n_perm=self.n_perm,
+        )
+        matrix_to_analyze = self.__get_matrix_by_type()
+        analysis_result_matrix = rips.fit_transform(matrix_to_analyze, distance_matrix=True)
         self.__save_plot(rips)
         self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
+
+    def __get_matrix_by_type(self):
+        elaborated_matrix = numpy.array(self.dataset.matrix)
+        if self.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
+            return dist.squareform(dist.pdist(elaborated_matrix.transpose(),
+                                              metric=self.distance_matrix_metric))
+        elif self.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
+            return numpy.corrcoef(elaborated_matrix)
 
     def __save_plot(self, rips):
         plot_filename = self.slug + '_plot.svg'
@@ -121,17 +131,3 @@ class FiltrationAnalysis(Analysis):
 
     def __save_matrix_json(self, matrix):
         self.result_matrix = json.dumps(matrix)
-
-
-@receiver(post_save, sender=FiltrationAnalysis)
-def run_ripser(sender, instance, **kwargs):
-    input_matrix = numpy.array(instance.dataset.matrix)
-    if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
-        ripser_input_matrix = dist.squareform(dist.pdist(input_matrix.transpose(),
-                                              metric=instance.distance_matrix_metric))
-    elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
-        ripser_input_matrix = numpy.corrcoef(input_matrix)
-    instance.execute(ripser_input_matrix)
-    signals.post_save.disconnect(run_ripser, sender=FiltrationAnalysis)
-    instance.save()
-    signals.post_save.connect(run_ripser, sender=FiltrationAnalysis)
