@@ -31,7 +31,6 @@ def dataset_directory_path(instance, filename):
 
 
 class Dataset(models.Model):
-    RELATIVE_STORAGE_PATH = None
     EDF = 'EDF'
     TEXT = 'TXT'
     FILE_TYPE_CHOICES = (
@@ -53,8 +52,9 @@ class Dataset(models.Model):
         max_length=3,
         choices=FILE_TYPE_CHOICES
     )
-    plot = models.ImageField(max_length=300, blank=True, null=True)
+    plot = models.ImageField(max_length=500, blank=True, null=True)
     matrix = JSONField(blank=True, null=True)
+    storage_path = models.CharField(max_length=500)
 
     class Meta:
         ordering = ['-creation_date']
@@ -68,13 +68,13 @@ class Dataset(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-        if self.RELATIVE_STORAGE_PATH is None:
-            self.RELATIVE_STORAGE_PATH = os.path.join(
-                self.research.RELATIVE_STORAGE_PATH,
+        if not self.storage_path:
+            self.storage_path = os.path.join(
+                self.research.storage_path,
                 'datasets',
                 self.slug,
             )
+        super().save(*args, **kwargs)
 
     @models.permalink
     def get_absolute_url(self):
@@ -109,12 +109,12 @@ class TextDataset(Dataset):
         proxy = True
 
     def process_file(self, values_separator, header_row_index, identity_column_index):
-        dataframe = self.__get_dataframe_from_text(identity_column_index, values_separator, header_row_index)
+        dataframe = self.__get_dataframe(identity_column_index, values_separator, header_row_index)
         self.__save_dataframe_plot(dataframe)
         self.__save_dataframe_matrix(dataframe)
         self.save()
 
-    def __get_dataframe_from_text(self, identity_column_index, values_separator, header_row_index):
+    def get_dataframe(self, identity_column_index, values_separator, header_row_index):
         return pd.read_csv(
             self.file.path,
             index_col=identity_column_index,
@@ -125,11 +125,11 @@ class TextDataset(Dataset):
     def __save_dataframe_plot(self, dataframe):
         dataframe.plot()
         plot_filename = self.slug + '_plot.svg'
-        absolute_storage_path = os.path.join(settings.MEDIA_ROOT, self.RELATIVE_STORAGE_PATH)
+        absolute_storage_path = os.path.join(settings.MEDIA_ROOT, self.storage_path)
         if not os.path.exists(absolute_storage_path):
             os.makedirs(absolute_storage_path)
         plt.savefig(os.path.join(absolute_storage_path, plot_filename))
-        self.plot = os.path.join(self.RELATIVE_STORAGE_PATH, plot_filename)
+        self.plot = os.path.join(self.storage_path, plot_filename)
 
     def __save_dataframe_matrix(self, dataframe):
         self.matrix = dataframe.values.tolist()
