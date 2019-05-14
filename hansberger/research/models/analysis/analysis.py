@@ -33,6 +33,7 @@ class Analysis(models.Model):
         related_name='analysis_set',
         related_query_name='analysis',
     )
+    precomputed_distance_matrix = models.FileField(default=None, null=True, blank=True)  # TODO
     window_size = models.IntegerField(default=None, null=True, blank=True)  # default no window
     window_overlap = models.IntegerField(default=0)
 
@@ -130,7 +131,7 @@ class FiltrationAnalysis(Analysis):
         self.result_matrix = json.dumps(matrix)
 
     def __save_entropy_json(self, analysis_result_matrix):
-        entropies = {}
+        entropies = dict()
         i = 0
         for ripser_matrix in analysis_result_matrix:
             entropies["H"+str(i)] = FiltrationAnalysis.calculate_entropy(ripser_matrix)
