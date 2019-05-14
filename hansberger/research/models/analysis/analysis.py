@@ -150,10 +150,8 @@ class FiltrationAnalysis(Analysis):
         max_death = max(map((lambda x: x[1]), filter((lambda x: x[1] != math.inf), ripser_matrix))) + 1
         li = list(map((lambda x: x[1]-x[0] if x[1] != math.inf else max_death - x[0]), ripser_matrix))
         ltot = sum(li)
-        if ltot == 0:
-            return 0
-        else:
-            return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
+        # maybe check if ltot != 0
+        return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
 
 def splitMatrix(m, window, overlap):
