@@ -4,11 +4,11 @@ from django.utils.text import slugify
 
 
 class Research(models.Model):
-    RELATIVE_STORAGE_PATH = None
     name = models.CharField(max_length=150)
     slug = models.SlugField(db_index=True, unique=True, max_length=150)
     description = models.TextField(max_length=500, blank=True, null=True)
     creation_date = models.DateField(auto_now_add=True)
+    storage_path = models.CharField(max_length=300)
 
     class Meta:
         ordering = ['-creation_date']
@@ -21,9 +21,12 @@ class Research(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = slugify(self.name)
+        if not self.storage_path:
+            self.storage_path = os.path.join(
+                'research',
+                self.slug,
+            )
         super(Research, self).save(*args, **kwargs)
-        if not self.RELATIVE_STORAGE_PATH:
-            self.RELATIVE_STORAGE_PATH = os.path.join('research', self.slug)
 
     @models.permalink
     def get_absolute_url(self):
