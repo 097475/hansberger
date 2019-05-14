@@ -110,30 +110,35 @@ class FiltrationAnalysis(Analysis):
 
     def execute(self, input_matrix):
         _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
-        rips = ripser.Rips(maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
-                           do_cocycles=self.do_cocycles, n_perm=self.n_perm)
-        analysis_result_matrix = rips.fit_transform(input_matrix, distance_matrix=True)
-        self.__save_plot(rips)
-        self.__save_matrix_json([l.tolist() for l in analysis_result_matrix])
-        self.__save_entropy_json(analysis_result_matrix)
+        result = ripser.ripser(input_matrix, maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
+                               distance_matrix=True, do_cocycles=self.do_cocycles, n_perm=self.n_perm)
+        self.__save_plot(result['dgms'])
+        self.__save_entropy_json(result['dgms'])
+        self.__save_matrix_json(result)  # this method modifies permanently the result dict
 
-    def __save_plot(self, rips):
+    def __save_plot(self, diagrams):
         plot_filename = self.slug + '_plot.svg'
         relative_plot_dir = os.path.join('research', self.research.slug, 'analysis', self.slug)
         absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
         if not os.path.exists(absolute_plot_dir):
             os.makedirs(absolute_plot_dir)
-        rips.plot()
+        ripser.Rips().plot(diagrams)
         plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
         self.result_plot = os.path.join(relative_plot_dir, plot_filename)
 
-    def __save_matrix_json(self, matrix):
-        self.result_matrix = json.dumps(matrix)
+    def __save_matrix_json(self, analysis_result_matrix):
+        for k in analysis_result_matrix:
+            if isinstance(analysis_result_matrix[k], numpy.ndarray):
+                analysis_result_matrix[k] = analysis_result_matrix[k].tolist()
+            elif isinstance(analysis_result_matrix[k], list):
+                analysis_result_matrix[k] = [l.tolist() for l in analysis_result_matrix[k]
+                                             if isinstance(l, numpy.ndarray)]
+        self.result_matrix = json.dumps(analysis_result_matrix)
 
-    def __save_entropy_json(self, analysis_result_matrix):
+    def __save_entropy_json(self, diagrams):
         entropies = dict()
         i = 0
-        for ripser_matrix in analysis_result_matrix:
+        for ripser_matrix in diagrams:
             entropies["H"+str(i)] = FiltrationAnalysis.calculate_entropy(ripser_matrix)
             i = i + 1
         self.result_entropy = json.dumps(entropies)

@@ -15,21 +15,6 @@ from .models import Research, Dataset, TextDataset, EDFDataset, FiltrationAnalys
 from .forms import DatasetCreationForm, TextDatasetProcessForm, FiltrationAnalysisCreationForm
 
 
-class TextDownloadView(VirtualDownloadView):
-    model = FiltrationAnalysis
-
-    def get_object(self):
-        return get_object_or_404(
-            FiltrationAnalysis,
-            research__slug=self.kwargs['research_slug'],
-            slug=self.kwargs['filtrationanalysis_slug']
-        )
-
-    def get_file(self):
-        analysis = self.get_object()
-        return ContentFile(analysis.result_matrix, name=analysis.research.name + '_' + analysis.name + '.dat')
-
-
 class ResearchCreateView(CreateView):
     model = Research
     fields = ['name', 'description']
@@ -252,3 +237,18 @@ class FiltrationAnalysisCreateView(CreateView):
     def form_valid(self, form):
         self.filtrationanalysis = form.save(commit=False)
         return super().form_valid(form)
+
+
+class TextDownloadView(VirtualDownloadView):
+    model = FiltrationAnalysis
+
+    def get_object(self):
+        return get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['filtrationanalysis_slug']
+        )
+
+    def get_file(self):
+        analysis = self.get_object()
+        return ContentFile(analysis.result_matrix, name=analysis.research.name + '_' + analysis.name + '.dat')
