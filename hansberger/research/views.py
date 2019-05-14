@@ -16,9 +16,18 @@ from .forms import DatasetCreationForm, TextDatasetProcessForm, FiltrationAnalys
 
 
 class TextDownloadView(VirtualDownloadView):
+    model = FiltrationAnalysis
+
+    def get_object(self):
+        return get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['filtrationanalysis_slug']
+        )
+
     def get_file(self):
-        """Return :class:`django.core.files.base.ContentFile` object."""
-        return ContentFile(b"Hello world!\n", name='hello-world.txt')
+        analysis = self.get_object()
+        return ContentFile(analysis.result_matrix, name=analysis.research.name + '_' + analysis.name + '.dat')
 
 
 class ResearchCreateView(CreateView):
