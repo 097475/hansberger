@@ -7,10 +7,18 @@ from django.views.generic import (
     FormView,
     RedirectView,
 )
+from django.core.files.base import ContentFile
+from django_downloadview import VirtualDownloadView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
 from .models import Research, Dataset, TextDataset, EDFDataset, FiltrationAnalysis
 from .forms import DatasetCreationForm, TextDatasetProcessForm, FiltrationAnalysisCreationForm
+
+
+class TextDownloadView(VirtualDownloadView):
+    def get_file(self):
+        """Return :class:`django.core.files.base.ContentFile` object."""
+        return ContentFile(b"Hello world!\n", name='hello-world.txt')
 
 
 class ResearchCreateView(CreateView):
