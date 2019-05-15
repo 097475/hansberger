@@ -181,7 +181,7 @@ def run_ripser(sender, instance, **kwargs):
     if not instance.precomputed_distance_matrix:
         input_matrix = numpy.array(instance.dataset.matrix)
     else:
-        input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix)  # TODO: numpy read
+        input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: numpy read
     '''
     if instance.window_size is not None:  # add alert
         windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
