@@ -4,6 +4,12 @@ from .views import (
     ResearchDeleteView,
     ResearchDetailView,
     ResearchListView,
+    DatasetCreateView,
+    DatasetDeleteView,
+    DatasetDetailView,
+    DatasetListView,
+    DatasetProcessRedirectView,
+    TextDatasetProcessFormView,
 )
 
 
@@ -13,4 +19,10 @@ urlpatterns = [
     path("new/", view=ResearchCreateView.as_view(), name="research-create"),
     path("<slug:research_slug>/", view=ResearchDetailView.as_view(), name="research-detail"),
     path("<slug:research_slug>/delete/", view=ResearchDeleteView.as_view(), name="research-delete"),
+    path("<slug:research_slug>/datasets/", view=DatasetListView.as_view(), name="dataset-list"),
+    path("<slug:research_slug>/datasets/add/", view=DatasetCreateView.as_view(), name="dataset-create"),
+    path("<slug:research_slug>/datasets/<slug:dataset_slug>/", view=DatasetDetailView.as_view(), name="dataset-detail"),
+    path("<slug:research_slug>/datasets/<slug:dataset_slug>/process/", view=DatasetProcessRedirectView.as_view(), name="dataset-process-redirect"), # noqa
+    path("<slug:research_slug>/datasets/<slug:dataset_slug>/process-text/", view=TextDatasetProcessFormView.as_view(), name="dataset-process-text"), # noqa
+    path("<slug:research_slug>/datasets/<slug:dataset_slug>/delete/", view=DatasetDeleteView.as_view(), name="dataset-delete"), # noqa
 ]
