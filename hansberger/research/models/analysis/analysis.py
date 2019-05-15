@@ -32,8 +32,10 @@ class Analysis(models.Model):
         on_delete=models.CASCADE,
         related_name='analysis_set',
         related_query_name='analysis',
+        blank=True,
+        null=True
     )
-    precomputed_distance_matrix = models.FileField(upload_to='research/precomputed', default=None, null=True,
+    precomputed_distance_matrix = models.FileField(upload_to='research/precomputed/', default=None, null=True,
                                                    blank=True)  # TODO
     window_size = models.IntegerField(default=None, null=True, blank=True)  # default no window
     window_overlap = models.IntegerField(default=0)
@@ -179,7 +181,7 @@ def run_ripser(sender, instance, **kwargs):
     if not instance.precomputed_distance_matrix:
         input_matrix = numpy.array(instance.dataset.matrix)
     else:
-        input_matrix = instance.precomputed_distance_matrix  # TODO: numpy read
+        input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix)  # TODO: numpy read
     '''
     if instance.window_size is not None:  # add alert
         windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
