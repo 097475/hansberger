@@ -41,6 +41,7 @@ class TextDataset(Dataset):
         if not os.path.exists(absolute_plot_dir):
             os.makedirs(absolute_plot_dir)
         plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
+        plt.clf()
         self.plot = os.path.join(relative_plot_dir, plot_filename)
 
     def __save_dataframe_matrix(self, dataframe):

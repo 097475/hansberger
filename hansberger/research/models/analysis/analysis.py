@@ -33,7 +33,8 @@ class Analysis(models.Model):
         related_name='analysis_set',
         related_query_name='analysis',
     )
-    precomputed_distance_matrix = models.FileField(default=None, null=True, blank=True)  # TODO
+    precomputed_distance_matrix = models.FileField(upload_to='research/precomputed', default=None, null=True,
+                                                   blank=True)  # TODO
     window_size = models.IntegerField(default=None, null=True, blank=True)  # default no window
     window_overlap = models.IntegerField(default=0)
 
@@ -124,6 +125,7 @@ class FiltrationAnalysis(Analysis):
             os.makedirs(absolute_plot_dir)
         ripser.Rips().plot(diagrams)
         plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
+        plt.clf()
         self.result_plot = os.path.join(relative_plot_dir, plot_filename)
 
     def __save_matrix_json(self, analysis_result_matrix):
@@ -147,7 +149,10 @@ class FiltrationAnalysis(Analysis):
     def calculate_entropy(ripser_matrix):
         if ripser_matrix.size == 0:
             return 0
-        max_death = max(map((lambda x: x[1]), filter((lambda x: x[1] != math.inf), ripser_matrix))) + 1
+        non_infinity = list(filter((lambda x: x[1] != math.inf), ripser_matrix))
+        if non_infinity == []:  # TODO: check this better
+            return 0
+        max_death = max(map((lambda x: x[1]), non_infinity)) + 1
         li = list(map((lambda x: x[1]-x[0] if x[1] != math.inf else max_death - x[0]), ripser_matrix))
         ltot = sum(li)
         # maybe check if ltot != 0
@@ -171,7 +176,10 @@ def splitMatrix(m, window, overlap):
 
 @receiver(post_save, sender=FiltrationAnalysis)
 def run_ripser(sender, instance, **kwargs):
-    input_matrix = numpy.array(instance.dataset.matrix)
+    if not instance.precomputed_distance_matrix:
+        input_matrix = numpy.array(instance.dataset.matrix)
+    else:
+        input_matrix = instance.precomputed_distance_matrix  # TODO: numpy read
     '''
     if instance.window_size is not None:  # add alert
         windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
