@@ -73,6 +73,9 @@ class Analysis(models.Model):
     window_size = models.IntegerField(default=None, null=True, blank=True)  # default no window
     window_overlap = models.IntegerField(default=0)
 
+    def get_type(self):
+        return self._meta.verbose_name
+
     class Meta:
         abstract = True
         unique_together = (('slug', 'research'))
@@ -165,7 +168,7 @@ class MapperAnalysis(Analysis):
 
     class Meta(Analysis.Meta):
         verbose_name = "mapper algorithm analysis"
-        verbose_name_plural = "mapper algoritms analysis"
+        verbose_name_plural = "mapper algoritm analyses"
 
     # TODO: check precomputed=False
     def execute(self, input_matrix):
@@ -206,6 +209,10 @@ class FiltrationAnalysis(Analysis):
     result_matrix = JSONField(blank=True, null=True)
     result_plot = models.ImageField(max_length=300, blank=True, null=True)
     result_entropy = JSONField(blank=True, null=True)
+
+    class Meta(Analysis.Meta):
+        verbose_name = "filtration analysis"
+        verbose_name_plural = "filtration analyses"
 
     @models.permalink
     def get_absolute_url(self):

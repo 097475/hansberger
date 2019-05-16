@@ -1,3 +1,4 @@
+from itertools import chain
 from django.views.generic import (
     View,
     CreateView,
@@ -11,7 +12,7 @@ from django.core.files.base import ContentFile
 from django_downloadview import VirtualDownloadView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
-from .models import Research, Dataset, TextDataset, EDFDataset, FiltrationAnalysis, MapperAnalysis
+from .models import Research, Dataset, TextDataset, EDFDataset, FiltrationAnalysis, MapperAnalysis, Analysis
 from .forms import DatasetCreationForm, TextDatasetProcessForm, FiltrationAnalysisCreationForm
 from .forms import MapperAnalysisCreationForm
 
@@ -296,3 +297,28 @@ class TextDownloadView(VirtualDownloadView):
     def get_file(self):
         analysis = self.get_object()
         return ContentFile(analysis.result_matrix, name=analysis.research.name + '_' + analysis.name + '.dat')
+
+
+class AnalysisListView(ListView):
+    model = Analysis
+    context_object_name = 'analyses'
+    paginate_by = 10
+    template_name = "research/analysis/analysis_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = self.research
+        return context
+
+    def get_queryset(self):
+        self.research = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        filtration_analyses = FiltrationAnalysis.objects.filter(
+            research=self.research
+        ).only('name', 'creation_date', 'slug', 'research')
+        mapper_analyses = MapperAnalysis.objects.filter(
+            research=self.research
+        ).only('name', 'creation_date', 'slug', 'research')
+        return list(chain(filtration_analyses, mapper_analyses))

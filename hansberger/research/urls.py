@@ -15,7 +15,8 @@ from .views import (
     FiltrationAnalysisDetailView,
     MapperAnalysisCreateView,
     MapperAnalysisDetailView,
-    TextDownloadView
+    TextDownloadView,
+    AnalysisListView
 )
 
 
@@ -41,5 +42,7 @@ urlpatterns = [
     path("<slug:research_slug>/mapperanalysis/add/",
          view=MapperAnalysisCreateView.as_view(), name="mapperanalysis-create"),
     path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/",
-         view=MapperAnalysisDetailView.as_view(), name="mapperanalysis-detail")
+         view=MapperAnalysisDetailView.as_view(), name="mapperanalysis-detail"),
+    path("<slug:research_slug>/analysis/", view=AnalysisListView.as_view(), name="analysis-list")
+
 ]
