@@ -13,6 +13,8 @@ from .views import (
     EDFDatasetProcessView,
     FiltrationAnalysisCreateView,
     FiltrationAnalysisDetailView,
+    MapperAnalysisCreateView,
+    MapperAnalysisDetailView,
     TextDownloadView
 )
 
@@ -35,5 +37,9 @@ urlpatterns = [
     path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/",
          view=FiltrationAnalysisDetailView.as_view(), name="filtrationanalysis-detail"),
     path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/download",
-        view=TextDownloadView.as_view(), name="download-view")
+        view=TextDownloadView.as_view(), name="download-view"),
+    path("<slug:research_slug>/mapperanalysis/add/",
+         view=MapperAnalysisCreateView.as_view(), name="mapperanalysis-create"),
+    path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/",
+         view=MapperAnalysisDetailView.as_view(), name="mapperanalysis-detail")
 ]

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Dataset, FiltrationAnalysis
+from .models import Dataset, FiltrationAnalysis, MapperAnalysis
 
 
 class DatasetCreationForm(forms.ModelForm):
@@ -43,4 +43,15 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
     class Meta:
         model = FiltrationAnalysis
         exclude = ['slug', 'result_matrix', 'result_plot', 'result_entropy']
+        widgets = {'research': forms.HiddenInput}
+
+
+class MapperAnalysisCreationForm(forms.ModelForm):
+    def __init__(self, research, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['research'].initial = research
+
+    class Meta:
+        model = MapperAnalysis
+        exclude = ['slug', 'graph']
         widgets = {'research': forms.HiddenInput}

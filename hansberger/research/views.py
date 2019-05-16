@@ -11,8 +11,9 @@ from django.core.files.base import ContentFile
 from django_downloadview import VirtualDownloadView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
-from .models import Research, Dataset, TextDataset, EDFDataset, FiltrationAnalysis
+from .models import Research, Dataset, TextDataset, EDFDataset, FiltrationAnalysis, MapperAnalysis
 from .forms import DatasetCreationForm, TextDatasetProcessForm, FiltrationAnalysisCreationForm
+from .forms import MapperAnalysisCreationForm
 
 
 class ResearchCreateView(CreateView):
@@ -236,6 +237,49 @@ class FiltrationAnalysisCreateView(CreateView):
 
     def form_valid(self, form):
         self.filtrationanalysis = form.save(commit=False)
+        return super().form_valid(form)
+
+
+class MapperAnalysisDetailView(DetailView):
+    model = MapperAnalysis
+    context_object_name = 'analysis'
+    template_name = "research/analysis/mapperanalysis_detail.html"
+
+    def get_object(self):
+        return get_object_or_404(
+            MapperAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['mapperanalysis_slug']
+        )
+
+
+class MapperAnalysisCreateView(CreateView):
+    model = MapperAnalysis
+    form_class = MapperAnalysisCreationForm
+    template_name = "research/analysis/mapperanalysis_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy('research:mapperanalysis-detail', kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'mapperanalysis_slug': self.mapperanalysis.slug
+        })
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = self.research
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        self.research = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        kwargs['research'] = self.research
+        return kwargs
+
+    def form_valid(self, form):
+        self.mapperanalysis = form.save(commit=False)
         return super().form_valid(form)
 
 
