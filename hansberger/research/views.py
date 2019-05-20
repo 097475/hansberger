@@ -1,4 +1,6 @@
+from itertools import chain
 from django.views.generic import (
+    View,
     CreateView,
     DeleteView,
     DetailView,
@@ -6,10 +8,18 @@ from django.views.generic import (
     RedirectView,
     FormView,
 )
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
-from .models import Research, Dataset, TextDataset
-from .forms import DatasetCreationForm, TextDatasetProcessForm
+from django_downloadview import VirtualDownloadView
+from django.core.files.base import ContentFile
+from .models import Research, Dataset, TextDataset, FiltrationAnalysis, MapperAnalysis, Analysis
+from .forms import (
+    DatasetCreationForm,
+    TextDatasetProcessForm,
+    FiltrationAnalysisCreationForm,
+    MapperAnalysisCreationForm
+)
 
 
 class ResearchCreateView(CreateView):
@@ -169,3 +179,139 @@ class DatasetListView(ListView):
             research=self.research
         ).only('name', 'creation_date', 'slug', 'research')
         return datasets
+
+
+class FiltrationAnalysisDetailView(DetailView):
+    model = FiltrationAnalysis
+    context_object_name = 'analysis'
+    template_name = "research/analysis/filtrationanalysis_detail.html"
+
+    def get_object(self):
+        return get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['filtrationanalysis_slug']
+        )
+
+
+class FiltrationAnalysisCreateView(CreateView):
+    model = FiltrationAnalysis
+    form_class = FiltrationAnalysisCreationForm
+    template_name = "research/analysis/filtrationanalysis_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy('research:filtrationanalysis-detail', kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'filtrationanalysis_slug': self.filtrationanalysis.slug
+        })
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = self.research
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        self.research = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        kwargs['research'] = self.research
+        return kwargs
+
+    def form_valid(self, form):
+        self.filtrationanalysis = form.save(commit=False)
+        return super().form_valid(form)
+
+
+class TextDownloadView(VirtualDownloadView):
+    model = FiltrationAnalysis
+
+    def get_object(self):
+        return get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['filtrationanalysis_slug']
+        )
+
+    def get_file(self):
+        analysis = self.get_object()
+        return ContentFile(analysis.result_matrix, name=analysis.research.name + '_' + analysis.name + '.dat')
+
+
+class MapperAnalysisDetailView(DetailView):
+    model = MapperAnalysis
+    context_object_name = 'analysis'
+    template_name = "research/analysis/mapperanalysis_detail.html"
+
+    def get_object(self):
+        return get_object_or_404(
+            MapperAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['mapperanalysis_slug']
+        )
+
+
+class MapperAnalysisCreateView(CreateView):
+    model = MapperAnalysis
+    form_class = MapperAnalysisCreationForm
+    template_name = "research/analysis/mapperanalysis_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy('research:mapperanalysis-detail', kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'mapperanalysis_slug': self.mapperanalysis.slug
+        })
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = self.research
+        return context
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        self.research = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        kwargs['research'] = self.research
+        return kwargs
+
+    def form_valid(self, form):
+        self.mapperanalysis = form.save(commit=False)
+        return super().form_valid(form)
+
+
+class MapperAnalysisView(View):
+    def get(self, request, *args, **kwargs):
+        my_analysis = get_object_or_404(
+            MapperAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['mapperanalysis_slug']
+        )
+        return HttpResponse(my_analysis.graph)
+
+
+class AnalysisListView(ListView):
+    model = Analysis
+    context_object_name = 'analyses'
+    paginate_by = 10
+    template_name = "research/analysis/analysis_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = self.research
+        return context
+
+    def get_queryset(self):
+        self.research = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        filtration_analyses = FiltrationAnalysis.objects.filter(
+            research=self.research
+        ).only('name', 'creation_date', 'slug', 'research')
+        mapper_analyses = MapperAnalysis.objects.filter(
+            research=self.research
+        ).only('name', 'creation_date', 'slug', 'research')
+        return list(chain(filtration_analyses, mapper_analyses))

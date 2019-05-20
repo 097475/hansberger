@@ -1,5 +1,4 @@
 import os.path
-import json
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
@@ -74,12 +73,12 @@ class Dataset(models.Model):
 
     def get_distance_matrix(self, metric):
         return distance.squareform(distance.pdist(
-                numpy.array(self.data.transpose()),
+                numpy.array(self.data).transpose(),
                 metric=metric
             ))
 
     def get_correlation_matrix(self):
-        return numpy.corrcoef(numpy.array(self.data.transpose))
+        return numpy.corrcoef(numpy.array(self.data))
 
 
 class TextDataset(Dataset):
@@ -90,7 +89,7 @@ class TextDataset(Dataset):
 
     def process_source_and_save_information(self, values_separator, identity_column_index, header_row_index):
         dataframe = self.get_dataframe(values_separator, identity_column_index, header_row_index)
-        self.data = json.dumps(dataframe.values.tolist())
+        self.data = dataframe.values.tolist()
         self.save()
 
     def get_dataframe(self, values_separator, identity_column_index, header_row_index):
