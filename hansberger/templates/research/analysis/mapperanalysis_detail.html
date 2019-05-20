@@ -1,3 +1,20 @@
-{% autoescape off %}
-{{analysis.graph}}
-{% endautoescape %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
+
+{% block content %}
+<script>
+    window.open('graph', '_blank')
+</script>
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ analysis.name }} : {{ analysis.research.name }}</h2>
+      {% if analysis.description %}
+        <p>{{ analysis.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

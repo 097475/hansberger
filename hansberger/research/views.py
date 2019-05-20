@@ -8,6 +8,7 @@ from django.views.generic import (
     FormView,
     RedirectView,
 )
+from django.http import HttpResponse
 from django.core.files.base import ContentFile
 from django_downloadview import VirtualDownloadView
 from django.urls import reverse_lazy
@@ -322,3 +323,14 @@ class AnalysisListView(ListView):
             research=self.research
         ).only('name', 'creation_date', 'slug', 'research')
         return list(chain(filtration_analyses, mapper_analyses))
+
+
+class MapperAnalysisView(View):
+
+    def get(self, request, *args, **kwargs):
+        my_analysis = get_object_or_404(
+            MapperAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['mapperanalysis_slug']
+        )
+        return HttpResponse(my_analysis.graph)
