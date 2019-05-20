@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ analysis.name }} : {{ analysis.research.name }}</h2>
+      {% if analysis.description %}
+        <p>{{ analysis.description }}</p>
+      {% endif %}
+      {% if analysis.result_plot %}
+      <img src = "{{ analysis.result_plot.url }}">
+      <p id="entropy"></p>
+      <script>
+            var entropy = JSON.parse('{{ analysis.result_entropy|safe }}');
+            for (var key in entropy) {
+              if (entropy.hasOwnProperty(key)) {
+                    console.log(key + " -> " + entropy[key]);
+                    document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
+                  }
+            }
+      </script>
+      {% endif %}
+      <a href="download">download</a>
+    </div>
+  </div>
+</div>
+{% endblock content %}

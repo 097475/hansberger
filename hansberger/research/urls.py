@@ -10,6 +10,9 @@ from .views import (
     DatasetListView,
     DatasetProcessRedirectView,
     TextDatasetProcessFormView,
+    FiltrationAnalysisCreateView,
+    FiltrationAnalysisDetailView,
+    TextDownloadView
 )
 
 
@@ -25,4 +28,10 @@ urlpatterns = [
     path("<slug:research_slug>/datasets/<slug:dataset_slug>/process/", view=DatasetProcessRedirectView.as_view(), name="dataset-process-redirect"), # noqa
     path("<slug:research_slug>/datasets/<slug:dataset_slug>/process-text/", view=TextDatasetProcessFormView.as_view(), name="dataset-process-text"), # noqa
     path("<slug:research_slug>/datasets/<slug:dataset_slug>/delete/", view=DatasetDeleteView.as_view(), name="dataset-delete"), # noqa
+    path("<slug:research_slug>/filtrationanalysis/add/",
+         view=FiltrationAnalysisCreateView.as_view(), name="filtrationanalysis-create"),
+    path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/",
+         view=FiltrationAnalysisDetailView.as_view(), name="filtrationanalysis-detail"),
+    path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/download",
+        view=TextDownloadView.as_view(), name="download-view"),
 ]
