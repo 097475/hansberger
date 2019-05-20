@@ -12,7 +12,10 @@ from .views import (
     TextDatasetProcessFormView,
     FiltrationAnalysisCreateView,
     FiltrationAnalysisDetailView,
-    TextDownloadView
+    TextDownloadView,
+    MapperAnalysisCreateView,
+    MapperAnalysisDetailView,
+    MapperAnalysisView
 )
 
 
@@ -34,4 +37,10 @@ urlpatterns = [
          view=FiltrationAnalysisDetailView.as_view(), name="filtrationanalysis-detail"),
     path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/download",
         view=TextDownloadView.as_view(), name="download-view"),
+    path("<slug:research_slug>/mapperanalysis/add/",
+         view=MapperAnalysisCreateView.as_view(), name="mapperanalysis-create"),
+    path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/",
+         view=MapperAnalysisDetailView.as_view(), name="mapperanalysis-detail"),
+    path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/graph", view=MapperAnalysisView.as_view(),
+         name="mapperanalysis-graph")
 ]
