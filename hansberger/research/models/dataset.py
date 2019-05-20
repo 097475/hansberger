@@ -1,5 +1,4 @@
 import os.path
-import json
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
@@ -74,7 +73,7 @@ class Dataset(models.Model):
 
     def get_distance_matrix(self, metric):
         return distance.squareform(distance.pdist(
-                numpy.array(self.data.transpose()),
+                numpy.array(self.data).transpose(),
                 metric=metric
             ))
 

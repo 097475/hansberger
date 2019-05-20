@@ -7,7 +7,6 @@ import math
 import sklearn.cluster
 import sklearn.preprocessing
 import sklearn.mixture
-import scipy.spatial.distance as dist
 import os.path
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -171,13 +170,11 @@ class MapperAnalysis(Analysis):
         verbose_name_plural = "mapper algoritm analyses"
 
     # TODO: check precomputed=False
-    def execute(self, input_matrix):
-        distance_matrix = dist.squareform(dist.pdist(input_matrix.transpose(),
-                                                     metric=self.distance_matrix_metric))
+    def execute(self, distance_matrix, original_matrix):
         mapper = kmapper.KeplerMapper()
         mycover = kmapper.Cover(n_cubes=self.cover_n_cubes, perc_overlap=self.cover_perc_overlap)
         mynerve = kmapper.GraphNerve(min_intersection=self.graph_nerve_min_intersection)
-        original_data = input_matrix if self.use_original_data else None
+        original_data = original_matrix if self.use_original_data else None
         projected_data = mapper.fit_transform(distance_matrix, projection=self.projection,
                                               scaler=MapperAnalysis.scalers[self.scaler], distance_matrix=False)
         graph = mapper.map(projected_data, X=original_data, clusterer=MapperAnalysis.clusterers[self.clusterer],
@@ -287,20 +284,17 @@ def splitMatrix(m, window, overlap):
 @receiver(post_save, sender=FiltrationAnalysis)
 def run_ripser(sender, instance, **kwargs):
 
-    if not instance.precomputed_distance_matrix:
-        input_matrix = numpy.array(instance.dataset.data)
-    else:
-        input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: wrong logic
     '''
     if instance.window_size is not None:  # add alert
         windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
     '''
-    print(instance.dataset.data[0])
-    if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
-        ripser_input_matrix = dist.squareform(dist.pdist(input_matrix.transpose(),
-                                              metric=instance.distance_matrix_metric))
-    elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
-        ripser_input_matrix = numpy.corrcoef(input_matrix)
+    if instance.precomputed_distance_matrix:
+        ripser_input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: add more read types
+    else:
+        if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
+            ripser_input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
+        elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
+            ripser_input_matrix = instance.dataset.get_correlation_matrix()
     instance.execute(ripser_input_matrix)
     signals.post_save.disconnect(run_ripser, sender=FiltrationAnalysis)
     instance.save()
@@ -310,10 +304,12 @@ def run_ripser(sender, instance, **kwargs):
 @receiver(post_save, sender=MapperAnalysis)
 def run_kmapper(sender, instance, **kwargs):
     if not instance.precomputed_distance_matrix:
-        input_matrix = numpy.array(instance.dataset.data)
+        original_matrix = numpy.array(instance.dataset.data)
+        distance_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
     else:
-        input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: numpy read
-    instance.execute(input_matrix)
+        original_matrix = None
+        distance_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: wrong logic
+    instance.execute(original_matrix, distance_matrix)
     signals.post_save.disconnect(run_kmapper, sender=MapperAnalysis)
     instance.save()
     signals.post_save.connect(run_kmapper, sender=MapperAnalysis)
