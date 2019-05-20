@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Research: {{ research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ research.name }}</h2>
+      {% if research.description %}
+        <p>{{ research.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
