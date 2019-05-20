@@ -16,8 +16,8 @@ from django.utils.text import slugify
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import signals
-from ..research import Research
-from ..dataset.dataset import Dataset
+from .research import Research
+from .dataset import Dataset
 
 
 class Analysis(models.Model):
@@ -286,14 +286,16 @@ def splitMatrix(m, window, overlap):
 
 @receiver(post_save, sender=FiltrationAnalysis)
 def run_ripser(sender, instance, **kwargs):
+
     if not instance.precomputed_distance_matrix:
-        input_matrix = numpy.array(instance.dataset.matrix)
+        input_matrix = numpy.array(instance.dataset.data)
     else:
         input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: wrong logic
     '''
     if instance.window_size is not None:  # add alert
         windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
     '''
+    print(instance.dataset.data[0])
     if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
         ripser_input_matrix = dist.squareform(dist.pdist(input_matrix.transpose(),
                                               metric=instance.distance_matrix_metric))
@@ -308,7 +310,7 @@ def run_ripser(sender, instance, **kwargs):
 @receiver(post_save, sender=MapperAnalysis)
 def run_kmapper(sender, instance, **kwargs):
     if not instance.precomputed_distance_matrix:
-        input_matrix = numpy.array(instance.dataset.matrix)
+        input_matrix = numpy.array(instance.dataset.data)
     else:
         input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: numpy read
     instance.execute(input_matrix)

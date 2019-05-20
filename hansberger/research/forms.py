@@ -17,17 +17,20 @@ class TextDatasetProcessForm(forms.Form):
 
     values_separator_character = forms.CharField(
         max_length=5,
-        label="separator character of the values in the file"
+        label="separator character of the values in the file",
+        initial=','
     )
     identity_column_index = forms.IntegerField(
         widget=forms.NumberInput,
         required=False,
-        label="column number that identifies the progressive number of rows in the file"
+        label="column number that identifies the progressive number of rows in the file",
+        initial=0
     )
     header_row_index = forms.IntegerField(
         widget=forms.NumberInput,
         required=False,
-        label="row number that identifies the column in the file"
+        label="row number that identifies the column in the file",
+        initial=0
     )
 
 
