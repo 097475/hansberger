@@ -29,10 +29,10 @@ class Research(models.Model):
             )
         super(Research, self).save(*args, **kwargs)
 
-    @property
-    def absolute_storage_path(self):
-        return os.path.join(settings.MEDIA_ROOT, self.storage_path)
-
     @models.permalink
     def get_absolute_url(self):
         return ('research:research-detail', (), {'research_slug': self.slug})
+
+    @property
+    def absolute_storage_path(self):
+        return os.path.join(settings.MEDIA_ROOT, self.storage_path)
