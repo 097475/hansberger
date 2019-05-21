@@ -24,3 +24,6 @@ scipy==1.2.1
 Cython==0.29.7
 ripser==0.3.2
 kmapper==1.2.0
+
+#Django External
+django-downloadview==1.9
