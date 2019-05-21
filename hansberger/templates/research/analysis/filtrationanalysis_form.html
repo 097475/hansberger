@@ -8,5 +8,24 @@
     {{ form|crispy }}
     <input type="submit" value="Save">
 </form>
-
+<script>
+        function hideDistanceMatrixMetric(filtrationType){
+            if(filtrationType.value == 'CWRF'){
+                document.getElementById("div_id_distance_matrix_metric").style.display = "none";
+            }
+            else{
+                document.getElementById("div_id_distance_matrix_metric").style.display = "block";
+            }   
+        }
+        function hideOverlap(window){
+            if(window.value > 0){
+                document.getElementById("div_id_window_overlap").style.display = "block";
+            }else{
+                document.getElementById("div_id_window_overlap").style.display = "none";
+            }
+        }
+        document.getElementById("id_filtration_type").setAttribute("onchange", "hideDistanceMatrixMetric(this)")
+        document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
+        document.getElementById("div_id_window_overlap").style.display = "none";
+</script>
 {% endblock %}

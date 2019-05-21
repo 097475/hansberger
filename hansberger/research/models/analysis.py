@@ -46,7 +46,7 @@ class Analysis(models.Model):
     )
     name = models.CharField(max_length=100)
     slug = models.SlugField(db_index=True, max_length=110)
-    description = models.TextField(max_length=500, blank=True, null=True)
+    description = models.TextField(max_length=500, blank=True)
     creation_date = models.DateField(auto_now_add=True)
     research = models.ForeignKey(
         Research,
@@ -62,15 +62,12 @@ class Analysis(models.Model):
         blank=True,
         null=True
     )
-    distance_matrix_metric = models.CharField(
-        max_length=20,
-        choices=METRIC_CHOICES,
-        default='euclidean'
-    )
+
     precomputed_distance_matrix = models.FileField(upload_to='research/precomputed/', default=None, null=True,
                                                    blank=True)  # TODO
-    window_size = models.IntegerField(default=None, null=True, blank=True)  # default no window
-    window_overlap = models.IntegerField(default=0)
+    window_size = models.PositiveIntegerField(default=None, null=True, blank=True,
+                                              help_text="Leave window size blank or 0 to not use windows")
+    window_overlap = models.PositiveIntegerField(default=0)
 
     def get_type(self):
         return self._meta.verbose_name
@@ -140,6 +137,11 @@ class MapperAnalysis(Analysis):
         ('birch', 'Birch')  # missing parameters
     )
 
+    distance_matrix_metric = models.CharField(
+        max_length=20,
+        choices=Analysis.METRIC_CHOICES,
+        default='euclidean'
+    )
     # fit_transform parameters; not implemented : scaler params, scikit projections
     projection = models.CharField(
                 max_length=50,
@@ -196,6 +198,11 @@ class FiltrationAnalysis(Analysis):
     filtration_type = models.CharField(
         max_length=50,
         choices=FILTRATION_TYPE_CHOICES,
+    )
+    distance_matrix_metric = models.CharField(
+        max_length=20,
+        choices=Analysis.METRIC_CHOICES,
+        blank=True,
     )
     max_homology_dimension = models.IntegerField(default=1)
     max_distances_considered = models.FloatField(default=None, null=True, blank=True)  # None/Null means infinity
