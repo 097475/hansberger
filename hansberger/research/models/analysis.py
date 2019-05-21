@@ -1,12 +1,5 @@
-import ripser
-import kmapper
-import matplotlib.pyplot as plt
 import json
-import numpy
 import math
-import sklearn.cluster
-import sklearn.preprocessing
-import sklearn.mixture
 import os.path
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -15,6 +8,13 @@ from django.utils.text import slugify
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models import signals
+import ripser
+import kmapper
+import matplotlib.pyplot as plt
+import sklearn.cluster
+import sklearn.preprocessing
+import sklearn.mixture
+import numpy
 from .research import Research
 from .dataset import Dataset
 

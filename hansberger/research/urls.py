@@ -41,6 +41,6 @@ urlpatterns = [
     path("<slug:research_slug>/mapperanalysis/add/", view=MapperAnalysisCreateView.as_view(), name="mapperanalysis-create"), # noqa
     path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/", view=MapperAnalysisDetailView.as_view(), name="mapperanalysis-detail"), # noqa
     path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/graph", view=MapperAnalysisView.as_view(), name="mapperanalysis-graph"), # noqa
-    
+
     path("<slug:research_slug>/analysis/", view=AnalysisListView.as_view(), name="analysis-list")
 ]
