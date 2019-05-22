@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.text import slugify
 from django.conf import settings
 import pandas as pd
+import matplotlib.pyplot as plt
 import scipy.spatial.distance as distance
 import numpy
 from .research import Research
@@ -42,6 +43,7 @@ class Dataset(models.Model):
         related_query_name='text_dataset',
     )
     data = JSONField(null=True, blank=True)
+    plot = models.ImageField(max_length=500, null=True, blank=True)
 
     class Meta:
         ordering = ['-creation_date']
@@ -90,6 +92,7 @@ class TextDataset(Dataset):
     def process_source_and_save_information(self, values_separator, identity_column_index, header_row_index):
         dataframe = self.get_dataframe(values_separator, identity_column_index, header_row_index)
         self.data = dataframe.values.tolist()
+        self.__make_plot(dataframe)
         self.save()
 
     def get_dataframe(self, values_separator, identity_column_index, header_row_index):
@@ -99,3 +102,11 @@ class TextDataset(Dataset):
             sep=values_separator,
             header=header_row_index,
         )
+
+    def __make_plot(self, dataframe):
+        dataframe.plot()
+        plot_filename = self.slug + '_plot.svg'
+        if not os.path.exists(self.absolute_storage_path):
+            os.makedirs(self.absolute_storage_path)
+        plt.savefig(os.path.join(self.absolute_storage_path, plot_filename))
+        self.plot = os.path.join(self.storage_path, plot_filename)
