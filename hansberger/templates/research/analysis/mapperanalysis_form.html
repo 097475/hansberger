@@ -8,5 +8,15 @@
     {{ form|crispy }}
     <input type="submit" value="Save">
 </form>
-
+<script>
+function hideOverlap(window){
+            if(window.value > 0){
+                document.getElementById("div_id_window_overlap").style.display = "block";
+            }else{
+                document.getElementById("div_id_window_overlap").style.display = "none";
+            }
+        }
+        document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
+        document.getElementById("div_id_window_overlap").style.display = "none";
+</script>
 {% endblock %}
