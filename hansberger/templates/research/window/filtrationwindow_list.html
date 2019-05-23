@@ -1,21 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Research{% endblock %}
+{% block title %}Analysis{% endblock %}
 
 {% block content %}
 <div class="container">
-  <h2>Analysis</h2>
+  <h2>Windows</h2>
 
   <div class="list-group">
-    {% for analysis in analyses %}
-    {% if analysis.get_type == "filtration analysis"%}
-        <a href="{% url 'research:filtrationanalysis-detail' analysis.research.slug analysis.slug %}" class="list-group-item">
-            <h4 class="list-group-item-heading">{{ analysis.name }} - {{ analysis.creation_date }}</h4>
+    {% for window in windows %}
+        <a href="{% url 'research:filtrationwindow-detail' window.analysis.research.slug window.analysis.slug window.slug %}" class="list-group-item">
+            <h4 class="list-group-item-heading">{{ window.name }} - {{ window.creation_date }}</h4>
        </a>
-    {% elif analysis.get_type == "mapper algorithm analysis" %}
-        <a href="{% url 'research:mapperanalysis-detail' analysis.research.slug analysis.slug %}" class="list-group-item">
-            <h4 class="list-group-item-heading">{{ analysis.name }} - {{ analysis.creation_date }}</h4>
-       </a>
-    {% endif %}
     {% endfor %}
   </div>
   {# .... **Now the pagination section** .... #}

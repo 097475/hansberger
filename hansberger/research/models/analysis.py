@@ -16,7 +16,8 @@ import sklearn.preprocessing
 import sklearn.mixture
 import numpy
 from .research import Research
-from .dataset import Dataset
+from .dataset import Dataset, distance_matrix, correlation_matrix
+from .window import FiltrationWindow, MapperWindow
 
 
 class Analysis(models.Model):
@@ -223,13 +224,15 @@ class FiltrationAnalysis(Analysis):
         return ('research:filtrationanalysis-detail', (), {'filtrationanalysis_slug': self.slug,
                 'research_slug': self.research.slug})
 
-    def execute(self, input_matrix):
+    def execute(self, input_matrix, number=0):
         _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
         result = ripser.ripser(input_matrix, maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
                                distance_matrix=True, do_cocycles=self.do_cocycles, n_perm=self.n_perm)
-        self.__save_plot(result['dgms'])
-        self.__save_entropy_json(result['dgms'])
-        self.__save_matrix_json(result)  # this method modifies permanently the result dict
+        window = FiltrationWindow.objects.create_window(str(number), self)
+        window.save_plot(result['dgms'])
+        window.save_entropy_json(result['dgms'])
+        window.save_matrix_json(result)  # this method modifies permanently the result dict
+        window.save()
 
     def __save_plot(self, diagrams):
         plot_filename = self.slug + '_plot.svg'
@@ -273,39 +276,47 @@ class FiltrationAnalysis(Analysis):
         return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
 
-def splitMatrix(m, window, overlap):
-    '''
-    # for correlation matrix
-    if window != 0 and window < len(m):
-    raise ValueError("window must be >= the number of rows of input matrix")
-    '''
-    cols = len(m[0])
-    step = window - overlap
-    windows = 1 + (cols - window) // step
-
-    for i in range(windows):
-        tmp = m[:, window*i - overlap*i: window*(i+1) - overlap*i]
-        yield tmp
-
-
-@receiver(post_save, sender=FiltrationAnalysis)
-def run_ripser(sender, instance, **kwargs):
-
-    '''
-    if instance.window_size is not None:  # add alert
-        windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
-    '''
+def single_run(instance):
     if instance.precomputed_distance_matrix:
         ripser_input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: add more read types
     else:
         if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
             ripser_input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
+            print(ripser_input_matrix)
         elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
             ripser_input_matrix = instance.dataset.get_correlation_matrix()
     instance.execute(ripser_input_matrix)
+    '''
     signals.post_save.disconnect(run_ripser, sender=FiltrationAnalysis)
     instance.save()
     signals.post_save.connect(run_ripser, sender=FiltrationAnalysis)
+    '''
+
+
+def multiple_run(instance, window_generator):
+    count = 0
+    for window in window_generator:
+        if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
+            ripser_input_matrix = distance_matrix(window, instance.distance_matrix_metric)
+        elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
+            ripser_input_matrix = correlation_matrix(window)
+        instance.execute(ripser_input_matrix, count)
+        count = count + 1
+        '''
+        signals.post_save.disconnect(run_ripser, sender=FiltrationAnalysis)
+        instance.save()
+        signals.post_save.connect(run_ripser, sender=FiltrationAnalysis)
+        '''
+
+#  traspose before or after splitting?
+@receiver(post_save, sender=FiltrationAnalysis)
+def run_ripser(sender, instance, **kwargs):
+    #  TODO: alert about wrong overlap and/or window size!
+    if instance.window_size is not None and instance.window_size != 0:  # add alert
+        window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
+        multiple_run(instance, window_generator)
+    else:
+        single_run(instance)
 
 
 @receiver(post_save, sender=MapperAnalysis)

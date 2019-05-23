@@ -16,7 +16,9 @@ from .views import (
     MapperAnalysisCreateView,
     MapperAnalysisDetailView,
     MapperAnalysisView,
-    AnalysisListView
+    AnalysisListView,
+    FiltrationWindowDetailView,
+    FiltrationWindowListView
 )
 
 
@@ -36,11 +38,14 @@ urlpatterns = [
 
     path("<slug:research_slug>/filtrationanalysis/add/", view=FiltrationAnalysisCreateView.as_view(), name="filtrationanalysis-create"), # noqa
     path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/", view=FiltrationAnalysisDetailView.as_view(), name="filtrationanalysis-detail"), # noqa
-    path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/download", view=TextDownloadView.as_view(), name="download-view"), # noqa
 
     path("<slug:research_slug>/mapperanalysis/add/", view=MapperAnalysisCreateView.as_view(), name="mapperanalysis-create"), # noqa
     path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/", view=MapperAnalysisDetailView.as_view(), name="mapperanalysis-detail"), # noqa
     path("<slug:research_slug>/mapperanalysis/<slug:mapperanalysis_slug>/graph", view=MapperAnalysisView.as_view(), name="mapperanalysis-graph"), # noqa
 
-    path("<slug:research_slug>/analysis/", view=AnalysisListView.as_view(), name="analysis-list")
+    path("<slug:research_slug>/analysis/", view=AnalysisListView.as_view(), name="analysis-list"),
+
+    path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/windows/<slug:filtrationwindow_slug>/", view=FiltrationWindowDetailView.as_view(), name="filtrationwindow-detail"), # noqa
+    path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/windows/", view=FiltrationWindowListView.as_view(), name="filtrationwindow-list"), # noqa
+    path("<slug:research_slug>/filtrationanalysis/<slug:filtrationanalysis_slug>/windows/<slug:filtrationwindow_slug>/download", view=TextDownloadView.as_view(), name="download-view"), # noqa
 ]
