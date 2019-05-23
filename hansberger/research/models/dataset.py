@@ -85,7 +85,8 @@ class Dataset(models.Model):
         if window != 0 and window < len(m):
         raise ValueError("window must be >= the number of rows of input matrix")
         '''
-        matrix = numpy.array(self.data).transpose()
+        # matrix = numpy.array(self.data).transpose()
+        matrix = self.data
         cols = len(matrix[0])
         step = window - overlap
         windows = 1 + (cols - window) // step
