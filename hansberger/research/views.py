@@ -14,7 +14,17 @@ from django.shortcuts import get_object_or_404
 from django_downloadview import VirtualDownloadView
 from django.core.files.base import ContentFile
 from django.shortcuts import redirect
-from .models import Research, Dataset, TextDataset, FiltrationAnalysis, MapperAnalysis, Analysis, FiltrationWindow
+from .models import (
+    Research,
+    Dataset,
+    TextDataset,
+    FiltrationAnalysis,
+    MapperAnalysis,
+    Analysis,
+    FiltrationWindow,
+    MapperWindow,
+    Window
+)
 from .forms import (
     DatasetCreationForm,
     TextDatasetProcessForm,
@@ -184,35 +194,36 @@ class DatasetListView(ListView):
 
 class FiltrationAnalysisDetailView(View):
     def get(self, request, *args, **kwargs):
-        my_analysis = get_object_or_404(
-            FiltrationAnalysis,
+        my_analysis = (FiltrationAnalysis.objects.filter(
             research__slug=self.kwargs['research_slug'],
-            slug=self.kwargs['filtrationanalysis_slug']
-        )
-        windows = FiltrationWindow.objects.filter(
-            analysis=my_analysis
-        )
-        print(windows.count())
+            slug=self.kwargs['analysis_slug']
+            ).first()
+            or
+            MapperAnalysis.objects.filter(
+                research__slug=self.kwargs['research_slug'],
+                slug=self.kwargs['analysis_slug']
+            ).first())
+        if type(my_analysis) is FiltrationAnalysis:
+            windows = FiltrationWindow.objects.filter(
+                      analysis=my_analysis
+                      )
+        elif type(my_analysis) is MapperAnalysis:
+            windows = MapperWindow.objects.filter(
+                      analysis=my_analysis
+                      )
         if windows.count() > 1:
-            return redirect('research:filtrationwindow-list',
+            return redirect('research:window-list',
                             permanent=False,
-                            filtrationanalysis_slug=self.kwargs['filtrationanalysis_slug'],
+                            analysis_slug=self.kwargs['analysis_slug'],
                             research_slug=self.kwargs['research_slug']
                             )
         else:
-            return redirect('research:filtrationwindow-detail',
+            return redirect('research:window-detail',
                             permanent=False,
-                            filtrationanalysis_slug=self.kwargs['filtrationanalysis_slug'],
+                            analysis_slug=self.kwargs['analysis_slug'],
                             research_slug=self.kwargs['research_slug'],
-                            filtrationwindow_slug=windows.get().slug
+                            window_slug=windows.get().slug
                             )
-    '''
-    def get_object(self):
-        return get_object_or_404(
-            FiltrationWindow,
-            analysis__slug=self.kwargs['filtrationanalysis_slug']
-        )
-    '''
 
 
 class FiltrationAnalysisCreateView(CreateView):
@@ -221,9 +232,9 @@ class FiltrationAnalysisCreateView(CreateView):
     template_name = "research/analysis/filtrationanalysis_form.html"
 
     def get_success_url(self):
-        return reverse_lazy('research:filtrationanalysis-detail', kwargs={
+        return reverse_lazy('research:analysis-detail', kwargs={
                 'research_slug': self.kwargs['research_slug'],
-                'filtrationanalysis_slug': self.filtrationanalysis.slug
+                'analysis_slug': self.analysis.slug
         })
 
     def get_context_data(self, **kwargs):
@@ -241,7 +252,7 @@ class FiltrationAnalysisCreateView(CreateView):
         return kwargs
 
     def form_valid(self, form):
-        self.filtrationanalysis = form.save(commit=False)
+        self.analysis = form.save(commit=False)
         return super().form_valid(form)
 
 
@@ -251,8 +262,8 @@ class TextDownloadView(VirtualDownloadView):
     def get_object(self):
         return get_object_or_404(
             FiltrationWindow,
-            analysis__slug=self.kwargs['filtrationanalysis_slug'],
-            slug=self.kwargs['filtrationwindow_slug']
+            analysis__slug=self.kwargs['analysis_slug'],
+            slug=self.kwargs['window_slug']
         )
 
     def get_file(self):
@@ -261,28 +272,15 @@ class TextDownloadView(VirtualDownloadView):
                            window_analysis.analysis.name + '_' + window_analysis.name + '.dat')
 
 
-class MapperAnalysisDetailView(DetailView):
-    model = MapperAnalysis
-    context_object_name = 'analysis'
-    template_name = "research/analysis/mapperanalysis_detail.html"
-
-    def get_object(self):
-        return get_object_or_404(
-            MapperAnalysis,
-            research__slug=self.kwargs['research_slug'],
-            slug=self.kwargs['mapperanalysis_slug']
-        )
-
-
 class MapperAnalysisCreateView(CreateView):
     model = MapperAnalysis
     form_class = MapperAnalysisCreationForm
     template_name = "research/analysis/mapperanalysis_form.html"
 
     def get_success_url(self):
-        return reverse_lazy('research:mapperanalysis-detail', kwargs={
+        return reverse_lazy('research:analysis-detail', kwargs={
                 'research_slug': self.kwargs['research_slug'],
-                'mapperanalysis_slug': self.mapperanalysis.slug
+                'analysis_slug': self.mapperanalysis.slug
         })
 
     def get_context_data(self, **kwargs):
@@ -309,9 +307,14 @@ class MapperAnalysisView(View):
         my_analysis = get_object_or_404(
             MapperAnalysis,
             research__slug=self.kwargs['research_slug'],
-            slug=self.kwargs['mapperanalysis_slug']
+            slug=self.kwargs['analysis_slug']
         )
-        return HttpResponse(my_analysis.graph)
+        my_window = get_object_or_404(
+            MapperWindow,
+            analysis=my_analysis,
+            slug=self.kwargs['window_slug']
+        )
+        return HttpResponse(my_window.graph)
 
 
 class AnalysisListView(ListView):
@@ -340,30 +343,45 @@ class AnalysisListView(ListView):
 
 
 class FiltrationWindowDetailView(DetailView):
-    model = FiltrationWindow
+    model = Window
     context_object_name = 'window'
-    template_name = "research/window/filtrationwindow_detail.html"
+    template_name = "research/window/window_detail.html"
 
     def get_object(self):
-        return get_object_or_404(
-            FiltrationWindow,
-            analysis__slug=self.kwargs['filtrationanalysis_slug'],
-            slug=self.kwargs['filtrationwindow_slug']
-        )
+        return (FiltrationWindow.objects.filter(
+            analysis__slug=self.kwargs['analysis_slug'],
+            slug=self.kwargs['window_slug']
+            ).first()
+            or
+            MapperWindow.objects.filter(
+            analysis__slug=self.kwargs['analysis_slug'],
+            slug=self.kwargs['window_slug']
+            ).first())
 
 
 class FiltrationWindowListView(ListView):
-    model = FiltrationWindow
+    model = Window
     context_object_name = 'windows'
     paginate_by = 10
-    template_name = "research/window/filtrationwindow_list.html"
+    template_name = "research/window/window_list.html"
 
     def get_queryset(self):
-        self.analysis = get_object_or_404(
-            FiltrationAnalysis,
-            slug=self.kwargs['filtrationanalysis_slug']
-        )
-        windows = FiltrationWindow.objects.filter(
-            analysis=self.analysis
-        ).only('name', 'creation_date', 'slug').order_by('name')
-        return windows
+        self.analysis = (FiltrationAnalysis.objects.filter(
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            ).first()
+            or
+            MapperAnalysis.objects.filter(
+                research__slug=self.kwargs['research_slug'],
+                slug=self.kwargs['analysis_slug']
+            ).first())
+        if type(self.analysis) is FiltrationAnalysis:
+            windows = FiltrationWindow.objects.filter(
+                      analysis=self.analysis
+                      )
+        elif type(self.analysis) is MapperAnalysis:
+            windows = MapperWindow.objects.filter(
+                      analysis=self.analysis
+                      )
+        return windows.only('name', 'creation_date', 'slug').extra(select={'name_int': 'CAST(name AS INTEGER)'},
+                                                                   order_by=['name_int'])
