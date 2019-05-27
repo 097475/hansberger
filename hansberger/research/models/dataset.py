@@ -5,6 +5,7 @@ from django.utils.text import slugify
 from django.conf import settings
 import pandas as pd
 import matplotlib.pyplot as plt
+import mpld3
 import scipy.spatial.distance as distance
 import numpy
 from .research import Research
@@ -43,7 +44,7 @@ class Dataset(models.Model):
         related_query_name='text_dataset',
     )
     data = JSONField(null=True, blank=True)
-    plot = models.ImageField(max_length=500, null=True, blank=True)
+    plot = models.TextField(null=True, blank=True)
 
     class Meta:
         ordering = ['-creation_date']
@@ -118,12 +119,11 @@ class TextDataset(Dataset):
 
     def __make_plot(self, dataframe):
         dataframe.plot()
-        plot_filename = self.slug + '_plot.svg'
-        if not os.path.exists(self.absolute_storage_path):
-            os.makedirs(self.absolute_storage_path)
-        plt.savefig(os.path.join(self.absolute_storage_path, plot_filename))
+        figure = plt.gcf()
+        html_figure = mpld3.fig_to_html(figure, template_type='general')
+        self.plot = html_figure
+        self.save()
         plt.clf()
-        self.plot = os.path.join(self.storage_path, plot_filename)
 
 
 def distance_matrix(matrix, metric):
