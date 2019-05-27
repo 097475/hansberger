@@ -68,7 +68,7 @@ class Analysis(models.Model):
                                                    blank=True, help_text="""Upload a precomputed distance matrix
                                                    instead of selecting a dataset""")  # TODO
     window_size = models.PositiveIntegerField(default=None, null=True, blank=True,
-                                              help_text="Leave window size blank or 0 to not use windows.")
+                                              help_text="Leave window size blank to not use windows.")
     window_overlap = models.PositiveIntegerField(default=0, help_text="""How many columns of overlap to have in
                                                  consequent windows. It must be at most 1 less than window size.""")
 
@@ -224,11 +224,11 @@ class FiltrationAnalysis(Analysis):
         help_text="""If Vietoris-Rips filtration is selected and not using a precomputed distance matrix, choose the
                   distance metric to use on the selected dataset. This parameter is ignored in all other cases."""
     )
-    max_homology_dimension = models.IntegerField(default=1, help_text="""Maximum homology dimension computed. Will compute all dimensions lower than and equal to this value.
+    max_homology_dimension = models.PositiveIntegerField(default=1, help_text="""Maximum homology dimension computed. Will compute all dimensions lower than and equal to this value.
                                                  For 1, H_0 and H_1 will be computed.""")
     max_distances_considered = models.FloatField(default=None, null=True, blank=True, help_text="""Maximum distances considered when constructing filtration.
                                                  If blank, compute the entire filtration.""")
-    coeff = models.IntegerField(default=2, help_text="""Compute homology with coefficients in the prime field Z/pZ for
+    coeff = models.PositiveIntegerField(default=2, help_text="""Compute homology with coefficients in the prime field Z/pZ for
                                 p=coeff.""")
     do_cocycles = models.BooleanField(default=False, help_text="Indicator of whether to compute cocycles.")
     n_perm = models.IntegerField(default=None, null=True, blank=True, help_text="""The number of points to subsample in
@@ -343,7 +343,7 @@ def multiple_run(instance, window_generator):
 @receiver(post_save, sender=MapperAnalysis)
 def run_ripser(sender, instance, **kwargs):
     #  TODO: alert about wrong overlap and/or window size!
-    if instance.window_size is not None and instance.window_size != 0:  # add alert
+    if instance.window_size is not None:  # add alert
         window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
         multiple_run(instance, window_generator)
     else:

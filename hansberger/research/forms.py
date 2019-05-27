@@ -3,6 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
 from django.urls import reverse_lazy
 from .models import Dataset, FiltrationAnalysis, MapperAnalysis
+import numpy
 
 
 class DatasetCreationForm(forms.ModelForm):
@@ -35,6 +36,26 @@ class TextDatasetProcessForm(forms.Form):
         label="row number that identifies the column in the file",
         initial=0
     )
+
+
+def raise_window_warning(dataset, window_size, window_overlap):
+    matrix = numpy.array(dataset.data).transpose()
+    cols = len(matrix[0])
+    step = window_size - window_overlap
+    return bool((cols-window_size) % step)
+
+
+def window_overlap_checks(window_size, window_overlap, dataset):
+    if window_size <= 0:
+        raise forms.ValidationError("Window size can't be less than or equal to 0")
+    if dataset and window_size > len(dataset.data[0]):
+        raise forms.ValidationError("Window size can't be greater than the number of columns in the dataset")
+    if window_overlap < 0:
+        raise forms.ValidationError("Window overlap can't be less than 0")
+    if window_overlap >= window_size:
+        raise forms.ValidationError("Window overlap can't be greater than or equal to window size")
+    if raise_window_warning(dataset, window_size, window_overlap):
+        pass
 
 
 class FiltrationAnalysisCreationForm(forms.ModelForm):
@@ -73,6 +94,12 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
         precomputed_distance_matrix = cleaned_data.get("precomputed_distance_matrix")
         filtration_type = cleaned_data.get("filtration_type")
         distance_matrix_metric = cleaned_data.get("distance_matrix_metric")
+        window_overlap = cleaned_data.get("window_overlap")
+        window_size = cleaned_data.get("window_size")
+        filtration_type = cleaned_data.get("filtration_type")
+        if window_size is not None:
+            window_overlap_checks(window_size, window_overlap, dataset)
+
         if dataset and precomputed_distance_matrix:  # both fields were filled
             raise forms.ValidationError("""You must either provide a precomputed distance matrix or select a dataset,
                                          not both.""")
@@ -98,6 +125,10 @@ class MapperAnalysisCreationForm(forms.ModelForm):
         cleaned_data = super(MapperAnalysisCreationForm, self).clean()
         dataset = cleaned_data.get("dataset")
         precomputed_distance_matrix = cleaned_data.get("precomputed_distance_matrix")
+        window_overlap = cleaned_data.get("window_overlap")
+        window_size = cleaned_data.get("window_size")
+        if window_size is not None:
+            window_overlap_checks(window_size, window_overlap, dataset)
         if dataset and precomputed_distance_matrix:  # both fields were filled
             raise forms.ValidationError("""You must either provide a precomputed distance matrix or select a dataset,
                                          not both.""")
