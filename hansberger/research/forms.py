@@ -45,20 +45,25 @@ def raise_window_warning(dataset, window_size, window_overlap):
     return bool((cols-window_size) % step)
 
 
-def window_overlap_checks(window_size, window_overlap, dataset):
-    if window_size <= 0:
-        raise forms.ValidationError("Window size can't be less than or equal to 0")
-    if dataset and window_size > len(dataset.data[0]):
-        raise forms.ValidationError("Window size can't be greater than the number of columns in the dataset")
-    if window_overlap < 0:
-        raise forms.ValidationError("Window overlap can't be less than 0")
-    if window_overlap >= window_size:
-        raise forms.ValidationError("Window overlap can't be greater than or equal to window size")
-    if raise_window_warning(dataset, window_size, window_overlap):
-        pass
+class AnalysisCreationForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def window_overlap_checks(self, window_size, window_overlap, dataset):
+        if window_size == 0:
+            self.add_error("window_size", "Window size can't be equal to 0")
+            raise forms.ValidationError("Window size can't be equal to 0")
+        if dataset and window_size > len(dataset.data[0]):
+            self.add_error("window_size", "Window size can't be greater than the number of columns in the dataset")
+            raise forms.ValidationError("Window size can't be greater than the number of columns in the dataset")
+        if window_overlap >= window_size:
+            self.add_error("window_overlap", "Window overlap can't be greater than or equal to window size")
+            raise forms.ValidationError("Window overlap can't be greater than or equal to window size")
+        if raise_window_warning(dataset, window_size, window_overlap):
+            pass
 
 
-class FiltrationAnalysisCreationForm(forms.ModelForm):
+class FiltrationAnalysisCreationForm(AnalysisCreationForm):
     def __init__(self, research, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
@@ -97,7 +102,7 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
         window_size = cleaned_data.get("window_size")
         filtration_type = cleaned_data.get("filtration_type")
         if window_size is not None:
-            window_overlap_checks(window_size, window_overlap, dataset)
+            self.window_overlap_checks(window_size, window_overlap, dataset)
 
         if dataset and precomputed_distance_matrix:  # both fields were filled
             raise forms.ValidationError("""You must either provide a precomputed distance matrix or select a dataset,
@@ -114,7 +119,7 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
         exclude = ['slug', 'result_matrix', 'result_plot', 'result_entropy']
 
 
-class MapperAnalysisCreationForm(forms.ModelForm):
+class MapperAnalysisCreationForm(AnalysisCreationForm):
     def __init__(self, research, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
@@ -155,7 +160,7 @@ class MapperAnalysisCreationForm(forms.ModelForm):
         window_overlap = cleaned_data.get("window_overlap")
         window_size = cleaned_data.get("window_size")
         if window_size is not None:
-            window_overlap_checks(window_size, window_overlap, dataset)
+            self.window_overlap_checks(window_size, window_overlap, dataset)
         if dataset and precomputed_distance_matrix:  # both fields were filled
             raise forms.ValidationError("""You must either provide a precomputed distance matrix or select a dataset,
                                          not both.""")

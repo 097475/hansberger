@@ -21,6 +21,7 @@
         }
         document.getElementById("id_filtration_type").setAttribute("onchange", "hideDistanceMatrixMetric(this)")
         document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
+        document.getElementById("id_window_size").setAttribute("onclick", "hideOverlap(this)")
         document.getElementById("div_id_window_overlap").style.display = "none";
 </script>
 {% endblock %}
