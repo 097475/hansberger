@@ -1,6 +1,6 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
+from crispy_forms.layout import Layout, Submit, Fieldset, Field
 from django.urls import reverse_lazy
 from .models import Dataset, FiltrationAnalysis, MapperAnalysis
 import numpy
@@ -62,15 +62,14 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
     def __init__(self, research, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
-        '''
-        self.helper = FormHelper()
-        self.helper.add_input(Submit('submit', 'Submit', css_class='btn-primary'))
+        self.helper = FormHelper(self)
         self.helper.form_method = 'POST'
         self.helper.form_action = reverse_lazy('research:filtrationanalysis-create', kwargs={
                                  'research_slug': research.slug})
         self.helper.layout = Layout(
             'name',
             'description',
+            Field('research', type="hidden"),
             'dataset',
             'precomputed_distance_matrix',
             'window_size',
@@ -78,15 +77,15 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
             'filtration_type',
             'distance_matrix_metric',
             Fieldset(
-                'first arg is the legend of the fieldset',
+                'Ripser arguments',
                 'max_homology_dimension',
                 'max_distances_considered',
                 'coeff',
                 'do_cocycles',
                 'n_perm'
-            )
+            ),
+            Submit('submit', u'Submit', css_class='btn btn-success')
         )
-        '''
 
     def clean(self):
         cleaned_data = super(FiltrationAnalysisCreationForm, self).clean()
@@ -113,13 +112,41 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
     class Meta:
         model = FiltrationAnalysis
         exclude = ['slug', 'result_matrix', 'result_plot', 'result_entropy']
-        widgets = {'research': forms.HiddenInput}
 
 
 class MapperAnalysisCreationForm(forms.ModelForm):
     def __init__(self, research, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
+        self.helper = FormHelper(self)
+        self.helper.form_method = 'POST'
+        self.helper.form_action = reverse_lazy('research:mapperanalysis-create', kwargs={
+                                 'research_slug': research.slug})
+        self.helper.layout = Layout(
+            'name',
+            'description',
+            Field('research', type="hidden"),
+            'dataset',
+            'precomputed_distance_matrix',
+            'window_size',
+            'window_overlap',
+            'distance_matrix_metric',
+            Fieldset(
+                'fit_transform parameters',
+                'projection',
+                'scaler',
+            ),
+            Fieldset(
+                'map parameters',
+                'use_original_data',
+                'clusterer',
+                'cover_n_cubes',
+                'cover_perc_overlap',
+                'graph_nerve_min_intersection',
+                'remove_duplicate_nodes'
+            ),
+            Submit('submit', u'Submit', css_class='btn btn-success')
+        )
 
     def clean(self):
         cleaned_data = super(MapperAnalysisCreationForm, self).clean()
@@ -138,4 +165,3 @@ class MapperAnalysisCreationForm(forms.ModelForm):
     class Meta:
         model = MapperAnalysis
         exclude = ['slug', 'graph']
-        widgets = {'research': forms.HiddenInput}
