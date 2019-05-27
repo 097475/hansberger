@@ -74,13 +74,26 @@ class Dataset(models.Model):
         return os.path.join(settings.MEDIA_ROOT, self.storage_path)
 
     def get_distance_matrix(self, metric):
-        return distance.squareform(distance.pdist(
-                numpy.array(self.data).transpose(),
-                metric=metric
-            ))
+        return distance_matrix(self.data, metric)
 
     def get_correlation_matrix(self):
-        return numpy.corrcoef(numpy.array(self.data))
+        return correlation_matrix(self.data)
+
+    def split_matrix(self, window, overlap):  # returns a generator
+        '''
+        # for correlation matrix
+        if window != 0 and window < len(m):
+        raise ValueError("window must be >= the number of rows of input matrix")
+        '''
+        # matrix = numpy.array(self.data).transpose()
+        matrix = self.data
+        cols = len(matrix[0])
+        step = window - overlap
+        windows = 1 + (cols - window) // step
+
+        for i in range(windows):
+            tmp = matrix[:, window*i - overlap*i: window*(i+1) - overlap*i]
+            yield tmp
 
 
 class TextDataset(Dataset):
@@ -109,4 +122,16 @@ class TextDataset(Dataset):
         if not os.path.exists(self.absolute_storage_path):
             os.makedirs(self.absolute_storage_path)
         plt.savefig(os.path.join(self.absolute_storage_path, plot_filename))
+        plt.clf()
         self.plot = os.path.join(self.storage_path, plot_filename)
+
+
+def distance_matrix(matrix, metric):
+    return distance.squareform(distance.pdist(
+                numpy.array(matrix).transpose(),
+                metric=metric
+            ))
+
+
+def correlation_matrix(matrix):
+    return numpy.corrcoef(numpy.array(matrix))

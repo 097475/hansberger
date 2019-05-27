@@ -7,7 +7,6 @@ from django.db import models
 from django.utils.text import slugify
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.db.models import signals
 import ripser
 import kmapper
 import matplotlib.pyplot as plt
@@ -16,7 +15,8 @@ import sklearn.preprocessing
 import sklearn.mixture
 import numpy
 from .research import Research
-from .dataset import Dataset
+from .dataset import Dataset, distance_matrix, correlation_matrix
+from .window import FiltrationWindow, MapperWindow
 
 
 class Analysis(models.Model):
@@ -172,7 +172,7 @@ class MapperAnalysis(Analysis):
         verbose_name_plural = "mapper algoritm analyses"
 
     # TODO: check precomputed=False
-    def execute(self, distance_matrix, original_matrix):
+    def execute(self, distance_matrix, original_matrix=None, number=0):
         mapper = kmapper.KeplerMapper()
         mycover = kmapper.Cover(n_cubes=self.cover_n_cubes, perc_overlap=self.cover_perc_overlap)
         mynerve = kmapper.GraphNerve(min_intersection=self.graph_nerve_min_intersection)
@@ -183,7 +183,9 @@ class MapperAnalysis(Analysis):
                            cover=mycover, nerve=mynerve, precomputed=False,
                            remove_duplicate_nodes=self.remove_duplicate_nodes)
         output_graph = mapper.visualize(graph, save_file=False)
-        self.graph = output_graph
+        window = MapperWindow.objects.create_window(str(number), self)
+        window.graph = output_graph
+        window.save()
 
 
 class FiltrationAnalysis(Analysis):
@@ -206,7 +208,7 @@ class FiltrationAnalysis(Analysis):
     )
     max_homology_dimension = models.IntegerField(default=1)
     max_distances_considered = models.FloatField(default=None, null=True, blank=True)  # None/Null means infinity
-    coeff = models.IntegerField(default=2)
+    coeff = models.IntegerField(default=2)  # must be prime
     do_cocycles = models.BooleanField(default=False)
     n_perm = models.IntegerField(default=None, null=True, blank=True)
 
@@ -223,13 +225,15 @@ class FiltrationAnalysis(Analysis):
         return ('research:filtrationanalysis-detail', (), {'filtrationanalysis_slug': self.slug,
                 'research_slug': self.research.slug})
 
-    def execute(self, input_matrix):
+    def execute(self, input_matrix, number=0):
         _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
         result = ripser.ripser(input_matrix, maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
                                distance_matrix=True, do_cocycles=self.do_cocycles, n_perm=self.n_perm)
-        self.__save_plot(result['dgms'])
-        self.__save_entropy_json(result['dgms'])
-        self.__save_matrix_json(result)  # this method modifies permanently the result dict
+        window = FiltrationWindow.objects.create_window(str(number), self)
+        window.save_plot(result['dgms'])
+        window.save_entropy_json(result['dgms'])
+        window.save_matrix_json(result)  # this method modifies permanently the result dict
+        window.save()
 
     def __save_plot(self, diagrams):
         plot_filename = self.slug + '_plot.svg'
@@ -273,50 +277,49 @@ class FiltrationAnalysis(Analysis):
         return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
 
-def splitMatrix(m, window, overlap):
-    '''
-    # for correlation matrix
-    if window != 0 and window < len(m):
-    raise ValueError("window must be >= the number of rows of input matrix")
-    '''
-    cols = len(m[0])
-    step = window - overlap
-    windows = 1 + (cols - window) // step
-
-    for i in range(windows):
-        tmp = m[:, window*i - overlap*i: window*(i+1) - overlap*i]
-        yield tmp
-
-
-@receiver(post_save, sender=FiltrationAnalysis)
-def run_ripser(sender, instance, **kwargs):
-
-    '''
-    if instance.window_size is not None:  # add alert
-        windows = splitMatrix(input_matrix, instance.window_size, instance.overlap)
-    '''
+def single_run(instance):
+    analysis_type = type(instance)
     if instance.precomputed_distance_matrix:
-        ripser_input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: add more read types
-    else:
+        input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)
+        instance.execute(input_matrix)  # TODO: add more read types
+    elif analysis_type is FiltrationAnalysis:
         if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
-            ripser_input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
+            input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
         elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
-            ripser_input_matrix = instance.dataset.get_correlation_matrix()
-    instance.execute(ripser_input_matrix)
-    signals.post_save.disconnect(run_ripser, sender=FiltrationAnalysis)
-    instance.save()
-    signals.post_save.connect(run_ripser, sender=FiltrationAnalysis)
-
-
-@receiver(post_save, sender=MapperAnalysis)
-def run_kmapper(sender, instance, **kwargs):
-    if not instance.precomputed_distance_matrix:
+            input_matrix = instance.dataset.get_correlation_matrix()
+        instance.execute(input_matrix)
+    elif analysis_type is MapperAnalysis:
+        input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
         original_matrix = numpy.array(instance.dataset.data)
-        distance_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
+        instance.execute(input_matrix, original_matrix)
+
+
+def multiple_run(instance, window_generator):
+    count = 0
+    analysis_type = type(instance)
+    if analysis_type is FiltrationAnalysis:
+        for window in window_generator:
+            if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
+                input_matrix = distance_matrix(window, instance.distance_matrix_metric)
+            elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
+                input_matrix = correlation_matrix(window)
+            instance.execute(input_matrix, count)
+            count = count + 1
+    elif analysis_type is MapperAnalysis:
+        for window in window_generator:
+            input_matrix = distance_matrix(window, instance.distance_matrix_metric)
+            original_matrix = numpy.array(window)
+            instance.execute(input_matrix, original_matrix, count)
+            count = count + 1
+
+
+#  traspose before or after splitting?
+@receiver(post_save, sender=FiltrationAnalysis)
+@receiver(post_save, sender=MapperAnalysis)
+def run_ripser(sender, instance, **kwargs):
+    #  TODO: alert about wrong overlap and/or window size!
+    if instance.window_size is not None and instance.window_size != 0:  # add alert
+        window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
+        multiple_run(instance, window_generator)
     else:
-        original_matrix = None
-        distance_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)  # TODO: wrong logic
-    instance.execute(original_matrix, distance_matrix)
-    signals.post_save.disconnect(run_kmapper, sender=MapperAnalysis)
-    instance.save()
-    signals.post_save.connect(run_kmapper, sender=MapperAnalysis)
+        single_run(instance)

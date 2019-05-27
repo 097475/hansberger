@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ window.analysis.name }} | {{ window.analysis.research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ window.analysis.name }} : {{ window.analysis.research.name }}</h2>
+      {% if window.analysis.description %}
+        <p>{{ window.analysis.description }}</p>
+      {% endif %}
+      {% if window.analysis.get_type == "filtration analysis"%}
+      <img src = "{{ window.result_plot.url }}">
+      <p id="entropy"></p>
+      <script>
+            var entropy = JSON.parse('{{ window.result_entropy|safe }}');
+            for (var key in entropy) {
+              if (entropy.hasOwnProperty(key)) {
+                    console.log(key + " -> " + entropy[key]);
+                    document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
+                  }
+            }
+      </script>
+      <a href="download">download</a>
+      {% elif window.analysis.get_type == "mapper algorithm analysis" %}
+      <script>
+        window.open('graph', '_blank')
+      </script>     
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
