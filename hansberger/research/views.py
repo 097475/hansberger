@@ -192,7 +192,7 @@ class DatasetListView(ListView):
         return datasets
 
 
-class FiltrationAnalysisDetailView(View):
+class AnalysisDetailView(View):
     def get(self, request, *args, **kwargs):
         my_analysis = (FiltrationAnalysis.objects.filter(
             research__slug=self.kwargs['research_slug'],
@@ -342,7 +342,7 @@ class AnalysisListView(ListView):
         return list(chain(filtration_analyses, mapper_analyses))
 
 
-class FiltrationWindowDetailView(DetailView):
+class WindowDetailView(DetailView):
     model = Window
     context_object_name = 'window'
     template_name = "research/window/window_detail.html"
@@ -359,7 +359,7 @@ class FiltrationWindowDetailView(DetailView):
             ).first())
 
 
-class FiltrationWindowListView(ListView):
+class WindowListView(ListView):
     model = Window
     context_object_name = 'windows'
     paginate_by = 10

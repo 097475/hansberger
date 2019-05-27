@@ -11,13 +11,13 @@ from .views import (
     DatasetProcessRedirectView,
     TextDatasetProcessFormView,
     FiltrationAnalysisCreateView,
-    FiltrationAnalysisDetailView,
+    AnalysisDetailView,
     TextDownloadView,
     MapperAnalysisCreateView,
     MapperAnalysisView,
     AnalysisListView,
-    FiltrationWindowDetailView,
-    FiltrationWindowListView
+    WindowDetailView,
+    WindowListView
 )
 
 
@@ -37,9 +37,9 @@ urlpatterns = [
     path("<slug:research_slug>/filtrationanalysis/add/", view=FiltrationAnalysisCreateView.as_view(), name="filtrationanalysis-create"), # noqa
     path("<slug:research_slug>/mapperanalysis/add/", view=MapperAnalysisCreateView.as_view(), name="mapperanalysis-create"), # noqa
     path("<slug:research_slug>/analysis/", view=AnalysisListView.as_view(), name="analysis-list"),
-    path("<slug:research_slug>/analysis/<slug:analysis_slug>/", view=FiltrationAnalysisDetailView.as_view(), name="analysis-detail"), # noqa 
-    path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/", view=FiltrationWindowListView.as_view(), name="window-list"), # noqa
-    path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/<slug:window_slug>/", view=FiltrationWindowDetailView.as_view(), name="window-detail"), # noqa    
+    path("<slug:research_slug>/analysis/<slug:analysis_slug>/", view=AnalysisDetailView.as_view(), name="analysis-detail"), # noqa 
+    path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/", view=WindowListView.as_view(), name="window-list"), # noqa
+    path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/<slug:window_slug>/", view=WindowDetailView.as_view(), name="window-detail"), # noqa    
     path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/<slug:window_slug>/graph", view=MapperAnalysisView.as_view(), name="mapperanalysis-graph"), # noqa
     path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/<slug:window_slug>/download", view=TextDownloadView.as_view(), name="download-view") # noqa
 ]

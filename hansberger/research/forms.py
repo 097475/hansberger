@@ -1,4 +1,7 @@
 from django import forms
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column, Fieldset
+from django.urls import reverse_lazy
 from .models import Dataset, FiltrationAnalysis, MapperAnalysis
 
 
@@ -38,6 +41,31 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
     def __init__(self, research, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
+        '''
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Submit', css_class='btn-primary'))
+        self.helper.form_method = 'POST'
+        self.helper.form_action = reverse_lazy('research:filtrationanalysis-create', kwargs={
+                                 'research_slug': research.slug})
+        self.helper.layout = Layout(
+            'name',
+            'description',
+            'dataset',
+            'precomputed_distance_matrix',
+            'window_size',
+            'window_overlap',
+            'filtration_type',
+            'distance_matrix_metric',
+            Fieldset(
+                'first arg is the legend of the fieldset',
+                'max_homology_dimension',
+                'max_distances_considered',
+                'coeff',
+                'do_cocycles',
+                'n_perm'
+            )
+        )
+        '''
 
     def clean(self):
         cleaned_data = super(FiltrationAnalysisCreationForm, self).clean()
@@ -51,7 +79,8 @@ class FiltrationAnalysisCreationForm(forms.ModelForm):
         elif not (dataset or precomputed_distance_matrix):  # neither one was filled
             raise forms.ValidationError("You must either provide a precomputed distance matrix or select a dataset")
 
-        if filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION and distance_matrix_metric == '':
+        if (filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION and distance_matrix_metric == '' and
+           not precomputed_distance_matrix):
             raise forms.ValidationError("You must provide a distance matrix metric for a Vietoris-Rips Filtration")
 
     class Meta:
