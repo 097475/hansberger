@@ -6,7 +6,7 @@
 <form method="post" action="{% url 'research:dataset-delete' dataset.research.slug dataset.slug %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <p> Are you sure you want to delete the research? </p>
+    <p> Are you sure you want to delete the dataset? </p>
     <input type="submit" value="Confirm">
 </form>
 
