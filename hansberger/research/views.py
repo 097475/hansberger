@@ -26,6 +26,7 @@ from .models import (
     Window
 )
 from .forms import (
+    ResearchCreationForm,
     DatasetCreationForm,
     TextDatasetProcessForm,
     FiltrationAnalysisCreationForm,
@@ -35,7 +36,7 @@ from .forms import (
 
 class ResearchCreateView(CreateView):
     model = Research
-    fields = ['name', 'description']
+    form_class = ResearchCreationForm
     template_name = "research/research_form.html"
 
 
