@@ -17,16 +17,32 @@ class WindowManager(models.Manager):
 
 
 class Window(models.Model):
-    name = models.CharField(max_length=150)
+    name = models.PositiveIntegerField()
     slug = models.SlugField(db_index=True, max_length=150)
     creation_date = models.DateField(auto_now_add=True)
+    start = models.PositiveIntegerField(null=True, blank=True)
+    end = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         abstract = True
 
+    def save_window_info(self):
+        analysis = self.analysis
+        if analysis.precomputed_distance_matrix:  # no windows and no datasets are being used
+            self.start = None
+            self.end = None
+        else:
+            if analysis.window_size is None:  # no windows are used
+                self.start = 0
+                self.end = analysis.dataset.cols
+            else:
+                self.start = 0 if self.name == 0 else self.name * analysis.window_size - analysis.window_overlap - 1
+                self.end = self.start + analysis.window_size - analysis.window_overlap
+
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = slugify(self.name)
+        self.save_window_info()
         super().save(*args, **kwargs)
 
 

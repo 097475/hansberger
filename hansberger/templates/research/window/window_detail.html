@@ -13,6 +13,7 @@
       {% if window.analysis.description %}
         <p>{{ window.analysis.description }}</p>
       {% endif %}
+      {{window.start}} {{window.end}}
       {% if window.analysis.get_type == "filtration analysis"%}
       <img src = "{{ window.result_plot.url }}">
       <p id="entropy"></p>
@@ -25,12 +26,13 @@
                   }
             }
       </script>
-      <a href="download">download</a>
+      <a href="download/">download</a>
       {% elif window.analysis.get_type == "mapper algorithm analysis" %}
       <script>
-        window.open('graph', '_blank')
+        window.open('graph/', '_blank')
       </script>     
       {% endif %}
+      <a href="../../delete/">Delete this analysis</a>
     </div>
   </div>
 </div>

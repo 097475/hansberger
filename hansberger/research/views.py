@@ -383,5 +383,26 @@ class WindowListView(ListView):
             windows = MapperWindow.objects.filter(
                       analysis=self.analysis
                       )
-        return windows.only('name', 'creation_date', 'slug').extra(select={'name_int': 'CAST(name AS INTEGER)'},
-                                                                   order_by=['name_int'])
+        return windows.only('name', 'creation_date', 'slug').order_by('name')
+
+
+class AnalysisDeleteView(DeleteView):
+    model = Analysis
+    context_object_name = 'analysis'
+    template_name = "research/analysis/analysis_confirm_delete.html"
+
+    def get_object(self):
+        return (FiltrationAnalysis.objects.filter(
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            ).first()
+            or
+            MapperAnalysis.objects.filter(
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            ).first())
+
+    def get_success_url(self):
+        return reverse_lazy('research:analysis-list', kwargs={
+                'research_slug': self.kwargs['research_slug']
+        })

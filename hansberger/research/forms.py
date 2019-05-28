@@ -45,6 +45,18 @@ def raise_window_warning(dataset, window_size, window_overlap):
     return bool((cols-window_size) % step)
 
 
+def name_unique_check(name, research):
+    return bool((FiltrationAnalysis.objects.filter(
+        research__slug=research.slug,
+        name=name
+        ).first()
+        or
+        MapperAnalysis.objects.filter(
+        research__slug=research.slug,
+        name=name
+        ).first()))
+
+
 class AnalysisCreationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,6 +79,7 @@ class FiltrationAnalysisCreationForm(AnalysisCreationForm):
     def __init__(self, research, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
+        self.fields['dataset'].queryset = Dataset.objects.filter(research__slug=research.slug)
         self.helper = FormHelper(self)
         self.helper.form_method = 'POST'
         self.helper.form_action = reverse_lazy('research:filtrationanalysis-create', kwargs={
@@ -101,6 +114,11 @@ class FiltrationAnalysisCreationForm(AnalysisCreationForm):
         window_overlap = cleaned_data.get("window_overlap")
         window_size = cleaned_data.get("window_size")
         filtration_type = cleaned_data.get("filtration_type")
+        name = cleaned_data.get("name")
+        research = cleaned_data.get("research")
+        if name_unique_check(name, research):
+            self.add_error("name", "An analysis with this name already exists.")
+            raise forms.ValidationError("An analysis with this name already exists.")
         if window_size is not None:
             self.window_overlap_checks(window_size, window_overlap, dataset)
 
@@ -123,6 +141,7 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
     def __init__(self, research, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
+        self.fields['dataset'].queryset = Dataset.objects.filter(research__slug=research.slug)
         self.helper = FormHelper(self)
         self.helper.form_method = 'POST'
         self.helper.form_action = reverse_lazy('research:mapperanalysis-create', kwargs={
@@ -159,6 +178,11 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
         precomputed_distance_matrix = cleaned_data.get("precomputed_distance_matrix")
         window_overlap = cleaned_data.get("window_overlap")
         window_size = cleaned_data.get("window_size")
+        name = cleaned_data.get("name")
+        research = cleaned_data.get("research")
+        if name_unique_check(name, research):
+            self.add_error("name", "An analysis with this name already exists.")
+            raise forms.ValidationError("An analysis with this name already exists.")
         if window_size is not None:
             self.window_overlap_checks(window_size, window_overlap, dataset)
         if dataset and precomputed_distance_matrix:  # both fields were filled

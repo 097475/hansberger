@@ -43,6 +43,8 @@ class Dataset(models.Model):
         related_query_name='text_dataset',
     )
     data = JSONField(null=True, blank=True)
+    rows = models.PositiveIntegerField(null=True, blank=True)
+    cols = models.PositiveIntegerField(null=True, blank=True)
     plot = models.ImageField(max_length=500, null=True, blank=True)
 
     class Meta:
@@ -100,6 +102,8 @@ class TextDataset(Dataset):
     def process_source_and_save_information(self, values_separator, identity_column_index, header_row_index):
         dataframe = self.get_dataframe(values_separator, identity_column_index, header_row_index)
         self.data = dataframe.values.tolist()
+        self.rows = len(dataframe.values)
+        self.cols = len(dataframe.values[0])
         self.__make_plot(dataframe)
         self.save()
 

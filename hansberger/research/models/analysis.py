@@ -254,7 +254,7 @@ class FiltrationAnalysis(Analysis):
         _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
         result = ripser.ripser(input_matrix, maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
                                distance_matrix=True, do_cocycles=self.do_cocycles, n_perm=self.n_perm)
-        window = FiltrationWindow.objects.create_window(str(number), self)
+        window = FiltrationWindow.objects.create_window(number, self)
         window.save_plot(result['dgms'])
         window.save_entropy_json(result['dgms'])
         window.save_matrix_json(result)  # this method modifies permanently the result dict

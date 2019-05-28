@@ -12,11 +12,13 @@
       {% if dataset.description %}
         <p>{{ dataset.description }}</p>
       {% endif %}
+      {{dataset.rows}} {{dataset.cols}}
       {% if dataset.plot %}
       <img src = "{{ dataset.plot.url }}">
       {% endif %}
     </div>
   </div>
   <a href="delete/">Delete dataset</a>
+  <a href="..">Back</a>
   </div>
 {% endblock content %}
