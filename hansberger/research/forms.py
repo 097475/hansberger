@@ -1,6 +1,6 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, Field
+from crispy_forms.layout import Layout, Fieldset, Field, Div
 from django.urls import reverse_lazy
 from .models import Research, Dataset, FiltrationAnalysis, MapperAnalysis
 import numpy
@@ -122,6 +122,7 @@ class FiltrationAnalysisCreationForm(AnalysisCreationForm):
             'description',
             Field('research', type="hidden"),
             'dataset',
+            Div(id='peek_dataset'),
             'precomputed_distance_matrix',
             'window_size',
             'window_overlap',
@@ -184,6 +185,7 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
             'description',
             Field('research', type="hidden"),
             'dataset',
+            Div(id='peek_dataset'),
             'precomputed_distance_matrix',
             'window_size',
             'window_overlap',

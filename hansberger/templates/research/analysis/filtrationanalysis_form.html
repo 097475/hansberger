@@ -1,9 +1,24 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
-
+{% block css %}
+{{ block.super }}
+<style>
+.box{
+    display: none;
+    width: 100%;
+    }
+      
+a:hover + .box,.box:hover{
+    display: block;
+    position: relative;
+    z-index: 100;
+    }    
+</style>
+{% endblock %}
 {% block content %}
 {% crispy form form.helper %}
 <button id="submit_button" class='btn btn-success'>Submit</button>
+<a href="http://en.wikipedia.org/">Wikipedia</a><div class="box"><iframe src="http://en.wikipedia.org/" width = "500px" height = "500px"></iframe></div>
 {% endblock %}
 {% block javascript %}
 {{ block.super }}
@@ -25,6 +40,18 @@
             document.getElementById("div_id_window_overlap").style.display = "none";
         }
     }
+    function getDataset(select){
+        var dataset = select.options[select.selectedIndex].text
+        var value = select.options[select.selectedIndex].value
+        if(dataset != undefined && value != ''){
+        document.getElementById("peek_dataset").innerHTML = `<a href="../../../datasets/`+dataset+`">Peek dataset</a>
+        <div class="box"><iframe src="../../../datasets/`+dataset+`" width = "500px" height = "500px"></iframe></div>`;
+        }
+        else{
+            document.getElementById("peek_dataset").innerHTML = ''
+        }
+    }
+    document.getElementById("id_dataset").setAttribute("onchange","getDataset(this)")
     document.getElementById("id_filtration_type").setAttribute("onchange", "hideDistanceMatrixMetric(this)")
     document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
     document.getElementById("id_window_size").setAttribute("onclick", "hideOverlap(this)")
@@ -35,5 +62,6 @@
        $.blockUI();
        document.getElementById("analysis_form").submit();
     }));
+
 </script>
 {% endblock javascript %}
