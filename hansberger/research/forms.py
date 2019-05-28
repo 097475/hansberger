@@ -1,6 +1,6 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Fieldset, Field
+from crispy_forms.layout import Layout, Fieldset, Field
 from django.urls import reverse_lazy
 from .models import Research, Dataset, FiltrationAnalysis, MapperAnalysis
 import numpy
@@ -116,6 +116,7 @@ class FiltrationAnalysisCreationForm(AnalysisCreationForm):
         self.helper.form_method = 'POST'
         self.helper.form_action = reverse_lazy('research:filtrationanalysis-create', kwargs={
                                  'research_slug': research.slug})
+        self.helper.form_id = "analysis_form"
         self.helper.layout = Layout(
             'name',
             'description',
@@ -133,8 +134,7 @@ class FiltrationAnalysisCreationForm(AnalysisCreationForm):
                 'coeff',
                 'do_cocycles',
                 'n_perm'
-            ),
-            Submit('submit', u'Submit', css_class='btn btn-success')
+            )
         )
 
     def clean(self):
@@ -178,6 +178,7 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
         self.helper.form_method = 'POST'
         self.helper.form_action = reverse_lazy('research:mapperanalysis-create', kwargs={
                                  'research_slug': research.slug})
+        self.helper.form_id = "analysis_form"
         self.helper.layout = Layout(
             'name',
             'description',
@@ -201,8 +202,7 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
                 'graph_nerve_min_intersection',
                 'precomputed',
                 'remove_duplicate_nodes'
-            ),
-            Submit('submit', u'Submit', css_class='btn btn-success')
+            )
         )
 
     def clean(self):

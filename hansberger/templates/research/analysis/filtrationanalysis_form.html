@@ -3,25 +3,37 @@
 
 {% block content %}
 {% crispy form form.helper %}
-<script>
-        function hideDistanceMatrixMetric(filtrationType){
-            if(filtrationType.value == 'CWRF'){
-                document.getElementById("div_id_distance_matrix_metric").style.display = "none";
-            }
-            else{
-                document.getElementById("div_id_distance_matrix_metric").style.display = "block";
-            }   
-        }
-        function hideOverlap(window){
-            if(window.value > 0){
-                document.getElementById("div_id_window_overlap").style.display = "block";
-            }else{
-                document.getElementById("div_id_window_overlap").style.display = "none";
-            }
-        }
-        document.getElementById("id_filtration_type").setAttribute("onchange", "hideDistanceMatrixMetric(this)")
-        document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
-        document.getElementById("id_window_size").setAttribute("onclick", "hideOverlap(this)")
-        document.getElementById("div_id_window_overlap").style.display = "none";
-</script>
+<button id="submit_button" class='btn btn-success'>Submit</button>
 {% endblock %}
+{% block javascript %}
+{{ block.super }}
+ <!-- include BlockUI -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.js"></script>
+<script>
+    function hideDistanceMatrixMetric(filtrationType){
+        if(filtrationType.value == 'CWRF'){
+            document.getElementById("div_id_distance_matrix_metric").style.display = "none";
+        }
+        else{
+            document.getElementById("div_id_distance_matrix_metric").style.display = "block";
+        }   
+    }
+    function hideOverlap(window){
+        if(window.value > 0){
+            document.getElementById("div_id_window_overlap").style.display = "block";
+        }else{
+            document.getElementById("div_id_window_overlap").style.display = "none";
+        }
+    }
+    document.getElementById("id_filtration_type").setAttribute("onchange", "hideDistanceMatrixMetric(this)")
+    document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
+    document.getElementById("id_window_size").setAttribute("onclick", "hideOverlap(this)")
+    document.getElementById("div_id_window_overlap").style.display = "none";
+
+    // invoke blockUI as needed -->
+    $($(document).on('click', '#submit_button', function() {
+       $.blockUI();
+       document.getElementById("analysis_form").submit();
+    }));
+</script>
+{% endblock javascript %}
