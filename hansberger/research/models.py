@@ -23,9 +23,8 @@ class Research(models.Model):
             self.slug = slugify(self.name)
         super(Research, self).save(*args, **kwargs)
 
-    @models.permalink
     def get_absolute_url(self):
         return reverse_lazy(
             'research:research-detail',
-            kwargs={'resarch_slug': self.slug}
+            kwargs={'research_slug': self.slug}
         )
