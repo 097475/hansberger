@@ -30,6 +30,7 @@ class Dataset(models.Model):
     )
 
     class Meta:
+        ordering = ['-creation_date']
         unique_together = (('slug', 'research'))
         verbose_name = "dataset"
         verbose_name_plural = "datasets"
