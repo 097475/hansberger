@@ -2,7 +2,6 @@ from django.urls import path
 from .views import (
     TextDatasetCreateView,
     TextDatasetDetailView,
-    DatasetListView,
 )
 
 app_name = 'datasets'
