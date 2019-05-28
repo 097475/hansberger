@@ -1,8 +1,9 @@
 from django.views.generic import (
     CreateView,
     DetailView,
-    RedirectView,
     ListView,
+    DeleteView,
+    RedirectView,
 )
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
@@ -99,3 +100,21 @@ class DatasetListView(ListView):
             research=self.research
         ).only('name', 'creation_date', 'slug', 'research')
         return datasets
+
+
+class DatasetDeleteView(DeleteView):
+    model = Dataset
+    context_object_name = 'dataset'
+
+    def get_object(self):
+        return get_object_or_404(
+            Dataset,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['dataset_slug']
+        )
+
+    def get_success_url(self):
+        return reverse_lazy(
+            'datasets:dataset-list',
+            kwargs={'research_slug': self.kwargs['research_slug']}
+        )
