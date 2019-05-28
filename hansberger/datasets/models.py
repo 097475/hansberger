@@ -20,6 +20,7 @@ class Dataset(models.Model):
         max_length=10,
         choices=[(kind.name, kind.value) for kind in DatasetKindChoice]
     )
+    source = models.FileField()
     creation_date = models.DateField(auto_now_add=True)
     research = models.ForeignKey(
         Research,
@@ -52,7 +53,6 @@ class Dataset(models.Model):
 
 
 class TextDataset(Dataset):
-    source = models.FileField()
     values_separator_character = models.CharField(max_length=5)
     identity_column_index = models.IntegerField()
     header_row_index = models.IntegerField()
