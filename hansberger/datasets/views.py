@@ -1,10 +1,12 @@
 from django.views.generic import (
     CreateView,
     DetailView,
+    RedirectView,
+    ListView,
 )
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from .models import TextDataset
+from .models import Dataset, TextDataset, DatasetKindChoice
 from research.models import Research
 from .forms import TextDatasetCreationForm
 
@@ -43,6 +45,27 @@ class TextDatasetCreateView(DatasetCreateMixin, CreateView):
         })
 
 
+class DatasetRedirectView(RedirectView):
+    detail_routes = {
+        DatasetKindChoice.TEXT.value: 'datasets:text-dataset-detail',
+    }
+
+    @property
+    def dataset_detail_route(self):
+        dataset = get_object_or_404(
+            Dataset,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['dataset_slug']
+        )
+        return self.detail_routes.get(dataset.kind)
+
+    def get_redirect_url(self, **kwargs):
+        return reverse_lazy(self.dataset_detail_route, kwargs={
+            'research_slug': kwargs['research_slug'],
+            'dataset_slug': kwargs['dataset_slug']
+        })
+
+
 class TextDatasetDetailView(DetailView):
     model = TextDataset
     context_object_name = 'dataset'
@@ -54,3 +77,25 @@ class TextDatasetDetailView(DetailView):
             research__slug=self.kwargs['research_slug'],
             slug=self.kwargs['dataset_slug']
         )
+
+
+class DatasetListView(ListView):
+    model = Dataset
+    context_object_name = 'datasets'
+    paginate_by = 10
+    template_name = "research/datasets/dataset_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['research'] = self.research
+        return context
+
+    def get_queryset(self):
+        self.research = get_object_or_404(
+            Research,
+            slug=self.kwargs['research_slug']
+        )
+        datasets = Dataset.objects.filter(
+            research=self.research
+        ).only('name', 'creation_date', 'slug', 'research')
+        return datasets
