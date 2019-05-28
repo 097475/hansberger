@@ -176,6 +176,12 @@ class MapperAnalysis(Analysis):
                                                        computing the nerve. An edge will be created only when the
                                                        intersection between two nodes is greater than or equal to
                                                        min_intersection""")
+    precomputed = models.BooleanField(default=False, help_text="""Tell Mapper whether the data that you are clustering on
+                                      is a precomputed distance matrix. If set to True, the assumption is that you are
+                                      also telling your clusterer that metric=’precomputed’ (which is an argument for
+                                      DBSCAN among others), which will then cause the clusterer to expect a square
+                                      distance matrix for each hypercube. precomputed=True will give a square matrix
+                                      to the clusterer to fit on for each hypercube.""")
     remove_duplicate_nodes = models.BooleanField(default=False, help_text="""Removes duplicate nodes before edges are
                                                  determined. A node is considered to be duplicate if it has exactly
                                                  the same set of points as another node.""")
@@ -195,7 +201,7 @@ class MapperAnalysis(Analysis):
         projected_data = mapper.fit_transform(distance_matrix, projection=self.projection,
                                               scaler=MapperAnalysis.scalers[self.scaler], distance_matrix=False)
         graph = mapper.map(projected_data, X=original_data, clusterer=MapperAnalysis.clusterers[self.clusterer],
-                           cover=mycover, nerve=mynerve, precomputed=False,
+                           cover=mycover, nerve=mynerve, precomputed=self.precomputed,
                            remove_duplicate_nodes=self.remove_duplicate_nodes)
         output_graph = mapper.visualize(graph, save_file=False)
         window = MapperWindow.objects.create_window(str(number), self)

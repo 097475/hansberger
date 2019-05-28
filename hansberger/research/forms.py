@@ -199,6 +199,7 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
                 'cover_n_cubes',
                 'cover_perc_overlap',
                 'graph_nerve_min_intersection',
+                'precomputed',
                 'remove_duplicate_nodes'
             ),
             Submit('submit', u'Submit', css_class='btn btn-success')
