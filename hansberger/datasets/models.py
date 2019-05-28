@@ -1,3 +1,4 @@
+from enum import Enum
 from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse_lazy
@@ -7,10 +8,18 @@ import mpld3
 from research.models import Research
 
 
+class DatasetKindChoice(Enum):
+    TEXT = "Text"
+
+
 class Dataset(models.Model):
     name = models.CharField(max_length=150)
     slug = models.SlugField(db_index=True, max_length=150)
     description = models.TextField(max_length=500, blank=True, null=True)
+    kind = models.CharField(
+        max_length=10,
+        choices=[(kind.name, kind.value) for kind in DatasetKindChoice]
+    )
     creation_date = models.DateField(auto_now_add=True)
     research = models.ForeignKey(
         Research,
@@ -47,6 +56,10 @@ class TextDataset(Dataset):
     values_separator_character = models.CharField(max_length=5)
     identity_column_index = models.IntegerField()
     header_row_index = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        self.kind = DatasetKindChoice.TEXT.value
+        super().save(*args, **kwargs)
 
     @property
     def dataframe(self):
