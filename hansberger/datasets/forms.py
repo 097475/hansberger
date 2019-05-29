@@ -1,5 +1,5 @@
 from django import forms
-from .models import TextDataset
+from .models import TextDataset, EDFDataset
 
 
 class DatasetCreationMixin:
@@ -10,17 +10,24 @@ class DatasetCreationMixin:
 
     class Meta:
         widgets = {'research': forms.HiddenInput}
+        fields = [
+            'name',
+            'description',
+            'source',
+            'research',
+        ]
 
 
 class TextDatasetCreationForm(DatasetCreationMixin, forms.ModelForm):
     class Meta(DatasetCreationMixin.Meta):
         model = TextDataset
         fields = [
-            'name',
-            'description',
-            'source',
-            'research',
             'values_separator_character',
             'identity_column_index',
             'header_row_index',
         ]
+
+
+class EDFDatasetCreationForm(DatasetCreationMixin, forms.ModelForm):
+    class Meta(DatasetCreationMixin.Meta):
+        model = EDFDataset
