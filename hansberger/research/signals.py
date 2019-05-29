@@ -6,7 +6,6 @@ from .models import Dataset, FiltrationAnalysis
 @receiver(signals.post_delete, sender=Dataset)
 def submission_delete(sender, instance, **kwargs):
     instance.source.delete(False)
-    instance.plot.delete(False)
 
 
 @receiver(signals.post_delete, sender=FiltrationAnalysis)
