@@ -68,9 +68,11 @@ class Analysis(models.Model):
                                                    blank=True, help_text="""Upload a precomputed distance matrix
                                                    instead of selecting a dataset""")  # TODO
     window_size = models.PositiveIntegerField(default=None, null=True, blank=True,
-                                              help_text="Leave window size blank to not use windows.")
+                                              help_text="""Leave window size blank to not use windows. Window parameter
+                                              is ignored when dealing with precomputed distance matrix""")
     window_overlap = models.PositiveIntegerField(default=0, help_text="""How many columns of overlap to have in
-                                                 consequent windows. It must be at most 1 less than window size.""")
+                                                 consequent windows, if windows are being used. It must be at most 1
+                                                 less than window size.""")
 
     def get_type(self):
         return self._meta.verbose_name
