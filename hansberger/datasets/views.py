@@ -60,6 +60,7 @@ class EDFDatasetCreateView(DatasetCreateMixin, CreateView):
 class DatasetRedirectView(RedirectView):
     detail_routes = {
         DatasetKindChoice.TEXT.value: 'datasets:text-dataset-detail',
+        DatasetKindChoice.EDF.value: 'datasets:edf-dataset-detail',
     }
 
     @property
