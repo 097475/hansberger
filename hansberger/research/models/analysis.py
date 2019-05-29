@@ -308,6 +308,18 @@ class FiltrationAnalysis(Analysis):
         return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
 
+#  multithreading decorator -> add connection.close() at end of function
+
+'''
+def start_new_thread(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target=function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+    return decorator
+'''
+
+
 def single_run(instance):
     analysis_type = type(instance)
     if instance.precomputed_distance_matrix:
