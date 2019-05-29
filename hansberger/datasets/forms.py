@@ -10,18 +10,16 @@ class DatasetCreationMixin:
 
     class Meta:
         widgets = {'research': forms.HiddenInput}
-        fields = [
-            'name',
-            'description',
-            'source',
-            'research',
-        ]
 
 
 class TextDatasetCreationForm(DatasetCreationMixin, forms.ModelForm):
     class Meta(DatasetCreationMixin.Meta):
         model = TextDataset
         fields = [
+            'name',
+            'description',
+            'source',
+            'research',
             'values_separator_character',
             'identity_column_index',
             'header_row_index',
@@ -31,3 +29,9 @@ class TextDatasetCreationForm(DatasetCreationMixin, forms.ModelForm):
 class EDFDatasetCreationForm(DatasetCreationMixin, forms.ModelForm):
     class Meta(DatasetCreationMixin.Meta):
         model = EDFDataset
+        fields = [
+            'name',
+            'description',
+            'source',
+            'research',
+        ]
