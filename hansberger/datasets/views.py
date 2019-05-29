@@ -7,9 +7,9 @@ from django.views.generic import (
 )
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from .models import Dataset, TextDataset, DatasetKindChoice
+from .models import Dataset, TextDataset, DatasetKindChoice, EDFDataset
 from research.models import Research
-from .forms import TextDatasetCreationForm
+from .forms import TextDatasetCreationForm, EDFDatasetCreationForm
 
 
 class DatasetCreateMixin:
@@ -46,9 +46,21 @@ class TextDatasetCreateView(DatasetCreateMixin, CreateView):
         })
 
 
+class EDFDatasetCreateView(DatasetCreateMixin, CreateView):
+    model = EDFDataset
+    form_class = EDFDatasetCreationForm
+
+    def get_success_url(self):
+        return reverse_lazy('datasets:edf-dataset-detail', kwargs={
+            'research_slug': self.kwargs['research_slug'],
+            'dataset_slug': self.dataset.slug
+        })
+
+
 class DatasetRedirectView(RedirectView):
     detail_routes = {
         DatasetKindChoice.TEXT.value: 'datasets:text-dataset-detail',
+        DatasetKindChoice.EDF.value: 'datasets:edf-dataset-detail',
     }
 
     @property
@@ -77,6 +89,19 @@ class TextDatasetDetailView(DetailView):
             TextDataset,
             research__slug=self.kwargs['research_slug'],
             slug=self.kwargs['dataset_slug']
+        )
+
+
+class EDFDatasetDetailView(DetailView):
+    model = EDFDataset
+    context_object_name = 'dataset'
+    template_name = "datasets/dataset_detail.html"
+
+    def get_object(self):
+        return get_object_or_404(
+            EDFDataset,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['dataset_slug'],
         )
 
 
