@@ -44,7 +44,9 @@ class Dataset(models.Model):
         related_query_name='text_dataset',
     )
     data = JSONField(null=True, blank=True)
-    plot = models.TextField(null=True, blank=True)
+    rows = models.PositiveIntegerField(null=True, blank=True)
+    cols = models.PositiveIntegerField(null=True, blank=True)
+    plot = models.ImageField(max_length=500, null=True, blank=True)
 
     class Meta:
         ordering = ['-creation_date']
@@ -81,11 +83,6 @@ class Dataset(models.Model):
         return correlation_matrix(self.data)
 
     def split_matrix(self, window, overlap):  # returns a generator
-        '''
-        # for correlation matrix
-        if window != 0 and window < len(m):
-        raise ValueError("window must be >= the number of rows of input matrix")
-        '''
         # matrix = numpy.array(self.data).transpose()
         matrix = self.data
         cols = len(matrix[0])
@@ -106,6 +103,8 @@ class TextDataset(Dataset):
     def process_source_and_save_information(self, values_separator, identity_column_index, header_row_index):
         dataframe = self.get_dataframe(values_separator, identity_column_index, header_row_index)
         self.data = dataframe.values.tolist()
+        self.rows = len(dataframe.values)
+        self.cols = len(dataframe.values[0])
         self.__make_plot(dataframe)
         self.save()
 

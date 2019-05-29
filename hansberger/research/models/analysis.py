@@ -44,9 +44,9 @@ class Analysis(models.Model):
         ('sqeuclidean', 'Sqeuclidean'),
         ('yule', 'Yule'),
     )
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, help_text="Name this analysis")
     slug = models.SlugField(db_index=True, max_length=110)
-    description = models.TextField(max_length=500, blank=True)
+    description = models.TextField(max_length=500, blank=True, help_text="Write a brief description of the analysis")
     creation_date = models.DateField(auto_now_add=True)
     research = models.ForeignKey(
         Research,
@@ -60,14 +60,22 @@ class Analysis(models.Model):
         related_name='%(class)s_requests_created',
         related_query_name='analysis',
         blank=True,
-        null=True
+        null=True,
+        help_text="Select the source dataset from the loaded datasets"
     )
 
     precomputed_distance_matrix = models.FileField(upload_to='research/precomputed/', default=None, null=True,
-                                                   blank=True)  # TODO
+                                                   blank=True, help_text="""Upload a precomputed distance matrix
+                                                   instead of selecting a dataset""")  # TODO
     window_size = models.PositiveIntegerField(default=None, null=True, blank=True,
-                                              help_text="Leave window size blank or 0 to not use windows")
-    window_overlap = models.PositiveIntegerField(default=0)
+                                              help_text="""Leave window size blank to not use windows. Window parameter
+                                              is ignored when dealing with precomputed distance matrix. Always check
+                                              the dimensions of the dataset your are operating on and plan your windows
+                                              accordingly; eventual data that won't fit into the final window will be
+                                              discarded.""")
+    window_overlap = models.PositiveIntegerField(default=0, help_text="""How many columns of overlap to have in
+                                                 consequent windows, if windows are being used. It must be at most 1
+                                                 less than window size.""")
 
     def get_type(self):
         return self._meta.verbose_name
@@ -100,7 +108,7 @@ class MapperAnalysis(Analysis):
         'mean-shift': sklearn.cluster.MeanShift(),
         'spectral_clustering': sklearn.cluster.SpectralClustering(),
         'agglomerative_clustering': sklearn.cluster.AgglomerativeClustering(),
-        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=1),  # should be 3
+        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=3),  # should be 3
         'gaussian_mixtures': sklearn.mixture.GaussianMixture(),
         'birch': sklearn.cluster.Birch()
     }
@@ -140,30 +148,48 @@ class MapperAnalysis(Analysis):
     distance_matrix_metric = models.CharField(
         max_length=20,
         choices=Analysis.METRIC_CHOICES,
-        default='euclidean'
+        default='euclidean',
+        help_text="If not using a precomputed matrix, choose the distance metric to use on the dataset."
     )
     # fit_transform parameters; not implemented : scaler params, scikit projections
     projection = models.CharField(
                 max_length=50,
-                choices=PROJECTION_CHOICES
+                choices=PROJECTION_CHOICES,
+                help_text="Specify a projection/lens type."
                 )
     scaler = models.CharField(
                 max_length=50,
-                choices=SCALER_CHOICES
+                choices=SCALER_CHOICES,
+                help_text="Scaler of the data applied after mapping. Use None for no scaling."
     )
 
     # map parameters; not implemented : clusterer params, cover limits
-    use_original_data = models.BooleanField(default=False)
+    use_original_data = models.BooleanField(default=False, help_text="""If ticked, clustering is run on the original data,
+                                            else it will be run on the lower dimensional projection.""")
     clusterer = models.CharField(
                 max_length=50,
                 choices=CLUSTERER_CHOICES,
-                default='DBSCAN'
+                default='DBSCAN',
+                help_text="Select the clustering algorithm."
                 )
     # missing cover limits
-    cover_n_cubes = models.IntegerField(default=10)
-    cover_perc_overlap = models.FloatField(default=0.5)
-    graph_nerve_min_intersection = models.IntegerField(default=1)
-    remove_duplicate_nodes = models.BooleanField(default=False)
+    cover_n_cubes = models.IntegerField(default=10, help_text="""Number of hypercubes along each dimension.
+                                        Sometimes referred to as resolution.""")
+    cover_perc_overlap = models.FloatField(default=0.5, help_text="""Amount of overlap between adjacent cubes calculated
+                                           only along 1 dimension.""")
+    graph_nerve_min_intersection = models.IntegerField(default=1, help_text="""Minimum intersection considered when
+                                                       computing the nerve. An edge will be created only when the
+                                                       intersection between two nodes is greater than or equal to
+                                                       min_intersection""")
+    precomputed = models.BooleanField(default=False, help_text="""Tell Mapper whether the data that you are clustering on
+                                      is a precomputed distance matrix. If set to True, the assumption is that you are
+                                      also telling your clusterer that metric=’precomputed’ (which is an argument for
+                                      DBSCAN among others), which will then cause the clusterer to expect a square
+                                      distance matrix for each hypercube. precomputed=True will give a square matrix
+                                      to the clusterer to fit on for each hypercube.""")
+    remove_duplicate_nodes = models.BooleanField(default=False, help_text="""Removes duplicate nodes before edges are
+                                                 determined. A node is considered to be duplicate if it has exactly
+                                                 the same set of points as another node.""")
 
     graph = models.TextField(blank=True, null=True)
 
@@ -180,7 +206,7 @@ class MapperAnalysis(Analysis):
         projected_data = mapper.fit_transform(distance_matrix, projection=self.projection,
                                               scaler=MapperAnalysis.scalers[self.scaler], distance_matrix=False)
         graph = mapper.map(projected_data, X=original_data, clusterer=MapperAnalysis.clusterers[self.clusterer],
-                           cover=mycover, nerve=mynerve, precomputed=False,
+                           cover=mycover, nerve=mynerve, precomputed=self.precomputed,
                            remove_duplicate_nodes=self.remove_duplicate_nodes)
         output_graph = mapper.visualize(graph, save_file=False)
         window = MapperWindow.objects.create_window(str(number), self)
@@ -200,17 +226,27 @@ class FiltrationAnalysis(Analysis):
     filtration_type = models.CharField(
         max_length=50,
         choices=FILTRATION_TYPE_CHOICES,
+        help_text="Choose the type of analysis."
     )
     distance_matrix_metric = models.CharField(
         max_length=20,
         choices=Analysis.METRIC_CHOICES,
         blank=True,
+        help_text="""If Vietoris-Rips filtration is selected and not using a precomputed distance matrix, choose the
+                  distance metric to use on the selected dataset. This parameter is ignored in all other cases."""
     )
-    max_homology_dimension = models.IntegerField(default=1)
-    max_distances_considered = models.FloatField(default=None, null=True, blank=True)  # None/Null means infinity
-    coeff = models.IntegerField(default=2)  # must be prime
-    do_cocycles = models.BooleanField(default=False)
-    n_perm = models.IntegerField(default=None, null=True, blank=True)
+    max_homology_dimension = models.PositiveIntegerField(default=1, help_text="""Maximum homology dimension computed. Will compute all dimensions lower than and equal to this value.
+                                                 For 1, H_0 and H_1 will be computed.""")
+    max_distances_considered = models.FloatField(default=None, null=True, blank=True, help_text="""Maximum distances considered when constructing filtration.
+                                                 If blank, compute the entire filtration.""")
+    coeff = models.PositiveIntegerField(default=2, help_text="""Compute homology with coefficients in the prime field Z/pZ for
+                                p=coeff.""")
+    do_cocycles = models.BooleanField(default=False, help_text="Indicator of whether to compute cocycles.")
+    n_perm = models.IntegerField(default=None, null=True, blank=True, help_text="""The number of points to subsample in
+                                 a “greedy permutation,” or a furthest point sampling of the points. These points will
+                                 be used in lieu of the full point cloud for a faster computation, at the expense of
+                                 some accuracy, which can be bounded as a maximum bottleneck distance to all diagrams
+                                 on the original point set""")
 
     result_matrix = JSONField(blank=True, null=True)
     result_plot = models.ImageField(max_length=300, blank=True, null=True)
@@ -229,7 +265,7 @@ class FiltrationAnalysis(Analysis):
         _thresh = math.inf if self.max_distances_considered is None else self.max_distances_considered
         result = ripser.ripser(input_matrix, maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
                                distance_matrix=True, do_cocycles=self.do_cocycles, n_perm=self.n_perm)
-        window = FiltrationWindow.objects.create_window(str(number), self)
+        window = FiltrationWindow.objects.create_window(number, self)
         window.save_plot(result['dgms'])
         window.save_entropy_json(result['dgms'])
         window.save_matrix_json(result)  # this method modifies permanently the result dict
@@ -277,6 +313,18 @@ class FiltrationAnalysis(Analysis):
         return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
 
+#  multithreading decorator -> add connection.close() at end of function
+
+'''
+def start_new_thread(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target=function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+    return decorator
+'''
+
+
 def single_run(instance):
     analysis_type = type(instance)
     if instance.precomputed_distance_matrix:
@@ -318,7 +366,7 @@ def multiple_run(instance, window_generator):
 @receiver(post_save, sender=MapperAnalysis)
 def run_ripser(sender, instance, **kwargs):
     #  TODO: alert about wrong overlap and/or window size!
-    if instance.window_size is not None and instance.window_size != 0:  # add alert
+    if instance.window_size is not None:  # add alert
         window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
         multiple_run(instance, window_generator)
     else:

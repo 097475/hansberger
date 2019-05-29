@@ -26,6 +26,7 @@ from .models import (
     Window
 )
 from .forms import (
+    ResearchCreationForm,
     DatasetCreationForm,
     TextDatasetProcessForm,
     FiltrationAnalysisCreationForm,
@@ -35,7 +36,7 @@ from .forms import (
 
 class ResearchCreateView(CreateView):
     model = Research
-    fields = ['name', 'description']
+    form_class = ResearchCreationForm
     template_name = "research/research_form.html"
 
 
@@ -192,7 +193,7 @@ class DatasetListView(ListView):
         return datasets
 
 
-class FiltrationAnalysisDetailView(View):
+class AnalysisDetailView(View):
     def get(self, request, *args, **kwargs):
         my_analysis = (FiltrationAnalysis.objects.filter(
             research__slug=self.kwargs['research_slug'],
@@ -342,7 +343,7 @@ class AnalysisListView(ListView):
         return list(chain(filtration_analyses, mapper_analyses))
 
 
-class FiltrationWindowDetailView(DetailView):
+class WindowDetailView(DetailView):
     model = Window
     context_object_name = 'window'
     template_name = "research/window/window_detail.html"
@@ -359,7 +360,7 @@ class FiltrationWindowDetailView(DetailView):
             ).first())
 
 
-class FiltrationWindowListView(ListView):
+class WindowListView(ListView):
     model = Window
     context_object_name = 'windows'
     paginate_by = 10
@@ -383,5 +384,26 @@ class FiltrationWindowListView(ListView):
             windows = MapperWindow.objects.filter(
                       analysis=self.analysis
                       )
-        return windows.only('name', 'creation_date', 'slug').extra(select={'name_int': 'CAST(name AS INTEGER)'},
-                                                                   order_by=['name_int'])
+        return windows.only('name', 'creation_date', 'slug').order_by('name')
+
+
+class AnalysisDeleteView(DeleteView):
+    model = Analysis
+    context_object_name = 'analysis'
+    template_name = "research/analysis/analysis_confirm_delete.html"
+
+    def get_object(self):
+        return (FiltrationAnalysis.objects.filter(
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            ).first()
+            or
+            MapperAnalysis.objects.filter(
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            ).first())
+
+    def get_success_url(self):
+        return reverse_lazy('research:analysis-list', kwargs={
+                'research_slug': self.kwargs['research_slug']
+        })

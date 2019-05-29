@@ -25,12 +25,16 @@
                   }
             }
       </script>
-      <a href="download">download</a>
+      <a href="download/">download</a></br>
       {% elif window.analysis.get_type == "mapper algorithm analysis" %}
       <script>
-        window.open('graph', '_blank')
+        window.open('graph/', '_blank')
       </script>     
       {% endif %}
+      Window starts at position (inclusive): {{window.start}}</br>
+      Window ends at position (non-inclusive): {{window.end}}</br>
+      <a href="../../delete/">Delete this analysis</a>
+      <a href="../">Go back</a>
     </div>
   </div>
 </div>

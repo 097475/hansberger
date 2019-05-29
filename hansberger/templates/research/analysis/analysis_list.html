@@ -4,7 +4,8 @@
 {% block content %}
 <div class="container">
   <h2>Analysis</h2>
-
+  <a href="filtrationanalysis/add/">New Ripser Analysis</a>
+  <a href="mapperanalysis/add/">New KeplerMapper Analysis</a>
   <div class="list-group">
     {% for analysis in analyses %}
         <a href="{% url 'research:analysis-detail' analysis.research.slug analysis.slug %}" class="list-group-item">

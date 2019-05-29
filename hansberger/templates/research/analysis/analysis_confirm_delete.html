@@ -3,10 +3,10 @@
 
 {% block content %}
 
-<form method="post" action="{% url 'research:dataset-delete' dataset.research.slug dataset.slug %}">
+<form method="post" action="{% url 'research:analysis-delete' analysis.research.slug analysis.slug %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <p> Are you sure you want to delete the dataset? </p>
+    <p> Are you sure you want to delete the analysis? </p>
     <input type="submit" value="Confirm">
 </form>
 
