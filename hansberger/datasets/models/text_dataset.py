@@ -2,8 +2,7 @@ from django.db import models
 import pandas as pd
 import matplotlib.pyplot as plt
 import mpld3
-from .dataset import Dataset
-from .dataset import DatasetKindChoice
+from .dataset import Dataset, DatasetKindChoice
 
 
 class TextDataset(Dataset):
