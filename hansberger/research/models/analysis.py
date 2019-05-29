@@ -103,7 +103,7 @@ class MapperAnalysis(Analysis):
         'mean-shift': sklearn.cluster.MeanShift(),
         'spectral_clustering': sklearn.cluster.SpectralClustering(),
         'agglomerative_clustering': sklearn.cluster.AgglomerativeClustering(),
-        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=1),  # should be 3
+        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=3),  # should be 3
         'gaussian_mixtures': sklearn.mixture.GaussianMixture(),
         'birch': sklearn.cluster.Birch()
     }
