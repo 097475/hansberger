@@ -69,7 +69,10 @@ class Analysis(models.Model):
                                                    instead of selecting a dataset""")  # TODO
     window_size = models.PositiveIntegerField(default=None, null=True, blank=True,
                                               help_text="""Leave window size blank to not use windows. Window parameter
-                                              is ignored when dealing with precomputed distance matrix""")
+                                              is ignored when dealing with precomputed distance matrix. Always check
+                                              the dimensions of the dataset your are operating on and plan your windows
+                                              accordingly; eventual data that won't fit into the final window will be
+                                              discarded.""")
     window_overlap = models.PositiveIntegerField(default=0, help_text="""How many columns of overlap to have in
                                                  consequent windows, if windows are being used. It must be at most 1
                                                  less than window size.""")
