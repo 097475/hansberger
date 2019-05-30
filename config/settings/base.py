@@ -73,6 +73,8 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     "hansberger.users.apps.UsersAppConfig",
+    "hansberger.research.apps.ResearchConfig",
+    "hansberger.datasets.apps.DatasetsConfig",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
