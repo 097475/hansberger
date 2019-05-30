@@ -1,5 +1,12 @@
 from django import forms
-from .models import TextDataset, EDFDataset
+from .models import Dataset, TextDataset, EDFDataset
+
+
+def dataset_name_unique_check(name, research):
+    return bool(Dataset.objects.filter(
+        research__slug=research.slug,
+        name=name
+    ).first())
 
 
 class DatasetCreationMixin:
@@ -7,6 +14,14 @@ class DatasetCreationMixin:
         research = kwargs.pop('research')
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get("name")
+        research = cleaned_data.get("research")
+        if dataset_name_unique_check(name, research):
+            self.add_error("name", "A dataset with this name already exists.")
+            raise forms.ValidationError("A dataset with this name already exists.")
 
     class Meta:
         widgets = {'research': forms.HiddenInput}

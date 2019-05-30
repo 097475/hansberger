@@ -36,8 +36,8 @@ class Window(models.Model):
                 self.start = 0
                 self.end = analysis.dataset.cols
             else:
-                self.start = 0 if self.name == 0 else self.name * analysis.window_size - analysis.window_overlap - 1
-                self.end = self.start + analysis.window_size - analysis.window_overlap
+                self.start = 0 if self.name == 0 else self.name * analysis.window_size - analysis.window_overlap
+                self.end = self.start + analysis.window_size
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -48,7 +48,7 @@ class Window(models.Model):
 
 class FiltrationWindow(Window):
     analysis = models.ForeignKey(
-        'research.FiltrationAnalysis',
+        'analysis.FiltrationAnalysis',
         on_delete=models.CASCADE,
         related_name='windows',
         related_query_name='window'
@@ -103,7 +103,7 @@ class FiltrationWindow(Window):
 
 class MapperWindow(Window):
     analysis = models.ForeignKey(
-        'research.MapperAnalysis',
+        'analysis.MapperAnalysis',
         on_delete=models.CASCADE,
         related_name='windows',
         related_query_name='window'

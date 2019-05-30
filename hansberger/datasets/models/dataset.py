@@ -1,4 +1,7 @@
 from enum import Enum
+import scipy.spatial.distance as distance
+import numpy
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
 from django.urls import reverse_lazy
@@ -26,6 +29,9 @@ class Dataset(models.Model):
         related_name='datasets',
         related_query_name='dataset'
     )
+    data = JSONField(blank=True, null=True)
+    rows = models.PositiveIntegerField(blank=True, null=True)
+    cols = models.PositiveIntegerField(blank=True, null=True)
 
     class Meta:
         ordering = ['-creation_date']
@@ -49,3 +55,31 @@ class Dataset(models.Model):
                 'dataset_slug': self.slug,
             }
         )
+
+    def get_distance_matrix(self, metric):
+        return distance_matrix(self.data, metric)
+
+    def get_correlation_matrix(self):
+        return correlation_matrix(self.data)
+
+    def split_matrix(self, window, overlap):  # returns a generator
+        # matrix = numpy.array(self.data).transpose()
+        matrix = self.data
+        cols = len(matrix[0])
+        step = window - overlap
+        windows = 1 + (cols - window) // step
+
+        for i in range(windows):
+            tmp = matrix[:, window*i - overlap*i: window*(i+1) - overlap*i]
+            yield tmp
+
+
+def distance_matrix(matrix, metric):
+    return distance.squareform(distance.pdist(
+                numpy.array(matrix).transpose(),
+                metric=metric
+            ))
+
+
+def correlation_matrix(matrix):
+    return numpy.corrcoef(numpy.array(matrix))

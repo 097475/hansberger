@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<form method="post" action="{% url 'research:analysis-delete' analysis.research.slug analysis.slug %}">
+<form method="post" action="{% url 'analysis:analysis-delete' analysis.research.slug analysis.slug %}">
     {% csrf_token %}
     {{ form|crispy }}
     <p> Are you sure you want to delete the analysis? </p>

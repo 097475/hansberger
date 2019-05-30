@@ -1,21 +1,16 @@
-import json
 import math
-import os.path
-from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 import ripser
 import kmapper
-import matplotlib.pyplot as plt
 import sklearn.cluster
 import sklearn.preprocessing
 import sklearn.mixture
 import numpy
-from .research import Research
-from .dataset import Dataset, distance_matrix, correlation_matrix
+from research.models import Research
+from datasets.models import Dataset
+from datasets.models.dataset import distance_matrix, correlation_matrix
 from .window import FiltrationWindow, MapperWindow
 
 
@@ -91,6 +86,7 @@ class Analysis(models.Model):
         if not self.id:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        run_analysis(self)
 
 
 class MapperAnalysis(Analysis):
@@ -155,12 +151,14 @@ class MapperAnalysis(Analysis):
     projection = models.CharField(
                 max_length=50,
                 choices=PROJECTION_CHOICES,
-                help_text="Specify a projection/lens type."
+                help_text="Specify a projection/lens type.",
+                default='sum'
                 )
     scaler = models.CharField(
                 max_length=50,
                 choices=SCALER_CHOICES,
-                help_text="Scaler of the data applied after mapping. Use None for no scaling."
+                help_text="Scaler of the data applied after mapping. Use None for no scaling.",
+                default='MinMaxScaler'
     )
 
     # map parameters; not implemented : clusterer params, cover limits
@@ -209,7 +207,7 @@ class MapperAnalysis(Analysis):
                            cover=mycover, nerve=mynerve, precomputed=self.precomputed,
                            remove_duplicate_nodes=self.remove_duplicate_nodes)
         output_graph = mapper.visualize(graph, save_file=False)
-        window = MapperWindow.objects.create_window(str(number), self)
+        window = MapperWindow.objects.create_window(number, self)
         window.graph = output_graph
         window.save()
 
@@ -271,47 +269,6 @@ class FiltrationAnalysis(Analysis):
         window.save_matrix_json(result)  # this method modifies permanently the result dict
         window.save()
 
-    def __save_plot(self, diagrams):
-        plot_filename = self.slug + '_plot.svg'
-        relative_plot_dir = os.path.join('research', self.research.slug, 'analysis', self.slug)
-        absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
-        if not os.path.exists(absolute_plot_dir):
-            os.makedirs(absolute_plot_dir)
-        ripser.Rips().plot(diagrams)
-        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
-        plt.clf()
-        self.result_plot = os.path.join(relative_plot_dir, plot_filename)
-
-    def __save_matrix_json(self, analysis_result_matrix):
-        for k in analysis_result_matrix:
-            if isinstance(analysis_result_matrix[k], numpy.ndarray):
-                analysis_result_matrix[k] = analysis_result_matrix[k].tolist()
-            elif isinstance(analysis_result_matrix[k], list):
-                analysis_result_matrix[k] = [l.tolist() for l in analysis_result_matrix[k]
-                                             if isinstance(l, numpy.ndarray)]
-        self.result_matrix = json.dumps(analysis_result_matrix)
-
-    def __save_entropy_json(self, diagrams):
-        entropies = dict()
-        i = 0
-        for ripser_matrix in diagrams:
-            entropies["H"+str(i)] = FiltrationAnalysis.calculate_entropy(ripser_matrix)
-            i = i + 1
-        self.result_entropy = json.dumps(entropies)
-
-    @staticmethod
-    def calculate_entropy(ripser_matrix):
-        if ripser_matrix.size == 0:
-            return 0
-        non_infinity = list(filter((lambda x: x[1] != math.inf), ripser_matrix))
-        if non_infinity == []:  # TODO: check this better
-            return 0
-        max_death = max(map((lambda x: x[1]), non_infinity)) + 1
-        li = list(map((lambda x: x[1]-x[0] if x[1] != math.inf else max_death - x[0]), ripser_matrix))
-        ltot = sum(li)
-        # maybe check if ltot != 0
-        return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
-
 
 #  multithreading decorator -> add connection.close() at end of function
 
@@ -361,6 +318,15 @@ def multiple_run(instance, window_generator):
             count = count + 1
 
 
+def run_analysis(instance):
+    if instance.window_size is not None:  # add alert
+        window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
+        multiple_run(instance, window_generator)
+    else:
+        single_run(instance)
+
+
+'''
 #  traspose before or after splitting?
 @receiver(post_save, sender=FiltrationAnalysis)
 @receiver(post_save, sender=MapperAnalysis)
@@ -371,3 +337,4 @@ def run_ripser(sender, instance, **kwargs):
         multiple_run(instance, window_generator)
     else:
         single_run(instance)
+'''

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
   <h2>Research</h2>
-  <a href="new/">New Research</a>
+  <a href="create/">New Research</a>
   <div class="list-group">
     {% for research in research_list %}
       <a href="{% url 'research:research-detail' research.slug %}" class="list-group-item">

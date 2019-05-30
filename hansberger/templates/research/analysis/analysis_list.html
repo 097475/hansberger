@@ -8,7 +8,7 @@
   <a href="mapperanalysis/add/">New KeplerMapper Analysis</a>
   <div class="list-group">
     {% for analysis in analyses %}
-        <a href="{% url 'research:analysis-detail' analysis.research.slug analysis.slug %}" class="list-group-item">
+        <a href="{% url 'analysis:analysis-detail' analysis.research.slug analysis.slug %}" class="list-group-item">
             <h4 class="list-group-item-heading">{{ analysis.name }} - {{ analysis.creation_date }}</h4>
        </a>
     {% endfor %}
