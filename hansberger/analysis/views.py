@@ -64,7 +64,7 @@ class AnalysisDetailView(View):
 class AnalysisDeleteView(DeleteView):
     model = Analysis
     context_object_name = 'analysis'
-    template_name = "research/analysis/analysis_confirm_delete.html"
+    template_name = "analysis/analysis_confirm_delete.html"
 
     def get_object(self):
         return (FiltrationAnalysis.objects.filter(
@@ -87,7 +87,7 @@ class AnalysisListView(ListView):
     model = Analysis
     context_object_name = 'analyses'
     paginate_by = 10
-    template_name = "research/analysis/analysis_list.html"
+    template_name = "analysis/analysis_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,7 +111,7 @@ class AnalysisListView(ListView):
 class FiltrationAnalysisCreateView(CreateView):
     model = FiltrationAnalysis
     form_class = FiltrationAnalysisCreationForm
-    template_name = "research/analysis/filtrationanalysis_form.html"
+    template_name = "analysis/filtrationanalysis_form.html"
 
     def get_success_url(self):
         return reverse_lazy('analysis:analysis-detail', kwargs={
@@ -157,7 +157,7 @@ class TextDownloadView(VirtualDownloadView):
 class MapperAnalysisCreateView(CreateView):
     model = MapperAnalysis
     form_class = MapperAnalysisCreationForm
-    template_name = "research/analysis/mapperanalysis_form.html"
+    template_name = "analysis/mapperanalysis_form.html"
 
     def get_success_url(self):
         return reverse_lazy('analysis:analysis-detail', kwargs={
@@ -202,7 +202,7 @@ class MapperAnalysisView(View):
 class WindowDetailView(DetailView):
     model = Window
     context_object_name = 'window'
-    template_name = "research/window/window_detail.html"
+    template_name = "analysis/window/window_detail.html"
 
     def get_object(self):
         return (FiltrationWindow.objects.filter(
@@ -220,7 +220,7 @@ class WindowListView(ListView):
     model = Window
     context_object_name = 'windows'
     paginate_by = 10
-    template_name = "research/window/window_list.html"
+    template_name = "analysis/window/window_list.html"
 
     def get_queryset(self):
         self.analysis = (FiltrationAnalysis.objects.filter(
