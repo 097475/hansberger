@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Research{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Datasets</h2>
+
+  <div class="list-group">
+    {% for dataset in datasets %}
+      <a href="{% url 'datasets:dataset-redirect' dataset.research.slug dataset.slug %}" class="list-group-item">
+        <h4 class="list-group-item-heading">{{ dataset.name }} - {{ dataset.creation_date }}</h4>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}

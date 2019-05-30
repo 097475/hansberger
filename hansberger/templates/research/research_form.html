@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block content %}
+{% block title %}New Research{% endblock %}
 
-<form method="post" action="{% url 'research:research-create' %}">
+{% block content %}
+  <h1>Create new Research</h1>
+  <form class="form-horizontal" method="post" action="{% url 'research:research-create' %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <input type="submit" value="Save">
-</form>
-
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Create</button>
+      </div>
+    </div>
+  </form>
 {% endblock %}
+

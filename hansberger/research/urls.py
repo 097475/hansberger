@@ -3,26 +3,10 @@ from .views import (
     ResearchCreateView,
     ResearchDeleteView,
     ResearchDetailView,
-    ResearchListView,
-    DatasetCreateView,
-    DatasetDeleteView,
-    DatasetDetailView,
-    DatasetListView,
-    DatasetProcessRedirectView,
-    TextDatasetProcessFormView,
-    FiltrationAnalysisCreateView,
-    AnalysisDetailView,
-    TextDownloadView,
-    MapperAnalysisCreateView,
-    MapperAnalysisView,
-    AnalysisListView,
-    WindowDetailView,
-    WindowListView,
-    AnalysisDeleteView
+    ResearchListView
 )
 
-
-app_name = 'research'
+'''
 urlpatterns = [
     path("", view=ResearchListView.as_view(), name="research-list"),
     path("new/", view=ResearchCreateView.as_view(), name="research-create"),
@@ -43,4 +27,12 @@ urlpatterns = [
     path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/<slug:window_slug>/", view=WindowDetailView.as_view(), name="window-detail"), # noqa    
     path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/<slug:window_slug>/graph/", view=MapperAnalysisView.as_view(), name="mapperanalysis-graph"), # noqa
     path("<slug:research_slug>/analysis/<slug:analysis_slug>/windows/<slug:window_slug>/download/", view=TextDownloadView.as_view(), name="download-view") # noqa
+'''
+
+app_name = 'research'
+urlpatterns = [
+    path("", view=ResearchListView.as_view(), name="research-list"),
+    path("create/", view=ResearchCreateView.as_view(), name="research-create"),
+    path("<slug:research_slug>/", view=ResearchDetailView.as_view(), name="research-detail"),
+    path("<slug:research_slug>/delete/", view=ResearchDeleteView.as_view(), name="research-delete"),
 ]
