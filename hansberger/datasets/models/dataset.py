@@ -63,8 +63,8 @@ class Dataset(models.Model):
         return correlation_matrix(self.data)
 
     def split_matrix(self, window, overlap):  # returns a generator
-        # matrix = numpy.array(self.data).transpose()
-        matrix = self.data
+        matrix = numpy.array(self.data).transpose()
+        #matrix = self.data
         cols = len(matrix[0])
         step = window - overlap
         windows = 1 + (cols - window) // step

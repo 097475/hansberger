@@ -103,7 +103,7 @@ class MapperAnalysis(Analysis):
         'mean-shift': sklearn.cluster.MeanShift(),
         'spectral_clustering': sklearn.cluster.SpectralClustering(),
         'agglomerative_clustering': sklearn.cluster.AgglomerativeClustering(),
-        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=3),  # should be 3
+        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=1),  # should be 3
         'gaussian_mixtures': sklearn.mixture.GaussianMixture(),
         'birch': sklearn.cluster.Birch()
     }
@@ -261,6 +261,10 @@ class FiltrationAnalysis(Analysis):
         window.save_entropy_json(result['dgms'])
         window.save_matrix_json(result)  # this method modifies permanently the result dict
         window.save()
+
+    @property
+    def plot_entropy(self):
+        pass
 
 
 #  multithreading decorator -> add connection.close() at end of function

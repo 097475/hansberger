@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ window.analysis.name }} | {{ window.analysis.research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ window.analysis.name }} : {{ window.analysis.research.name }}</h2>
+      {% if window.analysis.description %}
+        <p>{{ window.analysis.description }}</p> 
+      {% endif %}
+      Window starts at position (inclusive): {{window.start}}</br>
+      Window ends at position (non-inclusive): {{window.end}}</br>
+      <a href="../../delete/">Delete this analysis</a>
+      <a href="../">Go back</a>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+{% block javascript %}
+<script>
+  window.open('graph/', '_blank')
+</script>  
+{% endblock javascript %}

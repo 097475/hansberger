@@ -2,7 +2,7 @@ from itertools import chain
 from django.http import HttpResponse
 from django_downloadview import VirtualDownloadView
 from django.core.files.base import ContentFile
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic import (
     View,
@@ -200,20 +200,20 @@ class MapperAnalysisView(View):
 
 
 class WindowDetailView(DetailView):
-    model = Window
-    context_object_name = 'window'
-    template_name = "analysis/window/window_detail.html"
-
-    def get_object(self):
-        return (FiltrationWindow.objects.filter(
-            analysis__slug=self.kwargs['analysis_slug'],
-            slug=self.kwargs['window_slug']
-            ).first()
-            or
-            MapperWindow.objects.filter(
-            analysis__slug=self.kwargs['analysis_slug'],
-            slug=self.kwargs['window_slug']
-            ).first())
+    def get(self, request, *args, **kwargs):
+        my_window = (FiltrationWindow.objects.filter(
+                    analysis__slug=self.kwargs['analysis_slug'],
+                    slug=self.kwargs['window_slug']
+                    ).first()
+                    or
+                    MapperWindow.objects.filter(
+                    analysis__slug=self.kwargs['analysis_slug'],
+                    slug=self.kwargs['window_slug']
+                    ).first())
+        if isinstance(my_window, FiltrationWindow):
+            return render(request, 'analysis/window/filtrationwindow_detail.html', context={'window': my_window})
+        elif isinstance(my_window, MapperWindow):
+            return render(request, 'analysis/window/mapperwindow_detail.html', context={'window': my_window})
 
 
 class WindowListView(ListView):
