@@ -25,7 +25,9 @@
         do cocycles: {{analysis.do_cocycles}} </br>
         n perm: {{analysis.n_perm}} </br>
       </p>
-      <p id="entropy"></p>
+      <div id="fig_container">
+        {{ analysis.plot_entropy | safe }}
+      </div>
       <a href="../../delete/">Delete this analysis</a>
       <a href="../">Go back</a>
       <a href="windows/">See results</a>
