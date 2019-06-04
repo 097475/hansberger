@@ -1,5 +1,4 @@
 import math
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
 import ripser
@@ -189,8 +188,6 @@ class MapperAnalysis(Analysis):
                                                  determined. A node is considered to be duplicate if it has exactly
                                                  the same set of points as another node.""")
 
-    graph = models.TextField(blank=True, null=True)
-
     class Meta(Analysis.Meta):
         verbose_name = "mapper algorithm analysis"
         verbose_name_plural = "mapper algoritm analyses"
@@ -245,10 +242,6 @@ class FiltrationAnalysis(Analysis):
                                  be used in lieu of the full point cloud for a faster computation, at the expense of
                                  some accuracy, which can be bounded as a maximum bottleneck distance to all diagrams
                                  on the original point set""")
-
-    result_matrix = JSONField(blank=True, null=True)
-    result_plot = models.ImageField(max_length=300, blank=True, null=True)
-    result_entropy = JSONField(blank=True, null=True)
 
     class Meta(Analysis.Meta):
         verbose_name = "filtration analysis"
