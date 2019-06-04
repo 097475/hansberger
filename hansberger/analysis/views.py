@@ -2,7 +2,7 @@ from itertools import chain
 from django.http import HttpResponse
 from django_downloadview import VirtualDownloadView
 from django.core.files.base import ContentFile
-from django.shortcuts import redirect, get_object_or_404, render
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic import (
     View,
@@ -38,27 +38,10 @@ class AnalysisDetailView(View):
                 research__slug=self.kwargs['research_slug'],
                 slug=self.kwargs['analysis_slug']
             ).first())
-        if type(my_analysis) is FiltrationAnalysis:
-            windows = FiltrationWindow.objects.filter(
-                      analysis=my_analysis
-                      )
-        elif type(my_analysis) is MapperAnalysis:
-            windows = MapperWindow.objects.filter(
-                      analysis=my_analysis
-                      )
-        if windows.count() > 1:
-            return redirect('analysis:window-list',
-                            permanent=False,
-                            analysis_slug=self.kwargs['analysis_slug'],
-                            research_slug=self.kwargs['research_slug']
-                            )
-        else:
-            return redirect('analysis:window-detail',
-                            permanent=False,
-                            analysis_slug=self.kwargs['analysis_slug'],
-                            research_slug=self.kwargs['research_slug'],
-                            window_slug=windows.get().slug
-                            )
+        if isinstance(my_analysis, FiltrationAnalysis):
+            return render(request, 'analysis/filtrationanalysis_detail.html', context={'analysis': my_analysis})
+        elif isinstance(my_analysis, MapperAnalysis):
+            return render(request, 'analysis/mapperanalysis_detail.html', context={'analysis': my_analysis})
 
 
 class AnalysisDeleteView(DeleteView):

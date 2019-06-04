@@ -266,8 +266,8 @@ class FiltrationAnalysis(Analysis):
     def plot_entropy(self):
         pass
 
-
 #  multithreading decorator -> add connection.close() at end of function
+
 
 '''
 def start_new_thread(function):
