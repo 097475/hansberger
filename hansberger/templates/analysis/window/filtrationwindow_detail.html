@@ -13,7 +13,9 @@
       {% if window.analysis.description %}
         <p>{{ window.analysis.description }}</p>
       {% endif %}
-      <img src = "{{ window.result_plot.url }}">
+      <div id="fig_container">
+        {{ window.plot | safe }}
+      </div>
       <p id="entropy"></p>
       <script>
             var entropy = JSON.parse('{{ window.result_entropy|safe }}');

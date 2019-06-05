@@ -194,15 +194,17 @@ class WindowDetailView(DetailView):
                 slug=self.kwargs['analysis_slug']
             ).first())
         if type(self.analysis) is FiltrationAnalysis:
-            my_window = FiltrationWindow.objects.filter(
-                      analysis=self.analysis,
-                      slug=self.kwargs['window_slug']
-                      )
+            my_window = get_object_or_404(
+                        FiltrationWindow,
+                        analysis=self.analysis,
+                        slug=self.kwargs['window_slug']
+                        )
         elif type(self.analysis) is MapperAnalysis:
-            my_window = MapperWindow.objects.filter(
-                      analysis=self.analysis,
-                      slug=self.kwargs['window_slug']
-                      )
+            my_window = get_object_or_404(
+                        MapperWindow,
+                        analysis=self.analysis,
+                        slug=self.kwargs['window_slug']
+                        )
         if isinstance(my_window, FiltrationWindow):
             return render(request, 'analysis/window/filtrationwindow_detail.html', context={'window': my_window})
         elif isinstance(my_window, MapperWindow):

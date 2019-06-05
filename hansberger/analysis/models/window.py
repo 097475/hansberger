@@ -1,10 +1,10 @@
 import json
-import os.path
 import matplotlib.pyplot as plt
 import ripser
 import numpy
 import math
-from django.conf import settings
+import base64
+from io import BytesIO
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
@@ -54,21 +54,12 @@ class FiltrationWindow(Window):
         related_query_name='window'
     )
     result_matrix = JSONField(blank=True, null=True)
-    result_plot = models.ImageField(max_length=300, blank=True, null=True)
+    diagrams = JSONField(blank=True, null=True)
     result_entropy = JSONField(blank=True, null=True)
     objects = WindowManager()
 
-    def save_plot(self, diagrams):
-        plot_filename = self.slug + '_plot.svg'
-        relative_plot_dir = os.path.join('research', self.analysis.research.slug, 'analysis', self.analysis.slug,
-                                         self.slug)
-        absolute_plot_dir = os.path.join(settings.MEDIA_ROOT, relative_plot_dir)
-        if not os.path.exists(absolute_plot_dir):
-            os.makedirs(absolute_plot_dir)
-        ripser.Rips().plot(diagrams)
-        plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
-        plt.clf()
-        self.result_plot = os.path.join(relative_plot_dir, plot_filename)
+    def save_diagrams(self, diagrams):
+        self.diagrams = json.dumps([d.tolist() for d in diagrams])
 
     def save_matrix_json(self, analysis_result_matrix):
         for k in analysis_result_matrix:
@@ -99,6 +90,38 @@ class FiltrationWindow(Window):
         ltot = sum(li)
         # maybe check if ltot != 0
         return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
+
+    '''
+    @property
+    def plot(self):
+        diagrams = []
+        for diagram in json.loads(self.diagrams):
+            if diagram == []:
+                diagrams.append(numpy.empty(shape=(0, 2)))
+            else:
+                diagrams.append(numpy.array(diagram))
+        ripser.Rips().plot(diagrams)
+        figure = plt.gcf()
+        html_figure = mpld3.fig_to_html(figure, template_type='general')
+        plt.clf()
+        return html_figure
+    '''
+    @property
+    def plot(self):
+        diagrams = []
+        for diagram in json.loads(self.diagrams):
+            if diagram == []:
+                diagrams.append(numpy.empty(shape=(0, 2)))
+            else:
+                diagrams.append(numpy.array(diagram))
+        ripser.Rips().plot(diagrams)
+        # Save it to a temporary buffer.
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        # Embed the result in the html output.
+        data = base64.b64encode(buf.getbuffer()).decode("ascii")
+        plt.clf()
+        return f"<img src='data:image/png;base64,{data}'/>"
 
 
 class MapperWindow(Window):
