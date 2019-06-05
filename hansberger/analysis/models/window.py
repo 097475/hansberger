@@ -66,12 +66,9 @@ class FiltrationWindow(Window):
         if not os.path.exists(absolute_plot_dir):
             os.makedirs(absolute_plot_dir)
         ripser.Rips().plot(diagrams)
-        print(os.path.join(absolute_plot_dir, plot_filename))
         plt.savefig(os.path.join(absolute_plot_dir, plot_filename))
-        print("debug2")
         plt.clf()
         self.result_plot = os.path.join(relative_plot_dir, plot_filename)
-        print("debug3")
 
     def save_matrix_json(self, analysis_result_matrix):
         for k in analysis_result_matrix:
