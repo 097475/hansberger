@@ -184,15 +184,25 @@ class MapperAnalysisView(View):
 
 class WindowDetailView(DetailView):
     def get(self, request, *args, **kwargs):
-        my_window = (FiltrationWindow.objects.filter(
-                    analysis__slug=self.kwargs['analysis_slug'],
-                    slug=self.kwargs['window_slug']
-                    ).first()
-                    or
-                    MapperWindow.objects.filter(
-                    analysis__slug=self.kwargs['analysis_slug'],
-                    slug=self.kwargs['window_slug']
-                    ).first())
+        self.analysis = (FiltrationAnalysis.objects.filter(
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            ).first()
+            or
+            MapperAnalysis.objects.filter(
+                research__slug=self.kwargs['research_slug'],
+                slug=self.kwargs['analysis_slug']
+            ).first())
+        if type(self.analysis) is FiltrationAnalysis:
+            my_window = FiltrationWindow.objects.filter(
+                      analysis=self.analysis,
+                      slug=self.kwargs['window_slug']
+                      )
+        elif type(self.analysis) is MapperAnalysis:
+            my_window = MapperWindow.objects.filter(
+                      analysis=self.analysis,
+                      slug=self.kwargs['window_slug']
+                      )
         if isinstance(my_window, FiltrationWindow):
             return render(request, 'analysis/window/filtrationwindow_detail.html', context={'window': my_window})
         elif isinstance(my_window, MapperWindow):
