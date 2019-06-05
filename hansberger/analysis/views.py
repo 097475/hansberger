@@ -88,7 +88,7 @@ class AnalysisListView(ListView):
         mapper_analyses = MapperAnalysis.objects.filter(
             research=self.research
         ).only('name', 'creation_date', 'slug', 'research')
-        return list(chain(filtration_analyses, mapper_analyses))
+        return sorted(chain(filtration_analyses, mapper_analyses), key=lambda x: x.creation_date)
 
 
 class FiltrationAnalysisCreateView(CreateView):
