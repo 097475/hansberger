@@ -19,7 +19,7 @@ class WindowManager(models.Manager):
 class Window(models.Model):
     name = models.PositiveIntegerField()
     slug = models.SlugField(db_index=True, max_length=150)
-    creation_date = models.DateField(auto_now_add=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
     start = models.PositiveIntegerField(null=True, blank=True)
     end = models.PositiveIntegerField(null=True, blank=True)
 

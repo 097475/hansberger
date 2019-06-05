@@ -44,7 +44,7 @@ class Analysis(models.Model):
     name = models.CharField(max_length=100, help_text="Name this analysis")
     slug = models.SlugField(db_index=True, max_length=110)
     description = models.TextField(max_length=500, blank=True, help_text="Write a brief description of the analysis")
-    creation_date = models.DateField(auto_now_add=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
     research = models.ForeignKey(
         Research,
         on_delete=models.CASCADE,

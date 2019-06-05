@@ -22,7 +22,7 @@ class Dataset(models.Model):
         choices=[(kind.name, kind.value) for kind in DatasetKindChoice]
     )
     source = models.FileField()
-    creation_date = models.DateField(auto_now_add=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
     research = models.ForeignKey(
         Research,
         on_delete=models.CASCADE,
