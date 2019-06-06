@@ -89,8 +89,8 @@ class FiltrationAnalysisCreationForm(AnalysisCreationForm):
         if analysis_name_unique_check(name, research):
             self.add_error("name", "An analysis with this name already exists.")
             raise forms.ValidationError("An analysis with this name already exists.")
-        #if window_size is not None:
-            #self.window_overlap_checks(window_size, window_overlap, dataset)
+        if window_size is not None:
+            self.window_overlap_checks(window_size, window_overlap, dataset)
 
         if dataset and precomputed_distance_matrix:  # both fields were filled
             raise forms.ValidationError("""You must either provide a precomputed distance matrix or select a dataset,
@@ -155,8 +155,8 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
         if analysis_name_unique_check(name, research):
             self.add_error("name", "An analysis with this name already exists.")
             raise forms.ValidationError("An analysis with this name already exists.")
-        #if window_size is not None:
-            #self.window_overlap_checks(window_size, window_overlap, dataset)
+        if window_size is not None:
+            self.window_overlap_checks(window_size, window_overlap, dataset)
         if dataset and precomputed_distance_matrix:  # both fields were filled
             raise forms.ValidationError("""You must either provide a precomputed distance matrix or select a dataset,
                                          not both.""")

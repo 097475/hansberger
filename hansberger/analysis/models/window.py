@@ -91,21 +91,6 @@ class FiltrationWindow(Window):
         # maybe check if ltot != 0
         return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
-    '''
-    @property
-    def plot(self):
-        diagrams = []
-        for diagram in json.loads(self.diagrams):
-            if diagram == []:
-                diagrams.append(numpy.empty(shape=(0, 2)))
-            else:
-                diagrams.append(numpy.array(diagram))
-        ripser.Rips().plot(diagrams)
-        figure = plt.gcf()
-        html_figure = mpld3.fig_to_html(figure, template_type='general')
-        plt.clf()
-        return html_figure
-    '''
     @property
     def plot(self):
         diagrams = []
