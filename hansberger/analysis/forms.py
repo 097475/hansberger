@@ -130,6 +130,7 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
             Fieldset(
                 'fit_transform parameters',
                 'projection',
+                'knn_n_value',
                 'scaler',
             ),
             Fieldset(
@@ -152,6 +153,8 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
         window_size = cleaned_data.get("window_size")
         name = cleaned_data.get("name")
         research = cleaned_data.get("research")
+        projection = cleaned_data.get("projection")
+        knn_n_value = cleaned_data.get("knn_n_value")
         if analysis_name_unique_check(name, research):
             self.add_error("name", "An analysis with this name already exists.")
             raise forms.ValidationError("An analysis with this name already exists.")
@@ -162,6 +165,8 @@ class MapperAnalysisCreationForm(AnalysisCreationForm):
                                          not both.""")
         elif not (dataset or precomputed_distance_matrix):  # neither one was filled
             raise forms.ValidationError("You must either provide a precomputed distance matrix or select a dataset")
+        if projection == 'knn_distance_n' and not knn_n_value:
+            raise forms.ValidationError("You must provide a value for n in knn_distance_n")
 
     class Meta:
         model = MapperAnalysis

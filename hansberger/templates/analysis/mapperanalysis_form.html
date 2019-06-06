@@ -24,13 +24,20 @@ a:hover + .box,.box:hover{
  <!-- include BlockUI -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.js"></script>
 <script>
-    function hideOverlap(window){
-                if(window.value > 0){
-                    document.getElementById("div_id_window_overlap").style.display = "block";
+    function hideKnnValue(projection){
+                if(projection.value == 'knn_distance_n'){
+                    document.getElementById("div_id_knn_n_value").style.display = "block";
                 }else{
-                    document.getElementById("div_id_window_overlap").style.display = "none";
+                    document.getElementById("div_id_knn_n_value").style.display = "none";
                 }
             }
+    function hideOverlap(window){
+        if(window.value > 0){
+            document.getElementById("div_id_window_overlap").style.display = "block";
+        }else{
+            document.getElementById("div_id_window_overlap").style.display = "none";
+        }
+    }
     function getDataset(select){
                 var dataset = select.options[select.selectedIndex].text
                 var value = select.options[select.selectedIndex].value
@@ -45,7 +52,10 @@ a:hover + .box,.box:hover{
         document.getElementById("id_dataset").setAttribute("onchange","getDataset(this)")
         document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
         document.getElementById("id_window_size").setAttribute("onclick", "hideOverlap(this)")
+        document.getElementById("id_projection").setAttribute("onchange", "hideKnnValue(this)")
+        document.getElementById("id_projection").setAttribute("onclick", "hideKnnValue(this)")
         document.getElementById("div_id_window_overlap").style.display = "none";
+        document.getElementById("div_id_knn_n_value").style.display = "none";
     
 
     // invoke blockUI as needed -->

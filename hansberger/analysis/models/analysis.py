@@ -106,7 +106,7 @@ class MapperAnalysis(Analysis):
         'mean-shift': sklearn.cluster.MeanShift(),
         'spectral_clustering': sklearn.cluster.SpectralClustering(),
         'agglomerative_clustering': sklearn.cluster.AgglomerativeClustering(),
-        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=3),  # should be 3
+        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=1),  # should be 3
         'gaussian_mixtures': sklearn.mixture.GaussianMixture(),
         'birch': sklearn.cluster.Birch()
     }
@@ -156,6 +156,11 @@ class MapperAnalysis(Analysis):
                 help_text="Specify a projection/lens type.",
                 default='sum'
                 )
+    knn_n_value = models.PositiveIntegerField(
+                  help_text="Specify the value of n in knn_distance_n",
+                  blank=True,
+                  null=True
+                )
     scaler = models.CharField(
                 max_length=50,
                 choices=SCALER_CHOICES,
@@ -173,7 +178,7 @@ class MapperAnalysis(Analysis):
                 help_text="Select the clustering algorithm."
                 )
     # missing cover limits
-    cover_n_cubes = models.IntegerField(default=10, help_text="""Number of hypercubes along each dimension.
+    cover_n_cubes = models.PositiveIntegerField(default=10, help_text="""Number of hypercubes along each dimension.
                                         Sometimes referred to as resolution.""")
     cover_perc_overlap = models.FloatField(default=0.5, help_text="""Amount of overlap between adjacent cubes calculated
                                            only along 1 dimension.""")
@@ -201,7 +206,8 @@ class MapperAnalysis(Analysis):
         mycover = kmapper.Cover(n_cubes=self.cover_n_cubes, perc_overlap=self.cover_perc_overlap)
         mynerve = kmapper.GraphNerve(min_intersection=self.graph_nerve_min_intersection)
         original_data = original_matrix if self.use_original_data else None
-        projected_data = mapper.fit_transform(distance_matrix, projection=self.projection,
+        projection = self.projection if self.projection != 'knn_distance_n' else 'knn_distance_' + str(self.knn_n_value)
+        projected_data = mapper.fit_transform(distance_matrix, projection=projection,
                                               scaler=MapperAnalysis.scalers[self.scaler], distance_matrix=False)
         graph = mapper.map(projected_data, X=original_data, clusterer=MapperAnalysis.clusterers[self.clusterer],
                            cover=mycover, nerve=mynerve, precomputed=self.precomputed,
