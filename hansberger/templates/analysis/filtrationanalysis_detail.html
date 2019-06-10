@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>{{ analysis.name }} : {{ analysis.research.name }}</h2>
+      {% if analysis.description %}
+        <p>{{ analysis.description }}</p>
+      {% endif %}
+      <p>
+        analysis type: {{analysis.get_type}} </br>
+        filtration type: {{analysis.filtration_type}} </br>
+        window size: {{analysis.window_size}} </br>
+        window overlap: {{analysis.window_overlap}} </br>
+        distance matrix metric: {{analysis.distance_matrix_metric}} </br>
+        maximum homology dimension considered: {{analysis.max_homology_dimension}} </br>
+        maximum distance considered: {{analysis.max_distances_considered}} </br>
+        coeff: {{analysis.coeff}} </br>
+        do cocycles: {{analysis.do_cocycles}} </br>
+        n perm: {{analysis.n_perm}} </br>
+      </p>
+      <div id="fig_container">
+        {{ analysis.plot_entropy | safe }}
+      </div>
+      <a href="delete/">Delete this analysis</a>
+      <a href="../">Go back</a>
+      <a href="windows/">See results</a>
+    </div>
+  </div>
+</div>
+{% endblock content %}
