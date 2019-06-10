@@ -8,13 +8,15 @@
 
   <div class="row">
     <div class="col-sm-12">
-
       <h2>{{ research.name }}</h2>
-      {% if research.name %}
-        <p>{{ research.name }}</p>
+      {% if research.description %}
+        <p>{{ research.description }}</p>
       {% endif %}
     </div>
+    <a href="datasets/">See datasets</a>
+    <a href="analysis/">See analyses</a>
+    <a href="delete/">Delete research</a>
+    <a href="../">Go back</a>
   </div>
 </div>
 {% endblock content %}
-

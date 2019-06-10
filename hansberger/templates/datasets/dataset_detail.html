@@ -12,11 +12,14 @@
       {% if dataset.description %}
         <p>{{ dataset.description }}</p>
       {% endif %}
+      Rows:{{dataset.rows}}</br>
+      Columns:{{dataset.cols}}
       <div id="fig_container">
         {{ dataset.plot | safe }}
       </div>
     </div>
   </div>
+  <a href="../delete/">Delete dataset</a>
+  <a href="../../">Back</a>
   </div>
-</div>
 {% endblock content %}

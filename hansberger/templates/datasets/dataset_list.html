@@ -4,7 +4,8 @@
 {% block content %}
 <div class="container">
   <h2>Datasets</h2>
-
+  <a href="create/text/">New dataset from text</a>
+  <a href="create/edf">New dataset from EDF</a>
   <div class="list-group">
     {% for dataset in datasets %}
       <a href="{% url 'datasets:dataset-redirect' dataset.research.slug dataset.slug %}" class="list-group-item">
@@ -12,5 +13,21 @@
       </a>
     {% endfor %}
   </div>
+{# .... **Now the pagination section** .... #}
+  {% if is_paginated %}
+      <div class="pagination">
+          <span class="page-links">
+              {% if page_obj.has_previous %}
+                  <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+              {% endif %}
+              <span class="page-current">
+                  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+              </span>
+              {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}">next</a>
+              {% endif %}
+          </span>
+      </div>
+{% endif %}
 </div>
 {% endblock content %}

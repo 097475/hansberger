@@ -7,7 +7,7 @@ class Research(models.Model):
     name = models.CharField(max_length=150)
     slug = models.SlugField(db_index=True, unique=True, max_length=150)
     description = models.TextField(max_length=500, blank=True, null=True)
-    creation_date = models.DateField(auto_now_add=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         app_label = 'research'

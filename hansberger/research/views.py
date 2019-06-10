@@ -5,12 +5,18 @@ from django.views.generic import (
     ListView,
 )
 from django.urls import reverse_lazy
-from .models import Research
+from .models import (
+    Research
+)
+from .forms import (
+    ResearchCreationForm
+)
 
 
 class ResearchCreateView(CreateView):
     model = Research
-    fields = ['name', 'description']
+    form_class = ResearchCreationForm
+    template_name = "research/research_form.html"
 
 
 class ResearchDeleteView(DeleteView):
@@ -19,6 +25,7 @@ class ResearchDeleteView(DeleteView):
     slug_field = 'slug'
     slug_url_kwarg = 'research_slug'
     success_url = reverse_lazy('research:research-list')
+    template_name = "research/research_confirm_delete.html"
 
 
 class ResearchDetailView(DetailView):
@@ -26,6 +33,7 @@ class ResearchDetailView(DetailView):
     context_object_name = 'research'
     slug_field = 'slug'
     slug_url_kwarg = 'research_slug'
+    template_name = "research/research_detail.html"
 
 
 class ResearchListView(ListView):

@@ -3,8 +3,9 @@ from .views import (
     ResearchCreateView,
     ResearchDeleteView,
     ResearchDetailView,
-    ResearchListView,
+    ResearchListView
 )
+
 
 app_name = 'research'
 urlpatterns = [

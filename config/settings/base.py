@@ -75,6 +75,7 @@ LOCAL_APPS = [
     "hansberger.users.apps.UsersAppConfig",
     "hansberger.research.apps.ResearchConfig",
     "hansberger.datasets.apps.DatasetsConfig",
+    "hansberger.analysis.apps.AnalysisConfig"
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -203,7 +204,7 @@ CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-browser-xss-filter
 SECURE_BROWSER_XSS_FILTER = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
-X_FRAME_OPTIONS = "DENY"
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # EMAIL
 # ------------------------------------------------------------------------------
