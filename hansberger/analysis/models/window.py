@@ -28,7 +28,7 @@ class Window(models.Model):
 
     def save_window_info(self):
         analysis = self.analysis
-        if analysis.precomputed_distance_matrix:  # no windows and no datasets are being used
+        if json.loads(analysis.precomputed_distance_matrix_json) != []:  # no windows and no datasets are being used
             self.start = None
             self.end = None
         else:

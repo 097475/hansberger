@@ -1,3 +1,5 @@
+import numpy
+import json
 from itertools import chain
 from django.http import HttpResponse
 from django_downloadview import VirtualDownloadView
@@ -91,6 +93,7 @@ class AnalysisListView(ListView):
         return sorted(chain(filtration_analyses, mapper_analyses), key=lambda x: x.creation_date, reverse=True)
 
 
+# @method_decorator(csrf_exempt, name='dispatch')
 class FiltrationAnalysisCreateView(CreateView):
     model = FiltrationAnalysis
     form_class = FiltrationAnalysisCreationForm
@@ -118,7 +121,23 @@ class FiltrationAnalysisCreateView(CreateView):
 
     def form_valid(self, form):
         self.analysis = form.save(commit=False)
+        self.analysis.precomputed_distance_matrix_json = self.precomputed_distance_matrix_json
         return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        files = request.FILES.getlist('precomputed_distance_matrix')
+        if form.is_valid():
+            precomputed_distance_matrixes = []
+            for f in files:
+                print(f)
+                precomputed_distance_matrixes.append(numpy.loadtxt(f).tolist())
+            self.precomputed_distance_matrix_json = json.dumps(precomputed_distance_matrixes)
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
 class TextDownloadView(VirtualDownloadView):
@@ -145,7 +164,7 @@ class MapperAnalysisCreateView(CreateView):
     def get_success_url(self):
         return reverse_lazy('analysis:analysis-detail', kwargs={
                 'research_slug': self.kwargs['research_slug'],
-                'analysis_slug': self.mapperanalysis.slug
+                'analysis_slug': self.analysis.slug
         })
 
     def get_context_data(self, **kwargs):
@@ -163,8 +182,24 @@ class MapperAnalysisCreateView(CreateView):
         return kwargs
 
     def form_valid(self, form):
-        self.mapperanalysis = form.save(commit=False)
+        self.analysis = form.save(commit=False)
+        self.analysis.precomputed_distance_matrix_json = self.precomputed_distance_matrix_json
         return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        files = request.FILES.getlist('precomputed_distance_matrix')
+        if form.is_valid():
+            precomputed_distance_matrixes = []
+            for f in files:
+                print(f)
+                precomputed_distance_matrixes.append(numpy.loadtxt(f).tolist())
+            self.precomputed_distance_matrix_json = json.dumps(precomputed_distance_matrixes)
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
 
 
 class MapperAnalysisView(View):

@@ -4,12 +4,14 @@ import matplotlib.pyplot as plt
 import mpld3
 from django.db import models
 from django.utils.text import slugify
+from django.contrib.postgres.fields import JSONField
 import ripser
 import kmapper
 import sklearn.cluster
 import sklearn.preprocessing
 import sklearn.mixture
 import numpy
+import persim
 from research.models import Research
 from datasets.models import Dataset
 from datasets.models.dataset import distance_matrix, correlation_matrix
@@ -17,6 +19,11 @@ from .window import FiltrationWindow, MapperWindow
 
 
 class Analysis(models.Model):
+
+    def precomputed_directory_path(instance, filename):
+        # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
+        return 'research/precomputed/'+instance.slug+'/'+filename
+
     METRIC_CHOICES = (
         ('braycurtis', 'Braycurtis'),
         ('canberra', 'Canberra'),
@@ -60,10 +67,14 @@ class Analysis(models.Model):
         null=True,
         help_text="Select the source dataset from the loaded datasets"
     )
-
-    precomputed_distance_matrix = models.FileField(upload_to='research/precomputed/', default=None, null=True,
-                                                   blank=True, help_text="""Upload a precomputed distance matrix
+    '''
+    precomputed_distance_matrix = models.FileField(upload_to=precomputed_directory_path,
+                                                   default=None, null=True, blank=True,
+                                                   help_text="""Upload a precomputed distance matrix
                                                    instead of selecting a dataset""")  # TODO
+    '''
+    precomputed_distance_matrix_json = JSONField(blank=True, null=True)
+
     window_size = models.PositiveIntegerField(default=None, null=True, blank=True,
                                               help_text="""Leave window size blank to not use windows. Window parameter
                                               is ignored when dealing with precomputed distance matrix. Always check
@@ -282,10 +293,19 @@ class FiltrationAnalysis(Analysis):
         x_axis = [i for i in range(windows.count())]
         for key in entropies:
             plt.plot(x_axis, entropies[key], 'o')
+        plt.legend([key for key in entropies])
         figure = plt.gcf()
         html_figure = mpld3.fig_to_html(figure, template_type='general')
         plt.clf()
         return html_figure
+
+    def bottleneck_calculation(self):
+        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        for window1 in windows:
+            for window2 in windows:
+                print(persim.bottleneck(json.loads(window1.diagrams)[0], json.loads(window2.diagrams)[0]))
+            break
+        return 0
 
 #  multithreading decorator -> add connection.close() at end of function
 
@@ -302,8 +322,9 @@ def start_new_thread(function):
 
 def single_run(instance):
     analysis_type = type(instance)
-    if instance.precomputed_distance_matrix:
-        input_matrix = numpy.loadtxt(instance.precomputed_distance_matrix.path)
+    print(instance.precomputed_distance_matrix_json)
+    if json.loads(instance.precomputed_distance_matrix_json) != []:
+        input_matrix = json.loads(instance.precomputed_distance_matrix_json)
         instance.execute(input_matrix)  # TODO: add more read types
     elif analysis_type is FiltrationAnalysis:
         if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
@@ -336,10 +357,27 @@ def multiple_run(instance, window_generator):
             count = count + 1
 
 
+def multiple_run_precomputed(instance, precomputed_matrixes):
+    count = 0
+    analysis_type = type(instance)
+    if analysis_type is FiltrationAnalysis:
+        for matrix in precomputed_matrixes:
+            instance.execute(numpy.array(matrix), count)
+            count = count + 1
+    elif analysis_type is MapperAnalysis:
+        for matrix in precomputed_matrixes:
+            original_matrix = numpy.array(matrix)
+            instance.execute(numpy.array(matrix), original_matrix, count)
+            count = count + 1
+
+
 def run_analysis(instance):
-    if instance.window_size is not None:  # add alert
+    precomputed_distance_matrixes = json.loads(instance.precomputed_distance_matrix_json)
+    if instance.window_size is not None and precomputed_distance_matrixes == []:
         window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
         multiple_run(instance, window_generator)
+    elif precomputed_distance_matrixes != [] and instance.window_size is None:
+        multiple_run_precomputed(instance, precomputed_distance_matrixes)
     else:
         single_run(instance)
 
