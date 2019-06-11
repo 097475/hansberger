@@ -226,6 +226,7 @@ class MapperAnalysis(Analysis):
         output_graph = mapper.visualize(graph, save_file=False)
         window = MapperWindow.objects.create_window(number, self)
         window.graph = output_graph
+        window.save_window_info()
         window.save()
 
 
@@ -280,6 +281,7 @@ class FiltrationAnalysis(Analysis):
         window.save_diagrams(result['dgms'])
         window.save_entropy_json(result['dgms'])
         window.save_matrix_json(result)  # this method modifies permanently the result dict
+        window.save_window_info()
         window.save()
 
     @property

@@ -1,13 +1,16 @@
 import json
+import matplotlib
 import matplotlib.pyplot as plt
 import ripser
 import numpy
 import math
 import base64
+import persim
 from io import BytesIO
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
+matplotlib.use('Agg')
 
 
 class WindowManager(models.Manager):
@@ -42,7 +45,6 @@ class Window(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = slugify(self.name)
-        self.save_window_info()
         super().save(*args, **kwargs)
 
 
@@ -56,6 +58,8 @@ class FiltrationWindow(Window):
     result_matrix = JSONField(blank=True, null=True)
     diagrams = JSONField(blank=True, null=True)
     result_entropy = JSONField(blank=True, null=True)
+    bottleneck_distance_versus_all = JSONField(blank=True, null=True)
+    bottleneck_distance_versus_all_diags = JSONField(blank=True, null=True)
     objects = WindowManager()
 
     def save_diagrams(self, diagrams):
