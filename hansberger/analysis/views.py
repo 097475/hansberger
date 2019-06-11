@@ -144,9 +144,14 @@ class TextDownloadView(VirtualDownloadView):
     model = FiltrationWindow
 
     def get_object(self):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
         return get_object_or_404(
             FiltrationWindow,
-            analysis__slug=self.kwargs['analysis_slug'],
+            analysis=my_analysis,
             slug=self.kwargs['window_slug']
         )
 
@@ -271,3 +276,20 @@ class WindowListView(ListView):
                       analysis=self.analysis
                       )
         return windows.only('name', 'creation_date', 'slug').order_by('name')
+
+
+class WindowBottleneckView(View):
+    def get(self, request, *args, **kwargs):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+        my_window = get_object_or_404(
+            FiltrationWindow,
+            analysis=my_analysis,
+            slug=self.kwargs['window_slug']
+        )
+        if my_window.bottleneck_distance_versus_all is None:
+            my_window.bottleneck_calculation()
+        return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'window': my_window})

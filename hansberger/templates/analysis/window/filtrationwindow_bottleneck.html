@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+{{window.bottleneck_distance_versus_all}}
+<div id="fig_container">
+    {{ window.plot_bottleneck | safe }}
+</div>
+{% endblock content %}

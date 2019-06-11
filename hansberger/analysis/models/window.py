@@ -65,6 +65,10 @@ class FiltrationWindow(Window):
     def save_diagrams(self, diagrams):
         self.diagrams = json.dumps([d.tolist() for d in diagrams])
 
+    def get_diagram(self, homology):
+        diagrams = json.loads(self.diagrams)
+        return numpy.array(diagrams[homology])
+
     def save_matrix_json(self, analysis_result_matrix):
         for k in analysis_result_matrix:
             if isinstance(analysis_result_matrix[k], numpy.ndarray):
@@ -111,6 +115,36 @@ class FiltrationWindow(Window):
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
         plt.clf()
         return f"<img src='data:image/png;base64,{data}'/>"
+
+    def bottleneck_calculation(self):
+        windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
+        distances = {}
+        diags = {}
+        for window in windows:
+            print(window.name)
+            (d, (matching, D)) = persim.bottleneck(json.loads(window.diagrams)[0], json.loads(window.diagrams)[0], True)
+            distances[window.name] = d
+            diags[window.name] = (matching, D.tolist())
+        self.bottleneck_distance_versus_all = json.dumps(distances)
+        self.bottleneck_distance_versus_all_diags = json.dumps(diags)
+        self.save()
+
+    def plot_bottleneck(self):
+        windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
+        bottleneck_data = json.loads(self.bottleneck_distance_versus_all_diags)
+        output_diag = ""
+        for window in windows:
+            current_data = bottleneck_data[str(window.name)]
+            matchidx = current_data[0]
+            D = numpy.array(current_data[1])
+            persim.bottleneck_matching(self.get_diagram(0), window.get_diagram(0), matchidx, D)
+            buf = BytesIO()
+            plt.savefig(buf, format="png")
+            # Embed the result in the html output.
+            data = base64.b64encode(buf.getbuffer()).decode("ascii")
+            plt.clf()
+            output_diag = output_diag + f"<img src='data:image/png;base64,{data}'/>"
+        return output_diag
 
 
 class MapperWindow(Window):
