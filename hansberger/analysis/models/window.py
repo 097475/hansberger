@@ -122,7 +122,7 @@ class FiltrationWindow(Window):
         diags = {}
         for window in windows:
             print(window.name)
-            (d, (matching, D)) = persim.bottleneck(json.loads(window.diagrams)[0], json.loads(window.diagrams)[0], True)
+            (d, (matching, D)) = persim.bottleneck(json.loads(self.diagrams)[0], json.loads(window.diagrams)[0], True)
             distances[window.name] = d
             diags[window.name] = (matching, D.tolist())
         self.bottleneck_distance_versus_all = json.dumps(distances)

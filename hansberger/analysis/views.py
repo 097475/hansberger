@@ -290,6 +290,22 @@ class WindowBottleneckView(View):
             analysis=my_analysis,
             slug=self.kwargs['window_slug']
         )
-        if my_window.bottleneck_distance_versus_all is None:
+        if my_window.bottleneck_distance_versus_all is None or my_window.bottleneck_distance_versus_all_diags is None:
             my_window.bottleneck_calculation()
         return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'window': my_window})
+
+
+class AnalysisBottleneckView(View):
+    def get(self, request, *args, **kwargs):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+        if (
+           my_analysis.bottleneck_distance_consecutive is None
+           or
+           my_analysis.bottleneck_distance_consecutive_diags is None
+           ):
+            my_analysis.bottleneck_calculation()
+        return render(request, 'analysis/filtrationanalysis_bottleneck.html', context={'analysis': my_analysis})

@@ -1,5 +1,6 @@
 import math
 import json
+import matplotlib
 import matplotlib.pyplot as plt
 import mpld3
 from django.db import models
@@ -12,10 +13,13 @@ import sklearn.preprocessing
 import sklearn.mixture
 import numpy
 import persim
+import base64
+from io import BytesIO
 from research.models import Research
 from datasets.models import Dataset
 from datasets.models.dataset import distance_matrix, correlation_matrix
 from .window import FiltrationWindow, MapperWindow
+matplotlib.use('Agg')
 
 
 class Analysis(models.Model):
@@ -99,7 +103,6 @@ class Analysis(models.Model):
         if not self.id:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
-        run_analysis(self)
 
 
 class MapperAnalysis(Analysis):
@@ -211,6 +214,10 @@ class MapperAnalysis(Analysis):
         verbose_name = "mapper algorithm analysis"
         verbose_name_plural = "mapper algoritm analyses"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        run_analysis(self)
+
     # TODO: check precomputed=False
     def execute(self, distance_matrix, original_matrix=None, number=0):
         mapper = kmapper.KeplerMapper()
@@ -263,10 +270,16 @@ class FiltrationAnalysis(Analysis):
                                  be used in lieu of the full point cloud for a faster computation, at the expense of
                                  some accuracy, which can be bounded as a maximum bottleneck distance to all diagrams
                                  on the original point set""")
+    bottleneck_distance_consecutive = JSONField(blank=True, null=True)
+    bottleneck_distance_consecutive_diags = JSONField(blank=True, null=True)
 
     class Meta(Analysis.Meta):
         verbose_name = "filtration analysis"
         verbose_name_plural = "filtration analyses"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        run_analysis(self)
 
     @models.permalink
     def get_absolute_url(self):
@@ -303,11 +316,35 @@ class FiltrationAnalysis(Analysis):
 
     def bottleneck_calculation(self):
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        for window1 in windows:
-            for window2 in windows:
-                print(persim.bottleneck(json.loads(window1.diagrams)[0], json.loads(window2.diagrams)[0]))
-            break
-        return 0
+        distances = {}
+        diags = {}
+        for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
+            window2 = windows.get(name=i+1)
+            print(str(window1.name)+" "+str(window2.name))
+            (d, (matching, D)) = persim.bottleneck(json.loads(window1.diagrams)[0], json.loads(window2.diagrams)[0], True) # noqa
+            distances[window1.name] = d
+            diags[window1.name] = (matching, D.tolist())
+        self.bottleneck_distance_consecutive = json.dumps(distances)
+        self.bottleneck_distance_consecutive_diags = json.dumps(diags)
+        super().save()
+
+    def plot_bottleneck(self):
+        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        bottleneck_data = json.loads(self.bottleneck_distance_consecutive_diags)
+        output_diag = ""
+        for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
+            window2 = windows.get(name=i+1)
+            current_data = bottleneck_data[str(window1.name)]
+            matchidx = current_data[0]
+            D = numpy.array(current_data[1])
+            persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D)
+            buf = BytesIO()
+            plt.savefig(buf, format="png")
+            # Embed the result in the html output.
+            data = base64.b64encode(buf.getbuffer()).decode("ascii")
+            plt.clf()
+            output_diag = output_diag + f"<img src='data:image/png;base64,{data}'/>"
+        return output_diag
 
 #  multithreading decorator -> add connection.close() at end of function
 

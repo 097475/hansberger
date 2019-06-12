@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block content %}
+{{analysis.bottleneck_distance_consecutive}}
+<div id="fig_container">
+    {{ analysis.plot_bottleneck | safe }}
+</div>
+{% endblock content %}
