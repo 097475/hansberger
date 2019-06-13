@@ -299,20 +299,26 @@ class FiltrationAnalysis(Analysis):
 
     @property
     def plot_entropy(self):
+        entropies = self.get_entropy_data()
+        for key in entropies:
+            plt.plot(entropies[key], 'o')
+        plt.legend([key for key in entropies])
+        figure = plt.gcf()
+        html_figure = mpld3.fig_to_html(figure, template_type='general')
+        plt.clf()
+        return html_figure
+
+    def get_entropy_data(self):
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
         entropies = {"H"+str(i): [] for i in range(self.max_homology_dimension + 1)}  # initialize result dict
         entropy_dicts = map(lambda window: json.loads(window.result_entropy), windows)
         for entropy_dict in entropy_dicts:
             for key, value in entropy_dict.items():
                 entropies[key].append(value)
-        x_axis = [i for i in range(windows.count())]
-        for key in entropies:
-            plt.plot(x_axis, entropies[key], 'o')
-        plt.legend([key for key in entropies])
-        figure = plt.gcf()
-        html_figure = mpld3.fig_to_html(figure, template_type='general')
-        plt.clf()
-        return html_figure
+        return entropies
+
+    def show_entropy_data(self):
+        return json.dumps(self.get_entropy_data())
 
     def bottleneck_calculation(self):
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
