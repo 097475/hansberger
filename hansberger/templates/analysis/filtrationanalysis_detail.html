@@ -26,15 +26,6 @@
         n perm: {{analysis.n_perm}} </br>
       </p>
       <p id="entropy"></p>
-      <script>
-            var entropy = JSON.parse('{{ analysis.show_entropy_data | safe }}');
-            for (var key in entropy) {
-              if (entropy.hasOwnProperty(key)) {
-                    console.log(key + " -> " + entropy[key]);
-                    document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
-                  }
-            }
-      </script>
       <div id="fig_container" width=100%>
         {{ analysis.plot_entropy | safe }}
       </div>
@@ -47,3 +38,15 @@
   </div>
 </div>
 {% endblock content %}
+{% block javascript %}
+{{ block.super }}
+<script>
+  var entropy = JSON.parse('{{ analysis.show_entropy_data | safe }}');
+  for (var key in entropy) {
+    if (entropy.hasOwnProperty(key)) {
+          console.log(key + " -> " + entropy[key]);
+          document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
+        }
+  }
+</script>
+{% endblock javascript %}

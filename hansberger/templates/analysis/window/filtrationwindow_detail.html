@@ -17,15 +17,6 @@
         {{ window.plot | safe }}
       </div>
       <p id="entropy"></p>
-      <script>
-            var entropy = JSON.parse('{{ window.result_entropy|safe }}');
-            for (var key in entropy) {
-              if (entropy.hasOwnProperty(key)) {
-                    console.log(key + " -> " + entropy[key]);
-                    document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
-                  }
-            }
-      </script>
       <a href="download/">download</a></br>
       Window starts at position (inclusive): {{window.start}}</br>
       Window ends at position (non-inclusive): {{window.end}}</br>
@@ -35,3 +26,15 @@
   </div>
 </div>
 {% endblock content %}
+{% block javascript %}
+{{ block.super }}
+<script>
+  var entropy = JSON.parse('{{ window.result_entropy|safe }}');
+  for (var key in entropy) {
+    if (entropy.hasOwnProperty(key)) {
+          console.log(key + " -> " + entropy[key]);
+          document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
+        }
+  }
+</script>
+{% endblock javascript %}
