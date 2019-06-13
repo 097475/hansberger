@@ -10,7 +10,8 @@ from .views import (
     MapperAnalysisView,
     TextDownloadView,
     WindowBottleneckView,
-    AnalysisBottleneckView
+    AnalysisConsecutiveBottleneckView,
+    AnalysisAlltoallBottleneckView
 )
 
 app_name = 'analysis'
@@ -25,5 +26,7 @@ urlpatterns = [
     path("<slug:analysis_slug>/windows/<slug:window_slug>/graph/", view=MapperAnalysisView.as_view(), name="mapperanalysis-graph"), # noqa
     path("<slug:analysis_slug>/windows/<slug:window_slug>/download/", view=TextDownloadView.as_view(), name="download-view"), # noqa
     path("<slug:analysis_slug>/windows/<slug:window_slug>/bottleneck/", view=WindowBottleneckView.as_view(), name="window-bottleneck"), # noqa  
-    path("<slug:analysis_slug>/bottleneck/", view=AnalysisBottleneckView.as_view(), name="analysis-bottleneck"), # noqa      
+    path("<slug:analysis_slug>/bottleneck_consecutive/", view=AnalysisConsecutiveBottleneckView.as_view(), name="analysis-bottleneck-consecutive"), # noqa      
+    path("<slug:analysis_slug>/bottleneck_alltoall/", view=AnalysisAlltoallBottleneckView.as_view(), name="analysis-bottleneck-alltoall"), # noqa      
+
 ]

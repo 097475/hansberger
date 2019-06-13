@@ -320,7 +320,7 @@ class FiltrationAnalysis(Analysis):
     def show_entropy_data(self):
         return json.dumps(self.get_entropy_data())
 
-    def bottleneck_calculation(self):
+    def bottleneck_calculation_consecutive(self):
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
         distances = {}
         diags = {}
@@ -334,7 +334,7 @@ class FiltrationAnalysis(Analysis):
         self.bottleneck_distance_consecutive_diags = json.dumps(diags)
         super().save()
 
-    def plot_bottleneck(self):
+    def plot_bottleneck_consecutive(self):
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
         bottleneck_data = json.loads(self.bottleneck_distance_consecutive_diags)
         output_diag = ""
@@ -343,7 +343,7 @@ class FiltrationAnalysis(Analysis):
             current_data = bottleneck_data[str(window1.name)]
             matchidx = current_data[0]
             D = numpy.array(current_data[1])
-            persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D)
+            persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D, labels=["window_"+str(window1.name), "window_"+str(window2.name)])
             buf = BytesIO()
             plt.savefig(buf, format="png")
             # Embed the result in the html output.
@@ -352,8 +352,43 @@ class FiltrationAnalysis(Analysis):
             output_diag = output_diag + f"<img src='data:image/png;base64,{data}'/>"
         return output_diag
 
-#  multithreading decorator -> add connection.close() at end of function
+    def bottleneck_calculation_alltoall(self):
+        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        for window in windows:
+            window.bottleneck_calculation()
 
+    def plot_bottleneck_alltoall(self):
+        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        bottleneck_data = {}
+        for window in windows:
+            bottleneck_data[window.name] = json.loads(window.bottleneck_distance_versus_all_diags)
+        output_diag = ""
+        for i, window1 in enumerate(windows):
+            for j in range(i, windows.count()):
+                window2 = windows.get(name=j)
+                current_data = bottleneck_data[window1.name][str(j)]
+                matchidx = current_data[0]
+                D = numpy.array(current_data[1])
+                persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D, labels=["window_"+str(window1.name), "window_"+str(window2.name)])
+                buf = BytesIO()
+                plt.savefig(buf, format="png")
+                # Embed the result in the html output.
+                data = base64.b64encode(buf.getbuffer()).decode("ascii")
+                plt.clf()
+                output_diag = output_diag + f"<img src='data:image/png;base64,{data}'/>"
+        return output_diag
+
+    def get_bottleneck_matrix(self):
+        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        matrix = []
+        for window in windows:
+            bottleneck_dict = json.loads(window.bottleneck_distance_versus_all)
+            data = [bottleneck_dict[str(i)] for i in range(windows.count())]
+            matrix.append(data)
+        return matrix
+
+
+#  multithreading decorator -> add connection.close() at end of function
 
 '''
 def start_new_thread(function):

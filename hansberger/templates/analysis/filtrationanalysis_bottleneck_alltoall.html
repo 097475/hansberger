@@ -3,8 +3,8 @@
 
 
 {% block content %}
-{{analysis.bottleneck_distance_consecutive}}
+{{analysis.get_bottleneck_matrix}}
 <div id="fig_container">
-    {{ analysis.plot_bottleneck | safe }}
+    {{ analysis.plot_bottleneck_alltoall| safe }}
 </div>
 {% endblock content %}

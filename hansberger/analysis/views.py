@@ -295,7 +295,7 @@ class WindowBottleneckView(View):
         return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'window': my_window})
 
 
-class AnalysisBottleneckView(View):
+class AnalysisConsecutiveBottleneckView(View):
     def get(self, request, *args, **kwargs):
         my_analysis = get_object_or_404(
                         FiltrationAnalysis,
@@ -307,5 +307,19 @@ class AnalysisBottleneckView(View):
            or
            my_analysis.bottleneck_distance_consecutive_diags is None
            ):
-            my_analysis.bottleneck_calculation()
-        return render(request, 'analysis/filtrationanalysis_bottleneck.html', context={'analysis': my_analysis})
+            my_analysis.bottleneck_calculation_consecutive()
+        return render(request, 'analysis/filtrationanalysis_bottleneck_consecutive.html',
+                      context={'analysis': my_analysis})
+
+
+class AnalysisAlltoallBottleneckView(View):
+    def get(self, request, *args, **kwargs):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+
+        my_analysis.bottleneck_calculation_alltoall()
+        return render(request, 'analysis/filtrationanalysis_bottleneck_alltoall.html',
+                      context={'analysis': my_analysis})

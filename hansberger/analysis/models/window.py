@@ -137,7 +137,7 @@ class FiltrationWindow(Window):
             current_data = bottleneck_data[str(window.name)]
             matchidx = current_data[0]
             D = numpy.array(current_data[1])
-            persim.bottleneck_matching(self.get_diagram(0), window.get_diagram(0), matchidx, D)
+            persim.bottleneck_matching(self.get_diagram(0), window.get_diagram(0), matchidx, D, labels=["window_"+str(self.name), "window_"+str(window.name)])
             buf = BytesIO()
             plt.savefig(buf, format="png")
             # Embed the result in the html output.
