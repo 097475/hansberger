@@ -321,6 +321,8 @@ class FiltrationAnalysis(Analysis):
         return json.dumps(self.get_entropy_data())
 
     def bottleneck_calculation_consecutive(self):
+        if self.bottleneck_distance_consecutive or self.bottleneck_distance_consecutive_diags:
+            return
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
         distances = {}
         diags = {}

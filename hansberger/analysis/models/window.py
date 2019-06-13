@@ -117,6 +117,8 @@ class FiltrationWindow(Window):
         return f"<img src='data:image/png;base64,{data}'/>"
 
     def bottleneck_calculation(self):
+        if self.bottleneck_distance_versus_all and self.bottleneck_distance_versus_all_diags:
+            return
         windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
         distances = {}
         diags = {}
