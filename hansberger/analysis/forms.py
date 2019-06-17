@@ -1,17 +1,9 @@
-import numpy
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Field, Div
 from django.urls import reverse_lazy
 from .models import FiltrationAnalysis, MapperAnalysis
 from datasets.models import Dataset
-
-
-def raise_window_warning(dataset, window_size, window_overlap):
-    matrix = numpy.array(dataset.data).transpose()
-    cols = len(matrix[0])
-    step = window_size - window_overlap
-    return bool((cols-window_size) % step)
 
 
 def analysis_name_unique_check(name, research):
@@ -42,8 +34,6 @@ class AnalysisCreationForm(forms.ModelForm):
         if window_overlap >= window_size:
             self.add_error("window_overlap", "Window overlap can't be greater than or equal to window size")
             raise forms.ValidationError("Window overlap can't be greater than or equal to window size")
-        if raise_window_warning(dataset, window_size, window_overlap):
-            pass
 
 
 class FiltrationAnalysisCreationForm(AnalysisCreationForm):
@@ -93,8 +83,8 @@ class FiltrationAnalysisCreationForm(AnalysisCreationForm):
         if analysis_name_unique_check(name, research):
             self.add_error("name", "An analysis with this name already exists.")
             raise forms.ValidationError("An analysis with this name already exists.")
-        #if window_size is not None:
-            #self.window_overlap_checks(window_size, window_overlap, dataset)
+        if window_size is not None:
+            self.window_overlap_checks(window_size, window_overlap, dataset)
 
         if dataset and precomputed_distance_matrix:  # both fields were filled
             raise forms.ValidationError("""You must either provide a precomputed distance matrix or select a dataset,

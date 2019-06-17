@@ -35,6 +35,7 @@ class TextDatasetCreationForm(DatasetCreationMixin, forms.ModelForm):
             'description',
             'source',
             'research',
+            'transpose',
             'values_separator_character',
             'identity_column_index',
             'header_row_index',

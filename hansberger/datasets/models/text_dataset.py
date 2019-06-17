@@ -12,14 +12,20 @@ class TextDataset(Dataset):
                                                         progressive number of rows in the file""")
     header_row_index = models.PositiveIntegerField(default=0, help_text="""row number that identifies the column in
                                                    the file""")
+    transpose = models.BooleanField(default=True, help_text="""Transpose the text file's values so that features'
+                                    values are laid out horizontally. If the input is a csv file, you might want
+                                    to leave this box checked in.""")
 
     def save(self, *args, **kwargs):
         self.kind = DatasetKindChoice.TEXT.value
         super().save(*args, **kwargs)
         dataframe = self.dataframe
-        self.data = dataframe.values.tolist()
-        self.rows = len(dataframe.values)
-        self.cols = len(dataframe.values[0])
+        if self.transpose:
+            self.data = dataframe.values.transpose().tolist()
+        else:
+            self.data = dataframe.values.tolist()
+        self.rows = len(self.data)
+        self.cols = len(self.data[0])
         super().save(*args, **kwargs)
 
     @property
