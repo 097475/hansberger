@@ -58,15 +58,11 @@ class Analysis(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
     research = models.ForeignKey(
         Research,
-        on_delete=models.CASCADE,
-        related_name='%(class)s_requests_created',
-        related_query_name='analysis',
+        on_delete=models.CASCADE
     )
     dataset = models.ForeignKey(
         Dataset,
         on_delete=models.CASCADE,
-        related_name='%(class)s_requests_created',
-        related_query_name='analysis',
         blank=True,
         null=True,
         help_text="Select the source dataset from the loaded datasets"
@@ -344,7 +340,8 @@ class FiltrationAnalysis(Analysis):
             current_data = bottleneck_data[str(window1.name)]
             matchidx = current_data[0]
             D = numpy.array(current_data[1])
-            persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D, labels=["window_"+str(window1.name), "window_"+str(window2.name)])
+            persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D,
+                                       labels=["window_"+str(window1.name), "window_"+str(window2.name)])
             buf = BytesIO()
             plt.savefig(buf, format="png")
             # Embed the result in the html output.
@@ -370,7 +367,8 @@ class FiltrationAnalysis(Analysis):
                 current_data = bottleneck_data[window1.name][str(j)]
                 matchidx = current_data[0]
                 D = numpy.array(current_data[1])
-                persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D, labels=["window_"+str(window1.name), "window_"+str(window2.name)])
+                persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D,
+                                           labels=["window_"+str(window1.name), "window_"+str(window2.name)])
                 buf = BytesIO()
                 plt.savefig(buf, format="png")
                 # Embed the result in the html output.
