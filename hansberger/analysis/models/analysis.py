@@ -120,11 +120,10 @@ class MapperAnalysis(Analysis):
         'mean-shift': sklearn.cluster.MeanShift(),
         'spectral_clustering': sklearn.cluster.SpectralClustering(),
         'agglomerative_clustering': sklearn.cluster.AgglomerativeClustering(),
-        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=1),  # should be 3
+        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=3),  # should be 3
         'gaussian_mixtures': sklearn.mixture.GaussianMixture(),
         'birch': sklearn.cluster.Birch()
     }
-    # TODO: Inserire parametri
 
     PROJECTION_CHOICES = (
         ('sum', 'Sum'),
@@ -135,7 +134,7 @@ class MapperAnalysis(Analysis):
         ('std', 'Std'),
         ('dist_mean', 'Dist_mean'),
         ('l2norm', 'L2norm'),
-        ('knn_distance_n', 'knn_distance_n')  # TODO knn_distance, add scikit classes
+        ('knn_distance_n', 'knn_distance_n')
     )
 
     SCALER_CHOICES = (
@@ -143,7 +142,7 @@ class MapperAnalysis(Analysis):
         ('MinMaxScaler', 'MinMaxScaler'),
         ('MaxAbsScaler', 'MaxAbsScaler'),
         ('RobustScaler', 'RobustScaler'),
-        ('StandardScaler', 'StandardScaler'),  # missing parameters
+        ('StandardScaler', 'StandardScaler'),
     )
 
     CLUSTERER_CHOICES = (
@@ -154,7 +153,7 @@ class MapperAnalysis(Analysis):
         ('agglomerative_clustering', 'StandardScaler'),
         ('DBSCAN', 'DBSCAN'),
         ('gaussian_mixtures', 'Gaussian mixtures'),
-        ('birch', 'Birch')  # missing parameters
+        ('birch', 'Birch')
     )
 
     distance_matrix_metric = models.CharField(
@@ -163,7 +162,7 @@ class MapperAnalysis(Analysis):
         default='euclidean',
         help_text="If not using a precomputed matrix, choose the distance metric to use on the dataset."
     )
-    # fit_transform parameters; not implemented : scaler params, scikit projections
+
     projection = models.CharField(
                 max_length=50,
                 choices=PROJECTION_CHOICES,
@@ -182,7 +181,6 @@ class MapperAnalysis(Analysis):
                 default='MinMaxScaler'
     )
 
-    # map parameters; not implemented : clusterer params, cover limits
     use_original_data = models.BooleanField(default=False, help_text="""If ticked, clustering is run on the original data,
                                             else it will be run on the lower dimensional projection.""")
     clusterer = models.CharField(
@@ -191,7 +189,7 @@ class MapperAnalysis(Analysis):
                 default='DBSCAN',
                 help_text="Select the clustering algorithm."
                 )
-    # missing cover limits
+
     cover_n_cubes = models.PositiveIntegerField(default=10, help_text="""Number of hypercubes along each dimension.
                                         Sometimes referred to as resolution.""")
     cover_perc_overlap = models.FloatField(default=0.5, help_text="""Amount of overlap between adjacent cubes calculated
@@ -218,7 +216,6 @@ class MapperAnalysis(Analysis):
         super().save(*args, **kwargs)
         run_analysis(self)
 
-    # TODO: check precomputed=False
     def execute(self, distance_matrix, original_matrix=None, number=0):
         mapper = kmapper.KeplerMapper()
         mycover = kmapper.Cover(n_cubes=self.cover_n_cubes, perc_overlap=self.cover_perc_overlap)
@@ -407,7 +404,7 @@ def single_run(instance):
     print(instance.precomputed_distance_matrix_json)
     if json.loads(instance.precomputed_distance_matrix_json) != []:
         input_matrix = json.loads(instance.precomputed_distance_matrix_json)
-        instance.execute(input_matrix)  # TODO: add more read types
+        instance.execute(input_matrix)
     elif analysis_type is FiltrationAnalysis:
         if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
             input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
@@ -462,17 +459,3 @@ def run_analysis(instance):
         multiple_run_precomputed(instance, precomputed_distance_matrixes)
     else:
         single_run(instance)
-
-
-'''
-#  traspose before or after splitting?
-@receiver(post_save, sender=FiltrationAnalysis)
-@receiver(post_save, sender=MapperAnalysis)
-def run_ripser(sender, instance, **kwargs):
-    #  TODO: alert about wrong overlap and/or window size!
-    if instance.window_size is not None:  # add alert
-        window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
-        multiple_run(instance, window_generator)
-    else:
-        single_run(instance)
-'''
