@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block css %}
+{{ block.super }}
+<style>
+.box{
+    display: none;
+    width: 100%;
+    }
+      
+a:hover + .box,.box:hover{
+    display: block;
+    position: relative;
+    z-index: 100;
+    }    
+</style>
+{% endblock %}
+{% block content %}
+{% crispy form form.helper %}
+<button id="submit_button" class='btn btn-success'>Submit</button>
+{% endblock %}
+{% block javascript %}
+{{ block.super }}
+ <!-- include BlockUI -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.js"></script>
+<script>
+    // invoke blockUI as needed -->
+    $($(document).on('click', '#submit_button', function() {
+       $.blockUI();
+       document.getElementById("analysis_form").submit();
+    }));
+
+</script>
+{% endblock javascript %}

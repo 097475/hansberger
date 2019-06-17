@@ -1,6 +1,7 @@
 import numpy
 import json
 from itertools import chain
+from django.shortcuts import redirect
 from django.http import HttpResponse
 from django_downloadview import VirtualDownloadView
 from django.core.files.base import ContentFile
@@ -23,12 +24,48 @@ from .models import (
 )
 from research.models import Research
 from .forms import (
-    FiltrationAnalysisCreationForm,
-    MapperAnalysisCreationForm
+    SourceChoiceForm,
+    FiltrationAnalysisCreationForm_Dataset,
+    FiltrationAnalysisCreationForm_Precomputed,
+    MapperAnalysisCreationForm_Dataset,
+    MapperAnalysisCreationForm_Precomputed
 )
 
+form_dict = {
+    'filtration_analysis': {
+        'precomputed': FiltrationAnalysisCreationForm_Precomputed,
+        'dataset': FiltrationAnalysisCreationForm_Dataset
+    },
+    'mapper_analysis': {
+        'precomputed': MapperAnalysisCreationForm_Precomputed,
+        'dataset': MapperAnalysisCreationForm_Dataset
+    }
+}
 
-# Create your views here.
+
+def SourceChoice(request, research_slug):
+    research = get_object_or_404(Research, slug=research_slug)
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = SourceChoiceForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            analysis = cleaned_data.get("analysis")
+            source = cleaned_data.get("source")
+            if analysis == 'filtration_analysis':
+                return redirect('analysis:filtrationanalysis-create', form=source, research_slug=research.slug)
+            elif analysis == 'mapper_analysis':
+                return redirect('analysis:mapperanalysis-create', form=source, research_slug=research.slug)
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = SourceChoiceForm()
+
+    return render(request, 'analysis/analysis_source_choice.html', {'form': form, 'research': research})
+
+
 class AnalysisDetailView(View):
     def get(self, request, *args, **kwargs):
         my_analysis = (FiltrationAnalysis.objects.filter(
@@ -93,11 +130,18 @@ class AnalysisListView(ListView):
         return sorted(chain(filtration_analyses, mapper_analyses), key=lambda x: x.creation_date, reverse=True)
 
 
-# @method_decorator(csrf_exempt, name='dispatch')
 class FiltrationAnalysisCreateView(CreateView):
     model = FiltrationAnalysis
-    form_class = FiltrationAnalysisCreationForm
-    template_name = "analysis/filtrationanalysis_form.html"
+
+    def get_template_names(self):
+        print(self.get_form_class())
+        if self.get_form_class() is FiltrationAnalysisCreationForm_Dataset:
+            return "analysis/filtrationanalysis_dataset_form.html"
+        elif self.get_form_class() is FiltrationAnalysisCreationForm_Precomputed:
+            return "analysis/filtrationanalysis_precomputed_form.html"
+
+    def get_form_class(self):
+        return form_dict['filtration_analysis'][self.kwargs['form']]
 
     def get_success_url(self):
         return reverse_lazy('analysis:analysis-detail', kwargs={
@@ -163,8 +207,15 @@ class TextDownloadView(VirtualDownloadView):
 
 class MapperAnalysisCreateView(CreateView):
     model = MapperAnalysis
-    form_class = MapperAnalysisCreationForm
-    template_name = "analysis/mapperanalysis_form.html"
+
+    def get_template_names(self):
+        if self.get_form_class() is MapperAnalysisCreationForm_Dataset:
+            return "analysis/mapperanalysis_dataset_form.html"
+        elif self.get_form_class() is MapperAnalysisCreationForm_Precomputed:
+            return "analysis/mapperanalysis_precomputed_form.html"
+
+    def get_form_class(self):
+        return form_dict['mapper_analysis'][self.kwargs['form']]
 
     def get_success_url(self):
         return reverse_lazy('analysis:analysis-detail', kwargs={
