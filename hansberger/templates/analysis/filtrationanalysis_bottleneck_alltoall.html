@@ -3,8 +3,10 @@
 
 
 {% block content %}
-{{analysis.get_bottleneck_matrix}}
+{{bottleneck.get_bottleneck_matrix}}
 <div id="fig_container">
-    {{ analysis.plot_bottleneck_alltoall| safe }}
+    {% for diagram in bottleneck.get_diagrams %}
+    {{ diagram.image | safe }}
+    {% endfor %}
 </div>
 {% endblock content %}

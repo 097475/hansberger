@@ -20,7 +20,8 @@ from .models import (
     MapperAnalysis,
     Window,
     FiltrationWindow,
-    MapperWindow
+    MapperWindow,
+    Bottleneck
 )
 from research.models import Research
 from .forms import (
@@ -341,8 +342,9 @@ class WindowBottleneckView(View):
             analysis=my_analysis,
             slug=self.kwargs['window_slug']
         )
-        my_window.bottleneck_calculation()
-        return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'window': my_window})
+        my_window.bottleneck_calculation_onetoall()
+        bottleneck = my_window.get_bottleneck(0)
+        return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'bottleneck': bottleneck})
 
 
 class AnalysisConsecutiveBottleneckView(View):
@@ -353,8 +355,9 @@ class AnalysisConsecutiveBottleneckView(View):
                         slug=self.kwargs['analysis_slug']
                         )
         my_analysis.bottleneck_calculation_consecutive()
+        bottleneck = my_analysis.get_bottleneck(Bottleneck.CONS, 0)
         return render(request, 'analysis/filtrationanalysis_bottleneck_consecutive.html',
-                      context={'analysis': my_analysis})
+                      context={'bottleneck': bottleneck})
 
 
 class AnalysisAlltoallBottleneckView(View):
@@ -366,5 +369,6 @@ class AnalysisAlltoallBottleneckView(View):
                         )
 
         my_analysis.bottleneck_calculation_alltoall()
+        bottleneck = my_analysis.get_bottleneck(Bottleneck.ALL, 0)
         return render(request, 'analysis/filtrationanalysis_bottleneck_alltoall.html',
-                      context={'analysis': my_analysis})
+                      context={'bottleneck': bottleneck})

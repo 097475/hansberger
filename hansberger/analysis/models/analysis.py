@@ -12,13 +12,11 @@ import sklearn.cluster
 import sklearn.preprocessing
 import sklearn.mixture
 import numpy
-import persim
-import base64
-from io import BytesIO
 from research.models import Research
 from datasets.models import Dataset
 from datasets.models.dataset import distance_matrix, correlation_matrix
 from .window import FiltrationWindow, MapperWindow
+from .bottleneck import Bottleneck
 matplotlib.use('Agg')
 
 
@@ -265,8 +263,6 @@ class FiltrationAnalysis(Analysis):
                                  be used in lieu of the full point cloud for a faster computation, at the expense of
                                  some accuracy, which can be bounded as a maximum bottleneck distance to all diagrams
                                  on the original point set""")
-    bottleneck_distance_consecutive = JSONField(blank=True, null=True)
-    bottleneck_distance_consecutive_diags = JSONField(blank=True, null=True)
 
     class Meta(Analysis.Meta):
         verbose_name = "filtration analysis"
@@ -316,78 +312,26 @@ class FiltrationAnalysis(Analysis):
         return json.dumps(self.get_entropy_data())
 
     def bottleneck_calculation_consecutive(self):
-        if self.bottleneck_distance_consecutive or self.bottleneck_distance_consecutive_diags:
+        if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.CONS, homology=0).count() == 1:
             return
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        distances = {}
-        diags = {}
-        for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
-            window2 = windows.get(name=i+1)
-            print(str(window1.name)+" "+str(window2.name))
-            (d, (matching, D)) = persim.bottleneck(json.loads(window1.diagrams)[0], json.loads(window2.diagrams)[0], True) # noqa
-            distances[window1.name] = d
-            diags[window1.name] = (matching, D.tolist())
-        self.bottleneck_distance_consecutive = json.dumps(distances)
-        self.bottleneck_distance_consecutive_diags = json.dumps(diags)
-        super().save()
-
-    def plot_bottleneck_consecutive(self):
-        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        bottleneck_data = json.loads(self.bottleneck_distance_consecutive_diags)
-        output_diag = ""
-        for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
-            window2 = windows.get(name=i+1)
-            current_data = bottleneck_data[str(window1.name)]
-            matchidx = current_data[0]
-            D = numpy.array(current_data[1])
-            persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D,
-                                       labels=["window_"+str(window1.name), "window_"+str(window2.name)])
-            buf = BytesIO()
-            plt.savefig(buf, format="png")
-            # Embed the result in the html output.
-            data = base64.b64encode(buf.getbuffer()).decode("ascii")
-            plt.clf()
-            output_diag = output_diag + f"<img src='data:image/png;base64,{data}'/>"
-        return output_diag
+        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.CONS, 0)
+        bottleneck.run_bottleneck(windows)
+        bottleneck.save()
 
     def bottleneck_calculation_alltoall(self):
+        if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.ALL, homology=0).count() == 1:
+            return
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        for window in windows:
-            window.bottleneck_calculation()
+        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ALL, 0)
+        bottleneck.run_bottleneck(windows)
+        bottleneck.save()
 
-    def plot_bottleneck_alltoall(self):
-        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        bottleneck_data = {}
-        for window in windows:
-            bottleneck_data[window.name] = json.loads(window.bottleneck_distance_versus_all_diags)
-        output_diag = ""
-        for i, window1 in enumerate(windows):
-            for j in range(i, windows.count()):
-                window2 = windows.get(name=j)
-                current_data = bottleneck_data[window1.name][str(j)]
-                matchidx = current_data[0]
-                D = numpy.array(current_data[1])
-                persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D,
-                                           labels=["window_"+str(window1.name), "window_"+str(window2.name)])
-                buf = BytesIO()
-                plt.savefig(buf, format="png")
-                # Embed the result in the html output.
-                data = base64.b64encode(buf.getbuffer()).decode("ascii")
-                plt.clf()
-                output_diag = output_diag + f"<img src='data:image/png;base64,{data}'/>"
-        return output_diag
-
-    def get_bottleneck_matrix(self):
-        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        matrix = []
-        for window in windows:
-            bottleneck_dict = json.loads(window.bottleneck_distance_versus_all)
-            data = [bottleneck_dict[str(i)] for i in range(windows.count())]
-            matrix.append(data)
-        return matrix
-
+    def get_bottleneck(self, kind, homology):
+        return Bottleneck.objects.get(analysis=self, kind=kind, homology=homology)
 
 #  multithreading decorator -> add connection.close() at end of function
+
 
 '''
 def start_new_thread(function):

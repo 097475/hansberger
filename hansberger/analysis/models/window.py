@@ -5,11 +5,11 @@ import ripser
 import numpy
 import math
 import base64
-import persim
 from io import BytesIO
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.text import slugify
+from .bottleneck import Bottleneck
 matplotlib.use('Agg')
 
 
@@ -56,8 +56,6 @@ class FiltrationWindow(Window):
     result_matrix = JSONField(blank=True, null=True)
     diagrams = JSONField(blank=True, null=True)
     result_entropy = JSONField(blank=True, null=True)
-    bottleneck_distance_versus_all = JSONField(blank=True, null=True)
-    bottleneck_distance_versus_all_diags = JSONField(blank=True, null=True)
     objects = WindowManager()
 
     def save_diagrams(self, diagrams):
@@ -113,38 +111,16 @@ class FiltrationWindow(Window):
         plt.clf()
         return f"<img src='data:image/png;base64,{data}'/>"
 
-    def bottleneck_calculation(self):
-        if self.bottleneck_distance_versus_all and self.bottleneck_distance_versus_all_diags:
+    def bottleneck_calculation_onetoall(self):
+        if Bottleneck.objects.filter(window=self, kind=Bottleneck.ONE, homology=0).count() == 1:
             return
         windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
-        distances = {}
-        diags = {}
-        for window in windows:
-            print(window.name)
-            (d, (matching, D)) = persim.bottleneck(json.loads(self.diagrams)[0], json.loads(window.diagrams)[0], True)
-            distances[window.name] = d
-            diags[window.name] = (matching, D.tolist())
-        self.bottleneck_distance_versus_all = json.dumps(distances)
-        self.bottleneck_distance_versus_all_diags = json.dumps(diags)
-        self.save()
+        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ONE, 0)
+        bottleneck.run_bottleneck(windows)
+        bottleneck.save()
 
-    def plot_bottleneck(self):
-        windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
-        bottleneck_data = json.loads(self.bottleneck_distance_versus_all_diags)
-        output_diag = ""
-        for window in windows:
-            current_data = bottleneck_data[str(window.name)]
-            matchidx = current_data[0]
-            D = numpy.array(current_data[1])
-            persim.bottleneck_matching(self.get_diagram(0), window.get_diagram(0), matchidx, D,
-                                       labels=["window_"+str(self.name), "window_"+str(window.name)])
-            buf = BytesIO()
-            plt.savefig(buf, format="png")
-            # Embed the result in the html output.
-            data = base64.b64encode(buf.getbuffer()).decode("ascii")
-            plt.clf()
-            output_diag = output_diag + f"<img src='data:image/png;base64,{data}'/>"
-        return output_diag
+    def get_bottleneck(self, homology):
+        return Bottleneck.objects.get(window=self, kind=Bottleneck.ONE, homology=homology)
 
 
 class MapperWindow(Window):
