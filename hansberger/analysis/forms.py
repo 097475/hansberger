@@ -27,9 +27,6 @@ class SourceChoiceForm(forms.Form):
 
 
 class DatasetAnalysisCreationForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     def window_overlap_checks(self, window_size, window_overlap, dataset):
         if window_size == 0:
             self.add_error("window_size", "Window size can't be equal to 0")
@@ -44,9 +41,6 @@ class DatasetAnalysisCreationForm(forms.ModelForm):
 
 class PrecomputedAnalysisCreationForm(forms.ModelForm):
     precomputed_distance_matrix = forms.FileField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 
 class FiltrationAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
@@ -95,9 +89,11 @@ class FiltrationAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
         if window_size is not None:
             self.window_overlap_checks(window_size, window_overlap, dataset)
         if not dataset:
-            raise forms.ValidationError("You must select a dataset")
+            self.add_error("dataset", "This field is required.")
         if filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION and distance_matrix_metric == '':
             raise forms.ValidationError("You must provide a distance matrix metric for a Vietoris-Rips Filtration")
+            self.add_error("distance_matrix_metric",
+                           "You must provide a distance matrix metric for a Vietoris-Rips Filtration")
 
     class Meta:
         model = FiltrationAnalysis
@@ -139,6 +135,7 @@ class FiltrationAnalysisCreationForm_Precomputed(PrecomputedAnalysisCreationForm
             self.add_error("name", "An analysis with this name already exists.")
             raise forms.ValidationError("An analysis with this name already exists.")
         if not precomputed_distance_matrix:
+            self.add_error("precomputed_distance_matrix", "You must provide a precomputed distance matrix")
             raise forms.ValidationError("You must provide a precomputed distance matrix")
 
     class Meta:
@@ -199,8 +196,9 @@ class MapperAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
         if window_size is not None:
             self.window_overlap_checks(window_size, window_overlap, dataset)
         if not dataset:
-            raise forms.ValidationError("You must select a dataset")
+            self.add_error("dataset", "This field is required.")
         if projection == 'knn_distance_n' and not knn_n_value:
+            self.add_error("projection", "You must provide a value for n in knn_distance_n")
             raise forms.ValidationError("You must provide a value for n in knn_distance_n")
 
     class Meta:
@@ -253,8 +251,10 @@ class MapperAnalysisCreationForm_Precomputed(PrecomputedAnalysisCreationForm):
             self.add_error("name", "An analysis with this name already exists.")
             raise forms.ValidationError("An analysis with this name already exists.")
         if not precomputed_distance_matrix:
+            self.add_error("precomputed_distance_matrix", "You must provide a precomputed distance matrix")
             raise forms.ValidationError("You must provide a precomputed distance matrix")
         if projection == 'knn_distance_n' and not knn_n_value:
+            self.add_error("projection", "You must provide a value for n in knn_distance_n")
             raise forms.ValidationError("You must provide a value for n in knn_distance_n")
 
     class Meta:
