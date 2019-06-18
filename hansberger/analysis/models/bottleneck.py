@@ -47,7 +47,11 @@ class Bottleneck(models.Model):
         for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
             window2 = windows.get(name=i+1)
             print(str(window1.name)+" "+str(window2.name))
-            (d, (matching, D)) = persim.bottleneck(json.loads(window1.diagrams)[self.homology], json.loads(window2.diagrams)[self.homology], True) # noqa
+            diag1 = json.loads(window1.diagrams)[self.homology]
+            diag2 = json.loads(window2.diagrams)[self.homology]
+            if not diag1 or not diag2:
+                continue
+            (d, (matching, D)) = persim.bottleneck(diag1, diag2, True) # noqa
             image = self.plot_bottleneck(window1, window2, matching, D)
             diagram = Diagram.objects.create_diagram(self, window1, window2, d, image)
             diagram.save()
@@ -56,8 +60,11 @@ class Bottleneck(models.Model):
         reference_window = self.window
         for window in windows:
             print(window.name)
-            (d, (matching, D)) = persim.bottleneck(json.loads(reference_window.diagrams)[self.homology],
-                                                   json.loads(window.diagrams)[self.homology], True)
+            diag1 = json.loads(reference_window.diagrams)[self.homology]
+            diag2 = json.loads(window.diagrams)[self.homology]
+            if not diag1 or not diag2:
+                continue
+            (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
             image = self.plot_bottleneck(reference_window, window, matching, D)
             diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
             diagram.save()
@@ -68,8 +75,11 @@ class Bottleneck(models.Model):
                 if window.name < reference_window.name:
                     continue
                 print(window.name)
-                (d, (matching, D)) = persim.bottleneck(json.loads(reference_window.diagrams)[self.homology],
-                                                       json.loads(window.diagrams)[self.homology], True)
+                diag1 = json.loads(reference_window.diagrams)[self.homology]
+                diag2 = json.loads(window.diagrams)[self.homology]
+                if not diag1 or not diag2:
+                    continue
+                (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
                 image = self.plot_bottleneck(reference_window, window, matching, D)
                 diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
                 diagram.save()

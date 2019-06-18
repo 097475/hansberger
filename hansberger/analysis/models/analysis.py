@@ -311,19 +311,19 @@ class FiltrationAnalysis(Analysis):
     def show_entropy_data(self):
         return json.dumps(self.get_entropy_data())
 
-    def bottleneck_calculation_consecutive(self):
-        if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.CONS, homology=0).count() == 1:
+    def bottleneck_calculation_consecutive(self, homology):
+        if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.CONS, homology=homology).count() == 1:
             return
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.CONS, 0)
+        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.CONS, homology)
         bottleneck.run_bottleneck(windows)
         bottleneck.save()
 
-    def bottleneck_calculation_alltoall(self):
-        if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.ALL, homology=0).count() == 1:
+    def bottleneck_calculation_alltoall(self, homology):
+        if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.ALL, homology=homology).count() == 1:
             return
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ALL, 0)
+        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ALL, homology)
         bottleneck.run_bottleneck(windows)
         bottleneck.save()
 

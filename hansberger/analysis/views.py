@@ -79,7 +79,8 @@ class AnalysisDetailView(View):
                 slug=self.kwargs['analysis_slug']
             ).first())
         if isinstance(my_analysis, FiltrationAnalysis):
-            return render(request, 'analysis/filtrationanalysis_detail.html', context={'analysis': my_analysis})
+            return render(request, 'analysis/filtrationanalysis_detail.html', context={'analysis': my_analysis,
+                          'homology': range(my_analysis.max_homology_dimension + 1)})
         elif isinstance(my_analysis, MapperAnalysis):
             return render(request, 'analysis/mapperanalysis_detail.html', context={'analysis': my_analysis})
 
@@ -276,7 +277,7 @@ class MapperAnalysisView(View):
 
 class WindowDetailView(DetailView):
     def get(self, request, *args, **kwargs):
-        self.analysis = (FiltrationAnalysis.objects.filter(
+        my_analysis = (FiltrationAnalysis.objects.filter(
             research__slug=self.kwargs['research_slug'],
             slug=self.kwargs['analysis_slug']
             ).first()
@@ -285,20 +286,21 @@ class WindowDetailView(DetailView):
                 research__slug=self.kwargs['research_slug'],
                 slug=self.kwargs['analysis_slug']
             ).first())
-        if type(self.analysis) is FiltrationAnalysis:
+        if type(my_analysis) is FiltrationAnalysis:
             my_window = get_object_or_404(
                         FiltrationWindow,
-                        analysis=self.analysis,
+                        analysis=my_analysis,
                         slug=self.kwargs['window_slug']
                         )
-        elif type(self.analysis) is MapperAnalysis:
+        elif type(my_analysis) is MapperAnalysis:
             my_window = get_object_or_404(
                         MapperWindow,
-                        analysis=self.analysis,
+                        analysis=my_analysis,
                         slug=self.kwargs['window_slug']
                         )
         if isinstance(my_window, FiltrationWindow):
-            return render(request, 'analysis/window/filtrationwindow_detail.html', context={'window': my_window})
+            return render(request, 'analysis/window/filtrationwindow_detail.html', context={'window': my_window,
+                          'homology': range(my_analysis.max_homology_dimension + 1)})
         elif isinstance(my_window, MapperWindow):
             return render(request, 'analysis/window/mapperwindow_detail.html', context={'window': my_window})
 
@@ -342,8 +344,8 @@ class WindowBottleneckView(View):
             analysis=my_analysis,
             slug=self.kwargs['window_slug']
         )
-        my_window.bottleneck_calculation_onetoall()
-        bottleneck = my_window.get_bottleneck(0)
+        my_window.bottleneck_calculation_onetoall(self.kwargs['homology'])
+        bottleneck = my_window.get_bottleneck(self.kwargs['homology'])
         return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'bottleneck': bottleneck})
 
 
@@ -354,8 +356,8 @@ class AnalysisConsecutiveBottleneckView(View):
                         research__slug=self.kwargs['research_slug'],
                         slug=self.kwargs['analysis_slug']
                         )
-        my_analysis.bottleneck_calculation_consecutive()
-        bottleneck = my_analysis.get_bottleneck(Bottleneck.CONS, 0)
+        my_analysis.bottleneck_calculation_consecutive(self.kwargs['homology'])
+        bottleneck = my_analysis.get_bottleneck(Bottleneck.CONS, self.kwargs['homology'])
         return render(request, 'analysis/filtrationanalysis_bottleneck_consecutive.html',
                       context={'bottleneck': bottleneck})
 
@@ -368,7 +370,7 @@ class AnalysisAlltoallBottleneckView(View):
                         slug=self.kwargs['analysis_slug']
                         )
 
-        my_analysis.bottleneck_calculation_alltoall()
-        bottleneck = my_analysis.get_bottleneck(Bottleneck.ALL, 0)
+        my_analysis.bottleneck_calculation_alltoall(self.kwargs['homology'])
+        bottleneck = my_analysis.get_bottleneck(Bottleneck.ALL, self.kwargs['homology'])
         return render(request, 'analysis/filtrationanalysis_bottleneck_alltoall.html',
                       context={'bottleneck': bottleneck})

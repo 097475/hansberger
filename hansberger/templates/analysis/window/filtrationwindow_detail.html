@@ -20,7 +20,9 @@
       <a href="download/">download</a></br>
       Window starts at position (inclusive): {{window.start}}</br>
       Window ends at position (non-inclusive): {{window.end}}</br>
-      <a href="bottleneck/">Bottleneck distance</a>
+      {% for i in homology %}
+      <a href="{{i}}/bottleneck_onetoall/">Bottleneck distance {{i}} </a>
+      {% endfor %}
       <a href="../">Go back</a>
     </div>
   </div>

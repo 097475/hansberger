@@ -111,11 +111,11 @@ class FiltrationWindow(Window):
         plt.clf()
         return f"<img src='data:image/png;base64,{data}'/>"
 
-    def bottleneck_calculation_onetoall(self):
-        if Bottleneck.objects.filter(window=self, kind=Bottleneck.ONE, homology=0).count() == 1:
+    def bottleneck_calculation_onetoall(self, homology):
+        if Bottleneck.objects.filter(window=self, kind=Bottleneck.ONE, homology=homology).count() == 1:
             return
         windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
-        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ONE, 0)
+        bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ONE, homology)
         bottleneck.run_bottleneck(windows)
         bottleneck.save()
 
