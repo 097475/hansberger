@@ -186,27 +186,6 @@ class FiltrationAnalysisCreateView(CreateView):
             return self.form_invalid(form)
 
 
-class TextDownloadView(VirtualDownloadView):
-    model = FiltrationWindow
-
-    def get_object(self):
-        my_analysis = get_object_or_404(
-                        FiltrationAnalysis,
-                        research__slug=self.kwargs['research_slug'],
-                        slug=self.kwargs['analysis_slug']
-                        )
-        return get_object_or_404(
-            FiltrationWindow,
-            analysis=my_analysis,
-            slug=self.kwargs['window_slug']
-        )
-
-    def get_file(self):
-        window_analysis = self.get_object()
-        return ContentFile(window_analysis.result_matrix, name=window_analysis.analysis.research.name + '_' +
-                           window_analysis.analysis.name + '_' + str(window_analysis.name) + '.dat')
-
-
 class MapperAnalysisCreateView(CreateView):
     model = MapperAnalysis
 
@@ -374,3 +353,108 @@ class AnalysisAlltoallBottleneckView(View):
         bottleneck = my_analysis.get_bottleneck(Bottleneck.ALL, self.kwargs['homology'])
         return render(request, 'analysis/filtrationanalysis_bottleneck_alltoall.html',
                       context={'bottleneck': bottleneck})
+
+
+class RipserDownloadView(VirtualDownloadView):
+
+    def get_object(self):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+        return get_object_or_404(
+            FiltrationWindow,
+            analysis=my_analysis,
+            slug=self.kwargs['window_slug']
+        )
+
+    def get_file(self):
+        window_analysis = self.get_object()
+        return ContentFile(window_analysis.result_matrix, name=window_analysis.analysis.research.name + '_' +
+                           window_analysis.analysis.name + '_' + str(window_analysis.name) + '.dat')
+
+
+class EntropyDownloadView(VirtualDownloadView):
+
+    def get_object(self):
+        return get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+
+    def get_file(self):
+        analysis = self.get_object()
+        return ContentFile(json.dumps(analysis.get_entropy_data()), name=analysis.research.name + '_' +
+                           analysis.name + '_entropy.dat')
+
+
+class BottleneckONEDownloadView(VirtualDownloadView):
+    def get_object(self):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+        my_window = get_object_or_404(
+            FiltrationWindow,
+            analysis=my_analysis,
+            slug=self.kwargs['window_slug']
+        )
+        return get_object_or_404(
+            Bottleneck,
+            window=my_window,
+            kind=Bottleneck.ONE,
+            homology=self.kwargs['homology']
+        )
+
+    def get_file(self):
+        bottleneck = self.get_object()
+        return ContentFile(json.dumps(bottleneck.get_bottleneck_matrix()),
+                           name=bottleneck.window.analysis.research.name + '_' +
+                           bottleneck.window.analysis.name + '_' +
+                           str(bottleneck.window.name) + '_bottleneck_distance_one_to_all_H' + str(bottleneck.homology)
+                           + '.dat')
+
+
+class BottleneckALLDownloadView(VirtualDownloadView):
+    def get_object(self):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+        return get_object_or_404(
+            Bottleneck,
+            analysis=my_analysis,
+            kind=Bottleneck.ALL,
+            homology=self.kwargs['homology']
+        )
+
+    def get_file(self):
+        bottleneck = self.get_object()
+        return ContentFile(json.dumps(bottleneck.get_bottleneck_matrix()), name=bottleneck.analysis.research.name + '_'
+                           + bottleneck.analysis.name + '_bottleneck_distance_all_to_all_H' +
+                           str(bottleneck.homology) + '.dat')
+
+
+class BottleneckCONSDownloadView(VirtualDownloadView):
+    def get_object(self):
+        my_analysis = get_object_or_404(
+                        FiltrationAnalysis,
+                        research__slug=self.kwargs['research_slug'],
+                        slug=self.kwargs['analysis_slug']
+                        )
+        return get_object_or_404(
+            Bottleneck,
+            analysis=my_analysis,
+            kind=Bottleneck.CONS,
+            homology=self.kwargs['homology']
+        )
+
+    def get_file(self):
+        bottleneck = self.get_object()
+        return ContentFile(json.dumps(bottleneck.get_bottleneck_matrix()), name=bottleneck.analysis.research.name + '_'
+                           + bottleneck.analysis.name + '_bottleneck_distance_consecutive_H' +
+                           str(bottleneck.homology) + '.dat')

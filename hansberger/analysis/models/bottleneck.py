@@ -120,7 +120,7 @@ class Bottleneck(models.Model):
             matrix = numpy.array(matrix)
             out = matrix.T + matrix
             numpy.fill_diagonal(out, numpy.diag(matrix))
-            return out
+            return out.tolist()
 
     def get_diagrams(self):
         return Diagram.objects.filter(bottleneck=self).order_by('window1__name', 'window2__name')

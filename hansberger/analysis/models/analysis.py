@@ -308,9 +308,6 @@ class FiltrationAnalysis(Analysis):
                 entropies[key].append(value)
         return entropies
 
-    def show_entropy_data(self):
-        return json.dumps(self.get_entropy_data())
-
     def bottleneck_calculation_consecutive(self, homology):
         if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.CONS, homology=homology).count() == 1:
             return

@@ -32,6 +32,7 @@
       <a href="delete/">Delete this analysis</a>
       <a href="../">Go back</a>
       <a href="windows/">See results</a>
+      <a href="entropy_download/">Download entropy</a>
       {% for i in homology %}
       <a href="{{i}}/bottleneck_consecutive/">Bottleneck distance {{i}} </a>
       {% endfor %}
@@ -42,15 +43,3 @@
   </div>
 </div>
 {% endblock content %}
-{% block javascript %}
-{{ block.super }}
-<script>
-  var entropy = JSON.parse('{{ analysis.show_entropy_data | safe }}');
-  for (var key in entropy) {
-    if (entropy.hasOwnProperty(key)) {
-          console.log(key + " -> " + entropy[key]);
-          document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
-        }
-  }
-</script>
-{% endblock javascript %}
