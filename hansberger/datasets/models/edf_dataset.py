@@ -79,9 +79,8 @@ class EDFDataset(Dataset):
     def save(self, *args, **kwargs):
         self.kind = DatasetKindChoice.EDF.value
         super().save(*args, **kwargs)
-        self.data = self.edf_to_matrix()
-        self.rows = len(self.data)
-        self.cols = len(self.data[0])
+        self.rows = len(self.get_matrix_data())
+        self.cols = len(self.get_matrix_data()[0])
         super().save(*args, **kwargs)
 
     def edf_to_matrix(self):
@@ -119,3 +118,6 @@ class EDFDataset(Dataset):
         html_figure = mpld3.fig_to_html(figure, template_type='general')
         plt.clf()
         return html_figure
+
+    def get_matrix_data(self):
+        return self.edf_to_matrix()

@@ -3,6 +3,8 @@ import json
 import matplotlib
 import matplotlib.pyplot as plt
 import mpld3
+import psutil
+import os
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
@@ -13,7 +15,7 @@ import sklearn.preprocessing
 import sklearn.mixture
 import numpy
 from research.models import Research
-from datasets.models import Dataset
+from datasets.models import Dataset, DatasetKindChoice
 from datasets.models.dataset import distance_matrix, correlation_matrix
 from .window import FiltrationWindow, MapperWindow
 from .bottleneck import Bottleneck
@@ -61,17 +63,12 @@ class Analysis(models.Model):
     dataset = models.ForeignKey(
         Dataset,
         on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        help_text="Select the source dataset from the loaded datasets"
+        help_text="Select the source dataset from the loaded datasets",
+        default=None,
+        null=True
     )
-    '''
-    precomputed_distance_matrix = models.FileField(upload_to=precomputed_directory_path,
-                                                   default=None, null=True, blank=True,
-                                                   help_text="""Upload a precomputed distance matrix
-                                                   instead of selecting a dataset""")  # TODO
-    '''
-    precomputed_distance_matrix_json = JSONField(blank=True, null=True)
+
+    precomputed_distance_matrix_json = JSONField(default=json.dumps('[]'))
 
     window_size = models.PositiveIntegerField(default=None, null=True, blank=True,
                                               help_text="""Leave window size blank to not use windows. Window parameter
@@ -96,6 +93,11 @@ class Analysis(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = slugify(self.name)
+        if self.dataset:
+            if self.dataset.kind == DatasetKindChoice.EDF.value:
+                self.dataset = self.dataset.edfdataset
+            elif self.dataset.kind == DatasetKindChoice.TEXT.value:
+                self.dataset = self.dataset.textdataset
         super().save(*args, **kwargs)
 
 
@@ -225,9 +227,7 @@ class MapperAnalysis(Analysis):
                            remove_duplicate_nodes=self.remove_duplicate_nodes)
         output_graph = mapper.visualize(graph, save_file=False)
         window = MapperWindow.objects.create_window(number, self)
-        window.graph = output_graph
-        window.save_window_info()
-        window.save()
+        window.save_data(output_graph)
 
 
 class FiltrationAnalysis(Analysis):
@@ -282,11 +282,7 @@ class FiltrationAnalysis(Analysis):
         result = ripser.ripser(input_matrix, maxdim=self.max_homology_dimension, thresh=_thresh, coeff=self.coeff,
                                distance_matrix=True, do_cocycles=self.do_cocycles, n_perm=self.n_perm)
         window = FiltrationWindow.objects.create_window(number, self)
-        window.save_diagrams(result['dgms'])
-        window.save_entropy_json(result['dgms'])
-        window.save_matrix_json(result)  # this method modifies permanently the result dict
-        window.save_window_info()
-        window.save()
+        window.save_data(result)
 
     @property
     def plot_entropy(self):
@@ -343,10 +339,7 @@ def start_new_thread(function):
 def single_run(instance):
     analysis_type = type(instance)
     print(instance.precomputed_distance_matrix_json)
-    if json.loads(instance.precomputed_distance_matrix_json) != []:
-        input_matrix = json.loads(instance.precomputed_distance_matrix_json)
-        instance.execute(input_matrix)
-    elif analysis_type is FiltrationAnalysis:
+    if analysis_type is FiltrationAnalysis:
         if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
             input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
         elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
@@ -400,3 +393,5 @@ def run_analysis(instance):
         multiple_run_precomputed(instance, precomputed_distance_matrixes)
     else:
         single_run(instance)
+    process = psutil.Process(os.getpid())
+    print(process.memory_info().rss)  # in bytes

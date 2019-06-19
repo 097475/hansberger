@@ -6,6 +6,7 @@ from .dataset import Dataset, DatasetKindChoice
 
 
 class TextDataset(Dataset):
+
     values_separator_character = models.CharField(max_length=5, default=',', help_text="""separator character of the
                                                   values in the file""")
     identity_column_index = models.PositiveIntegerField(default=0, help_text="""column number that identifies the
@@ -21,11 +22,11 @@ class TextDataset(Dataset):
         super().save(*args, **kwargs)
         dataframe = self.dataframe
         if self.transpose:
-            self.data = dataframe.values.transpose().tolist()
+            matrix_data = dataframe.values.transpose().tolist()
         else:
-            self.data = dataframe.values.tolist()
-        self.rows = len(self.data)
-        self.cols = len(self.data[0])
+            matrix_data = dataframe.values.tolist()
+        self.rows = len(matrix_data)
+        self.cols = len(matrix_data[0])
         super().save(*args, **kwargs)
 
     @property
@@ -44,3 +45,9 @@ class TextDataset(Dataset):
         html_figure = mpld3.fig_to_html(figure, template_type='general')
         plt.clf()
         return html_figure
+
+    def get_matrix_data(self):
+        if self.transpose:
+            return self.dataframe.values.transpose().tolist()
+        else:
+            return self.dataframe.values.tolist()

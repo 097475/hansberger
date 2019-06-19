@@ -58,6 +58,13 @@ class FiltrationWindow(Window):
     result_entropy = JSONField(blank=True, null=True)
     objects = WindowManager()
 
+    def save_data(self, result):
+        self.save_diagrams(result['dgms'])
+        self.save_entropy_json(result['dgms'])
+        self.save_matrix_json(result)  # this method modifies permanently the result dict
+        self.save_window_info()
+        self.save()
+
     def save_diagrams(self, diagrams):
         self.diagrams = json.dumps([d.tolist() for d in diagrams])
 
@@ -87,8 +94,8 @@ class FiltrationWindow(Window):
         if ripser_matrix.size == 0:
             return 0
         non_infinity = list(filter((lambda x: x[1] != math.inf), ripser_matrix))
-        # if non_infinity == []:  # TODO: check this better
-        # return 0
+        if non_infinity == []:  # TODO: single infinity element
+            return 0
         max_death = max(map((lambda x: x[1]), non_infinity)) + 1
         li = list(map((lambda x: x[1]-x[0] if x[1] != math.inf else max_death - x[0]), ripser_matrix))
         ltot = sum(li)
@@ -132,3 +139,8 @@ class MapperWindow(Window):
     )
     graph = models.TextField(blank=True, null=True)
     objects = WindowManager()
+
+    def save_data(self, output_graph):
+        self.graph = output_graph
+        self.save_window_info()
+        self.save()

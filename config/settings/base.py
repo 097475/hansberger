@@ -78,8 +78,14 @@ LOCAL_APPS = [
     "hansberger.analysis.apps.AnalysisConfig"
     # Your stuff: custom apps go here
 ]
+
+DEBUG_TOOLBAR_PANELS = (
+    'debug_toolbar.panels.timer.TimerDebugPanel',
+    'pympler.panels.MemoryPanel',
+    )
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = INSTALLED_APPS + ['pympler']
 
 # MIGRATIONS
 # ------------------------------------------------------------------------------

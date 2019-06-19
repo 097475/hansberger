@@ -4,6 +4,8 @@ import persim
 import base64
 import json
 import numpy
+import psutil
+import os
 from io import BytesIO
 from django.db import models
 matplotlib.use('Agg')
@@ -55,6 +57,8 @@ class Bottleneck(models.Model):
             image = self.plot_bottleneck(window1, window2, matching, D)
             diagram = Diagram.objects.create_diagram(self, window1, window2, d, image)
             diagram.save()
+            process = psutil.Process(os.getpid())
+            print(process.memory_info().rss)  # in bytes 
 
     def bottleneck_calculation_ONE(self, windows):
         reference_window = self.window

@@ -3,7 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Field, Div
 from django.urls import reverse_lazy
 from .models import FiltrationAnalysis, MapperAnalysis
-from datasets.models import Dataset
+from datasets.models import Dataset, DatasetKindChoice
 
 
 def analysis_name_unique_check(name, research):
@@ -28,10 +28,14 @@ class SourceChoiceForm(forms.Form):
 
 class DatasetAnalysisCreationForm(forms.ModelForm):
     def window_overlap_checks(self, window_size, window_overlap, dataset):
+        if dataset.kind == DatasetKindChoice.EDF.value:
+            dataset = dataset.edfdataset
+        elif dataset.kind == DatasetKindChoice.TEXT.value:
+            dataset = dataset.textdataset
         if window_size == 0:
             self.add_error("window_size", "Window size can't be equal to 0")
             raise forms.ValidationError("Window size can't be equal to 0")
-        if window_size > len(dataset.data[0]):
+        if window_size > len(dataset.get_matrix_data()[0]):
             self.add_error("window_size", "Window size can't be greater than the number of columns in the dataset")
             raise forms.ValidationError("Window size can't be greater than the number of columns in the dataset")
         if window_overlap >= window_size:
@@ -88,8 +92,6 @@ class FiltrationAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
             raise forms.ValidationError("An analysis with this name already exists.")
         if window_size is not None:
             self.window_overlap_checks(window_size, window_overlap, dataset)
-        if not dataset:
-            self.add_error("dataset", "This field is required.")
         if filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION and distance_matrix_metric == '':
             raise forms.ValidationError("You must provide a distance matrix metric for a Vietoris-Rips Filtration")
             self.add_error("distance_matrix_metric",
@@ -195,8 +197,6 @@ class MapperAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
             raise forms.ValidationError("An analysis with this name already exists.")
         if window_size is not None:
             self.window_overlap_checks(window_size, window_overlap, dataset)
-        if not dataset:
-            self.add_error("dataset", "This field is required.")
         if projection == 'knn_distance_n' and not knn_n_value:
             self.add_error("projection", "You must provide a value for n in knn_distance_n")
             raise forms.ValidationError("You must provide a value for n in knn_distance_n")
