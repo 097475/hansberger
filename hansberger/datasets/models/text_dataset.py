@@ -20,11 +20,7 @@ class TextDataset(Dataset):
     def save(self, *args, **kwargs):
         self.kind = DatasetKindChoice.TEXT.value
         super().save(*args, **kwargs)
-        dataframe = self.dataframe
-        if self.transpose:
-            matrix_data = dataframe.values.transpose().tolist()
-        else:
-            matrix_data = dataframe.values.tolist()
+        matrix_data = self.get_matrix_data()
         self.rows = len(matrix_data)
         self.cols = len(matrix_data[0])
         super().save(*args, **kwargs)
