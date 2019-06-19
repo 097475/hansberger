@@ -49,8 +49,6 @@ class Bottleneck(models.Model):
             print(str(window1.name)+" "+str(window2.name))
             diag1 = json.loads(window1.diagrams)[self.homology]
             diag2 = json.loads(window2.diagrams)[self.homology]
-            if not diag1 or not diag2:
-                continue
             (d, (matching, D)) = persim.bottleneck(diag1, diag2, True) # noqa
             image = self.plot_bottleneck(window1, window2, matching, D)
             diagram = Diagram.objects.create_diagram(self, window1, window2, d, image)
@@ -62,8 +60,6 @@ class Bottleneck(models.Model):
             print(window.name)
             diag1 = json.loads(reference_window.diagrams)[self.homology]
             diag2 = json.loads(window.diagrams)[self.homology]
-            if not diag1 or not diag2:
-                continue
             (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
             image = self.plot_bottleneck(reference_window, window, matching, D)
             diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
@@ -77,15 +73,13 @@ class Bottleneck(models.Model):
                 print(window.name)
                 diag1 = json.loads(reference_window.diagrams)[self.homology]
                 diag2 = json.loads(window.diagrams)[self.homology]
-                if not diag1 or not diag2:
-                    continue
                 (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
                 image = self.plot_bottleneck(reference_window, window, matching, D)
                 diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
                 diagram.save()
 
     def plot_bottleneck(self, window1, window2, matchidx, D):
-        persim.bottleneck_matching(window1.get_diagram(0), window2.get_diagram(0), matchidx, D,
+        persim.bottleneck_matching(window1.get_diagram(self.homology), window2.get_diagram(self.homology), matchidx, D,
                                    labels=["window_"+str(window1.name), "window_"+str(window2.name)])
         buf = BytesIO()
         plt.savefig(buf, format="png")
