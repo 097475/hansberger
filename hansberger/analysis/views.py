@@ -389,7 +389,7 @@ class EntropyDownloadView(VirtualDownloadView):
     def get_file(self):
         analysis = self.get_object()
         return ContentFile(json.dumps(analysis.get_entropy_data()), name=analysis.research.name + '_' +
-                           analysis.name + '_entropy.dat')
+                           analysis.name + '_entropy.csv')
 
 
 class BottleneckONEDownloadView(VirtualDownloadView):
@@ -417,7 +417,7 @@ class BottleneckONEDownloadView(VirtualDownloadView):
                            name=bottleneck.window.analysis.research.name + '_' +
                            bottleneck.window.analysis.name + '_' +
                            str(bottleneck.window.name) + '_bottleneck_distance_one_to_all_H' + str(bottleneck.homology)
-                           + '.dat')
+                           + '.csv')
 
 
 class BottleneckALLDownloadView(VirtualDownloadView):
@@ -438,7 +438,7 @@ class BottleneckALLDownloadView(VirtualDownloadView):
         bottleneck = self.get_object()
         return ContentFile(json.dumps(bottleneck.get_bottleneck_matrix()), name=bottleneck.analysis.research.name + '_'
                            + bottleneck.analysis.name + '_bottleneck_distance_all_to_all_H' +
-                           str(bottleneck.homology) + '.dat')
+                           str(bottleneck.homology) + '.csv')
 
 
 class BottleneckCONSDownloadView(VirtualDownloadView):
@@ -459,7 +459,7 @@ class BottleneckCONSDownloadView(VirtualDownloadView):
         bottleneck = self.get_object()
         return ContentFile(json.dumps(bottleneck.get_bottleneck_matrix()), name=bottleneck.analysis.research.name + '_'
                            + bottleneck.analysis.name + '_bottleneck_distance_consecutive_H' +
-                           str(bottleneck.homology) + '.dat')
+                           str(bottleneck.homology) + '.csv')
 
 
 def AnalysisBottleneckCreateView(request, research_slug, analysis_slug):

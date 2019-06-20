@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import mpld3
 import psutil
 import os
+import pandas
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
@@ -302,7 +303,8 @@ class FiltrationAnalysis(Analysis):
         for entropy_dict in entropy_dicts:
             for key, value in entropy_dict.items():
                 entropies[key].append(value)
-        return entropies
+        df = pandas.DataFrame(entropies.values(), index=entropies.keys(), columns=[i for i in range(windows.count())])
+        return df.to_csv(index=True, header=True)
 
     def bottleneck_calculation_consecutive(self, homology):
         if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.CONS, homology=homology).count() == 1:
@@ -322,6 +324,9 @@ class FiltrationAnalysis(Analysis):
 
     def get_bottleneck(self, kind, homology):
         return Bottleneck.objects.get(analysis=self, kind=kind, homology=homology)
+
+    def get_window_number(self):
+        return FiltrationWindow.objects.filter(analysis=self).count()
 
 #  multithreading decorator -> add connection.close() at end of function
 

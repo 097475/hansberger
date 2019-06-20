@@ -5,8 +5,10 @@ import ripser
 import base64
 import json
 import numpy
+import pandas
 from io import BytesIO
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 matplotlib.use('Agg')
 
 
@@ -66,7 +68,7 @@ class Bottleneck(models.Model):
             diag1 = json.loads(window1.diagrams)[self.homology]
             diag2 = json.loads(window2.diagrams)[self.homology]
             if diag1 == [] or diag2 == []:
-                return
+                continue
             (d, (matching, D)) = persim.bottleneck(diag1, diag2, True) # noqa
             image = self.plot_bottleneck(window1, window2, matching, D)
             diagram = Diagram.objects.create_diagram(self, window1, window2, d, image)
@@ -79,7 +81,7 @@ class Bottleneck(models.Model):
             diag1 = json.loads(reference_window.diagrams)[self.homology]
             diag2 = json.loads(window.diagrams)[self.homology]
             if diag1 == [] or diag2 == []:
-                return
+                continue
             if reference_window == window and len(diag1) == 1:
                 (d, image) = self.manage_persim_crash(window)
             else:
@@ -97,7 +99,7 @@ class Bottleneck(models.Model):
                 diag1 = json.loads(reference_window.diagrams)[self.homology]
                 diag2 = json.loads(window.diagrams)[self.homology]
                 if diag1 == [] or diag2 == []:
-                    return
+                    continue
                 if reference_window == window and len(diag1) == 1:
                     (d, image) = self.manage_persim_crash(window)
                 else:
@@ -126,26 +128,52 @@ class Bottleneck(models.Model):
 
     def get_bottleneck_matrix(self):
         diagrams = Diagram.objects.filter(bottleneck=self).order_by('window1__name', 'window2__name')
-        if self.kind == self.CONS or self.kind == self.ONE:
-            return [diagram.bottleneck_distance for diagram in diagrams]
+        if self.kind == self.ONE:
+            data = []
+            labels = []
+            reference_window = diagrams.first().window1.name
+            for diagram in diagrams:
+                data.append(diagram.bottleneck_distance)
+                labels.append(str(diagram.window2.name))
+            df = pandas.DataFrame([data], index=[str(reference_window)], columns=labels)
+            return df.to_csv(index=True, header=True)
+        elif self.kind == self.CONS:
+            data = []
+            labels = []
+            for diagram in diagrams:
+                data.append(diagram.bottleneck_distance)
+                labels.append(str(diagram.window1.name))
+            df = pandas.DataFrame([data], index=['n+1'], columns=labels)
+            return df.to_csv(index=True, header=True)
         elif self.kind == self.ALL:
             row = diagrams.filter(window1__name=0)
-            n_rows = row.count()
-            n_cols = row.count()
+            n_cols = row.count()  # actual number of cols
+            expected_cols = self.analysis.get_window_number()
+            labels = [i for i in range(expected_cols)]
             matrix = []
             i = 0
             while(n_cols != 0):
-                matrix.append([0]*(n_rows - n_cols)+[diagram.bottleneck_distance for diagram in row])
+                current_row = []
+                for j in range(expected_cols):
+                    if j < i:
+                        current_row.append(0)
+                    else:
+                        try:
+                            current_row.append(diagrams.get(window1__name=i, window2__name=j).bottleneck_distance)
+                        except ObjectDoesNotExist:
+                            current_row.append(float('NaN'))
+                matrix.append(current_row)
                 i = i + 1
                 row = diagrams.filter(window1__name=i)
                 n_cols = row.count()
             if matrix == []:
-                return matrix
+                out = matrix
             else:
                 matrix = numpy.array(matrix)
                 out = matrix.T + matrix
                 numpy.fill_diagonal(out, numpy.diag(matrix))
-                return out.tolist()
+            df = pandas.DataFrame(out, index=labels, columns=labels)
+            return df.to_csv(index=True, header=True)
 
     def get_diagrams(self):
         return Diagram.objects.filter(bottleneck=self).order_by('window1__name', 'window2__name')
