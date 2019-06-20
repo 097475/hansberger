@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<form action="{% url 'analysis:analysis-bottleneck-create' research.slug analysis.slug %}" method="post">
+    {% csrf_token %}
+    {{ form | crispy}}
+    <input type="submit" value="Submit">
+</form>
+
+{% endblock %}

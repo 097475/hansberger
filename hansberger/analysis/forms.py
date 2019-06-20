@@ -2,7 +2,7 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Field, Div
 from django.urls import reverse_lazy
-from .models import FiltrationAnalysis, MapperAnalysis
+from .models import FiltrationAnalysis, MapperAnalysis, Bottleneck
 from datasets.models import Dataset, DatasetKindChoice
 
 
@@ -260,3 +260,22 @@ class MapperAnalysisCreationForm_Precomputed(PrecomputedAnalysisCreationForm):
     class Meta:
         model = MapperAnalysis
         exclude = ['slug', 'graph', 'window_size', 'window_overlap', 'filtration_type', 'distance_matrix_metric']
+
+
+class AnalysisBottleneckCreationForm(forms.Form):
+    BOTTLENECK_OPTIONS = [(Bottleneck.CONS, Bottleneck.CONS),
+                          (Bottleneck.ALL, Bottleneck.ALL)]
+    bottleneck_type = forms.ChoiceField(widget=forms.RadioSelect, choices=BOTTLENECK_OPTIONS)
+    homology = forms.ChoiceField(widget=forms.RadioSelect)
+
+    def __init__(self, _homology, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['homology'].choices = [(i, i) for i in range(_homology+1)]
+
+
+class WindowBottleneckCreationForm(forms.Form):
+    homology = forms.ChoiceField(widget=forms.RadioSelect)
+
+    def __init__(self, _homology, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['homology'].choices = [(i, i) for i in range(_homology+1)]

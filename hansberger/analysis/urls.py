@@ -16,7 +16,9 @@ from .views import (
     EntropyDownloadView,
     BottleneckALLDownloadView,
     BottleneckCONSDownloadView,
-    BottleneckONEDownloadView
+    BottleneckONEDownloadView,
+    AnalysisBottleneckCreateView,
+    WindowBottleneckCreateView
 )
 
 app_name = 'analysis'
@@ -28,9 +30,11 @@ urlpatterns = [
     path("<slug:analysis_slug>/", view=AnalysisDetailView.as_view(), name="analysis-detail"), # noqa 
     path("<slug:analysis_slug>/delete/", view=AnalysisDeleteView.as_view(), name="analysis-delete"), # noqa 
     path("<slug:analysis_slug>/windows/", view=WindowListView.as_view(), name="window-list"), # noqa
-    path("<slug:analysis_slug>/windows/<slug:window_slug>/", view=WindowDetailView.as_view(), name="window-detail"), # noqa    
+    path("<slug:analysis_slug>/windows/<slug:window_slug>/", view=WindowDetailView.as_view(), name="window-detail"), # noqa   
+    path("<slug:analysis_slug>/windows/<slug:window_slug>/bottleneck/", view=WindowBottleneckCreateView, name="window-bottleneck-create"), # noqa 
     path("<slug:analysis_slug>/windows/<slug:window_slug>/graph/", view=MapperAnalysisView.as_view(), name="mapperanalysis-graph"), # noqa
-    path("<slug:analysis_slug>/windows/<slug:window_slug>/<int:homology>/bottleneck_onetoall/", view=WindowBottleneckView.as_view(), name="window-bottleneck"), # noqa  
+    path("<slug:analysis_slug>/windows/<slug:window_slug>/<int:homology>/bottleneck_onetoall/", view=WindowBottleneckView.as_view(), name="window-bottleneck-onetoall"), # noqa 
+    path("<slug:analysis_slug>/bottleneck/", view=AnalysisBottleneckCreateView, name="analysis-bottleneck-create"), # noqa          
     path("<slug:analysis_slug>/<int:homology>/bottleneck_consecutive/", view=AnalysisConsecutiveBottleneckView.as_view(), name="analysis-bottleneck-consecutive"), # noqa      
     path("<slug:analysis_slug>/<int:homology>/bottleneck_alltoall/", view=AnalysisAlltoallBottleneckView.as_view(), name="analysis-bottleneck-alltoall"), # noqa  
     path("<slug:analysis_slug>/windows/<slug:window_slug>/ripser_download/", view=RipserDownloadView.as_view(), name="ripser-download-view"), # noqa 

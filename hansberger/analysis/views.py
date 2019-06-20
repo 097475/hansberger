@@ -29,7 +29,9 @@ from .forms import (
     FiltrationAnalysisCreationForm_Dataset,
     FiltrationAnalysisCreationForm_Precomputed,
     MapperAnalysisCreationForm_Dataset,
-    MapperAnalysisCreationForm_Precomputed
+    MapperAnalysisCreationForm_Precomputed,
+    AnalysisBottleneckCreationForm,
+    WindowBottleneckCreationForm
 )
 
 form_dict = {
@@ -458,3 +460,54 @@ class BottleneckCONSDownloadView(VirtualDownloadView):
         return ContentFile(json.dumps(bottleneck.get_bottleneck_matrix()), name=bottleneck.analysis.research.name + '_'
                            + bottleneck.analysis.name + '_bottleneck_distance_consecutive_H' +
                            str(bottleneck.homology) + '.dat')
+
+
+def AnalysisBottleneckCreateView(request, research_slug, analysis_slug):
+    research = get_object_or_404(Research, slug=research_slug)
+    analysis = get_object_or_404(FiltrationAnalysis, research=research, slug=analysis_slug)
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = AnalysisBottleneckCreationForm(analysis.max_homology_dimension, request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            bottleneck_type = cleaned_data.get("bottleneck_type")
+            homology = cleaned_data.get("homology")
+            if bottleneck_type == Bottleneck.CONS:
+                return redirect('analysis:analysis-bottleneck-consecutive', homology=homology,
+                                analysis_slug=analysis.slug, research_slug=research.slug)
+            elif bottleneck_type == Bottleneck.ALL:
+                return redirect('analysis:analysis-bottleneck-alltoall', homology=homology,
+                                analysis_slug=analysis.slug, research_slug=research.slug)
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = AnalysisBottleneckCreationForm(analysis.max_homology_dimension)
+
+    return render(request, 'analysis/analysis_bottleneck_form.html',
+                  {'form': form, 'research': research, 'analysis': analysis})
+
+
+def WindowBottleneckCreateView(request, research_slug, analysis_slug, window_slug):
+    research = get_object_or_404(Research, slug=research_slug)
+    analysis = get_object_or_404(FiltrationAnalysis, research=research, slug=analysis_slug)
+    window = get_object_or_404(FiltrationWindow, analysis=analysis, slug=window_slug)
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = WindowBottleneckCreationForm(analysis.max_homology_dimension, request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            homology = cleaned_data.get("homology")
+            return redirect('analysis:window-bottleneck-onetoall', homology=homology,
+                            window_slug=window.slug,
+                            analysis_slug=analysis.slug, research_slug=research.slug)
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = WindowBottleneckCreationForm(analysis.max_homology_dimension)
+
+    return render(request, 'analysis/window/window_bottleneck_form.html',
+                  {'form': form, 'research': research, 'analysis': analysis, 'window': window})
