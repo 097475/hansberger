@@ -17,7 +17,8 @@ a:hover + .box,.box:hover{
 {% endblock %}
 {% block content %}
 {% crispy form form.helper %}
-<button id="submit_button" class='btn btn-success'>Submit</button>
+<button id="submit_button" class='btn btn-success' onclick="request_progress()">Submit</button>
+<div id="domMessage" style="display:none;"> </div> 
 {% endblock %}
 {% block javascript %}
 {{ block.super }}
@@ -26,9 +27,33 @@ a:hover + .box,.box:hover{
 <script>
     // invoke blockUI as needed -->
     $($(document).on('click', '#submit_button', function() {
-       $.blockUI();
+       $.blockUI({ message: $('#domMessage') });
        document.getElementById("analysis_form").submit();
     }));
 
+    var analysisSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/analysis/');
+
+    analysisSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var message = data['status'];
+        document.getElementById("domMessage").innerHTML = "Processing window "+message;
+        console.log(message)
+    };
+
+    analysisSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    function request_status(){
+        analysisSocket.send(JSON.stringify({
+            'signal': 'status'
+        }));
+    }
+
+    function request_progress(){
+        setInterval(request_status, 1000);
+    }
 </script>
 {% endblock javascript %}

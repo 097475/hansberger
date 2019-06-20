@@ -4,6 +4,8 @@ Base settings to build other settings files upon.
 
 import environ
 
+ASGI_APPLICATION = 'hansberger.routing.application'
+
 ROOT_DIR = (
     environ.Path(__file__) - 3
 )  # (hansberger/config/settings/base.py - 3 = hansberger/)
@@ -65,6 +67,7 @@ DJANGO_APPS = [
     "django.contrib.admin",
 ]
 THIRD_PARTY_APPS = [
+    "channels",
     "crispy_forms",
     "allauth",
     "allauth.account",

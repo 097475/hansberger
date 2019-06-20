@@ -18,6 +18,7 @@ from datasets.models import Dataset, DatasetKindChoice
 from datasets.models.dataset import distance_matrix, correlation_matrix
 from .window import FiltrationWindow, MapperWindow
 from .bottleneck import Bottleneck
+from ..consumers import StatusHolder
 matplotlib.use('Agg')
 
 
@@ -269,7 +270,7 @@ class FiltrationAnalysis(Analysis):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        run_analysis.delay(self.id)
+        run_analysis(self)
 
     @models.permalink
     def get_absolute_url(self):
@@ -379,21 +380,24 @@ def multiple_run(instance, window_generator):
 
 
 def multiple_run_precomputed(instance, precomputed_matrixes):
+    StatusHolder.init()
     count = 0
     analysis_type = type(instance)
     if analysis_type is FiltrationAnalysis:
         for matrix in precomputed_matrixes:
             instance.execute(numpy.array(matrix), count)
             count = count + 1
+            StatusHolder.set_status(count)
     elif analysis_type is MapperAnalysis:
         for matrix in precomputed_matrixes:
             original_matrix = numpy.array(matrix)
             instance.execute(numpy.array(matrix), original_matrix, count)
             count = count + 1
+            StatusHolder.set_status(count)
+    StatusHolder.reset_status()
 
 
-def run_analysis(analysis_id):
-    instance = FiltrationAnalysis.objects.get(pk=analysis_id)
+def run_analysis(instance):
     precomputed_distance_matrixes = json.loads(instance.precomputed_distance_matrix_json)
     if instance.window_size is not None and precomputed_distance_matrixes == []:
         window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
