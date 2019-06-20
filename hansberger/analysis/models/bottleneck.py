@@ -1,6 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import persim
+import ripser
 import base64
 import json
 import numpy
@@ -43,12 +44,29 @@ class Bottleneck(models.Model):
     kind = models.CharField(choices=BOTTLENECK_TYPES, max_length=20)
     objects = BottleneckManager()
 
+    def manage_persim_crash(self, window):
+        diagram = json.loads(window.diagrams)[self.homology]
+        if diagram == []:
+            diagram = numpy.empty(shape=(0, 2))
+        else:
+            diagram = numpy.array(diagram)
+        ripser.Rips().plot(diagram, labels='window_'+str(window.name))
+        # Save it to a temporary buffer.
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        # Embed the result in the html output.
+        data = base64.b64encode(buf.getbuffer()).decode("ascii")
+        plt.clf()
+        return (0, f"<img src='data:image/png;base64,{data}'/>")
+
     def bottleneck_calculation_CONS(self, windows):
         for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
             window2 = windows.get(name=i+1)
             print(str(window1.name)+" "+str(window2.name))
             diag1 = json.loads(window1.diagrams)[self.homology]
             diag2 = json.loads(window2.diagrams)[self.homology]
+            if diag1 == [] or diag2 == []:
+                return
             (d, (matching, D)) = persim.bottleneck(diag1, diag2, True) # noqa
             image = self.plot_bottleneck(window1, window2, matching, D)
             diagram = Diagram.objects.create_diagram(self, window1, window2, d, image)
@@ -60,8 +78,13 @@ class Bottleneck(models.Model):
             print(window.name)
             diag1 = json.loads(reference_window.diagrams)[self.homology]
             diag2 = json.loads(window.diagrams)[self.homology]
-            (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
-            image = self.plot_bottleneck(reference_window, window, matching, D)
+            if diag1 == [] or diag2 == []:
+                return
+            if reference_window == window and len(diag1) == 1:
+                (d, image) = self.manage_persim_crash(window)
+            else:
+                (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
+                image = self.plot_bottleneck(reference_window, window, matching, D)
             diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
             diagram.save()
 
@@ -73,8 +96,13 @@ class Bottleneck(models.Model):
                 print(window.name)
                 diag1 = json.loads(reference_window.diagrams)[self.homology]
                 diag2 = json.loads(window.diagrams)[self.homology]
-                (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
-                image = self.plot_bottleneck(reference_window, window, matching, D)
+                if diag1 == [] or diag2 == []:
+                    return
+                if reference_window == window and len(diag1) == 1:
+                    (d, image) = self.manage_persim_crash(window)
+                else:
+                    (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
+                    image = self.plot_bottleneck(reference_window, window, matching, D)
                 diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
                 diagram.save()
 
@@ -111,10 +139,13 @@ class Bottleneck(models.Model):
                 i = i + 1
                 row = diagrams.filter(window1__name=i)
                 n_cols = row.count()
-            matrix = numpy.array(matrix)
-            out = matrix.T + matrix
-            numpy.fill_diagonal(out, numpy.diag(matrix))
-            return out.tolist()
+            if matrix == []:
+                return matrix
+            else:
+                matrix = numpy.array(matrix)
+                out = matrix.T + matrix
+                numpy.fill_diagonal(out, numpy.diag(matrix))
+                return out.tolist()
 
     def get_diagrams(self):
         return Diagram.objects.filter(bottleneck=self).order_by('window1__name', 'window2__name')
