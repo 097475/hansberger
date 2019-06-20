@@ -3,8 +3,6 @@ import json
 import matplotlib
 import matplotlib.pyplot as plt
 import mpld3
-import psutil
-import os
 import pandas
 from django.db import models
 from django.utils.text import slugify
@@ -271,7 +269,7 @@ class FiltrationAnalysis(Analysis):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        run_analysis(self)
+        run_analysis.delay(self.id)
 
     @models.permalink
     def get_absolute_url(self):
@@ -303,6 +301,11 @@ class FiltrationAnalysis(Analysis):
         for entropy_dict in entropy_dicts:
             for key, value in entropy_dict.items():
                 entropies[key].append(value)
+        return entropies
+
+    def get_entropy_csv(self):
+        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        entropies = self.get_entropy_data()
         df = pandas.DataFrame(entropies.values(), index=entropies.keys(), columns=[i for i in range(windows.count())])
         return df.to_csv(index=True, header=True)
 
@@ -389,7 +392,9 @@ def multiple_run_precomputed(instance, precomputed_matrixes):
             count = count + 1
 
 
-def run_analysis(instance):
+@shared_task
+def run_analysis(analysis_id):
+    instance = FiltrationAnalysis.objects.get(pk=analysis_id)
     precomputed_distance_matrixes = json.loads(instance.precomputed_distance_matrix_json)
     if instance.window_size is not None and precomputed_distance_matrixes == []:
         window_generator = instance.dataset.split_matrix(instance.window_size, instance.window_overlap)
@@ -398,5 +403,3 @@ def run_analysis(instance):
         multiple_run_precomputed(instance, precomputed_distance_matrixes)
     else:
         single_run(instance)
-    process = psutil.Process(os.getpid())
-    print(process.memory_info().rss)  # in bytes

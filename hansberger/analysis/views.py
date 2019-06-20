@@ -388,7 +388,7 @@ class EntropyDownloadView(VirtualDownloadView):
 
     def get_file(self):
         analysis = self.get_object()
-        return ContentFile(json.dumps(analysis.get_entropy_data()), name=analysis.research.name + '_' +
+        return ContentFile(json.dumps(analysis.get_entropy_csv()), name=analysis.research.name + '_' +
                            analysis.name + '_entropy.csv')
 
 
