@@ -392,7 +392,6 @@ def multiple_run_precomputed(instance, precomputed_matrixes):
             count = count + 1
 
 
-@shared_task
 def run_analysis(analysis_id):
     instance = FiltrationAnalysis.objects.get(pk=analysis_id)
     precomputed_distance_matrixes = json.loads(instance.precomputed_distance_matrix_json)
