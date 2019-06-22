@@ -22,6 +22,15 @@ from ..consumers import StatusHolder
 matplotlib.use('Agg')
 
 
+def logger_decorator(func):
+    def wrapper(instance, *args, **kwargs):
+        status_logger = StatusHolder()
+        status_logger.set_limit(instance.get_expected_window_number())
+        func(instance, *args, **kwargs)
+        status_logger.reset()
+    return wrapper
+
+
 class Analysis(models.Model):
 
     def precomputed_directory_path(instance, filename):
@@ -82,6 +91,18 @@ class Analysis(models.Model):
 
     def get_type(self):
         return self._meta.verbose_name
+
+    def get_expected_window_number(self):
+        precomputed_distance_matrixes = json.loads(self.precomputed_distance_matrix_json)
+        if precomputed_distance_matrixes != []:
+            return len(precomputed_distance_matrixes)
+        elif self.window_size is not None:
+            matrix = self.dataset.get_matrix_data()
+            cols = len(matrix[0])
+            step = self.window_size - self.window_overlap
+            return 1 + (cols - self.window_size) // step
+        else:
+            return 1
 
     class Meta:
         abstract = True
@@ -229,6 +250,9 @@ class MapperAnalysis(Analysis):
         window = MapperWindow.objects.create_window(number, self)
         window.save_data(output_graph)
 
+    def get_window_number(self):
+        return MapperWindow.objects.filter(analysis=self).count()
+
 
 class FiltrationAnalysis(Analysis):
     VIETORIS_RIPS_FILTRATION = 'VRF'
@@ -332,6 +356,7 @@ class FiltrationAnalysis(Analysis):
     def get_window_number(self):
         return FiltrationWindow.objects.filter(analysis=self).count()
 
+
 #  multithreading decorator -> add connection.close() at end of function
 
 
@@ -345,21 +370,26 @@ def start_new_thread(function):
 '''
 
 
+@logger_decorator
 def single_run(instance):
     analysis_type = type(instance)
-    print(instance.precomputed_distance_matrix_json)
     if analysis_type is FiltrationAnalysis:
         if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
             input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
         elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
             input_matrix = instance.dataset.get_correlation_matrix()
         instance.execute(input_matrix)
+        if StatusHolder().get_kill():
+            return
     elif analysis_type is MapperAnalysis:
         input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
         original_matrix = numpy.array(instance.dataset.data)
         instance.execute(input_matrix, original_matrix)
+        if StatusHolder().get_kill():
+            return
 
 
+@logger_decorator
 def multiple_run(instance, window_generator):
     count = 0
     analysis_type = type(instance)
@@ -371,30 +401,39 @@ def multiple_run(instance, window_generator):
                 input_matrix = correlation_matrix(window)
             instance.execute(input_matrix, count)
             count = count + 1
+            if StatusHolder().get_kill():
+                return
+            StatusHolder().set_status(count)
     elif analysis_type is MapperAnalysis:
         for window in window_generator:
             input_matrix = distance_matrix(window, instance.distance_matrix_metric)
             original_matrix = numpy.array(window)
             instance.execute(input_matrix, original_matrix, count)
             count = count + 1
+            if StatusHolder().get_kill():
+                return
+            StatusHolder().set_status(count)
 
 
+@logger_decorator
 def multiple_run_precomputed(instance, precomputed_matrixes):
-    StatusHolder.init()
     count = 0
     analysis_type = type(instance)
     if analysis_type is FiltrationAnalysis:
         for matrix in precomputed_matrixes:
             instance.execute(numpy.array(matrix), count)
             count = count + 1
-            StatusHolder.set_status(count)
+            if StatusHolder().get_kill():
+                return
+            StatusHolder().set_status(count)
     elif analysis_type is MapperAnalysis:
         for matrix in precomputed_matrixes:
             original_matrix = numpy.array(matrix)
             instance.execute(numpy.array(matrix), original_matrix, count)
             count = count + 1
-            StatusHolder.set_status(count)
-    StatusHolder.reset_status()
+            if StatusHolder().get_kill():
+                return
+            StatusHolder().set_status(count)
 
 
 def run_analysis(instance):
