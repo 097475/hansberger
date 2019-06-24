@@ -364,20 +364,17 @@ def start_new_thread(function):
 @analysis_logger_decorator
 def single_run(instance):
     analysis_type = type(instance)
+    StatusHolder().set_status(0)
     if analysis_type is FiltrationAnalysis:
         if instance.filtration_type == FiltrationAnalysis.VIETORIS_RIPS_FILTRATION:
             input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
         elif instance.filtration_type == FiltrationAnalysis.CLIQUE_WEIGHTED_RANK_FILTRATION:
             input_matrix = instance.dataset.get_correlation_matrix()
         instance.execute(input_matrix)
-        if StatusHolder().get_kill():
-            return
     elif analysis_type is MapperAnalysis:
         input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
         original_matrix = numpy.array(instance.dataset.data)
         instance.execute(input_matrix, original_matrix)
-        if StatusHolder().get_kill():
-            return
 
 
 @analysis_logger_decorator
