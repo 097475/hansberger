@@ -94,7 +94,7 @@ class FiltrationWindow(Window):
         if ripser_matrix.size == 0:
             return 0
         non_infinity = list(filter((lambda x: x[1] != math.inf), ripser_matrix))
-        if non_infinity == []:  # TODO: single infinity element
+        if non_infinity == []:  # single infinity element
             return 0
         max_death = max(map((lambda x: x[1]), non_infinity)) + 1
         li = list(map((lambda x: x[1]-x[0] if x[1] != math.inf else max_death - x[0]), ripser_matrix))

@@ -18,17 +18,8 @@ from datasets.models import Dataset, DatasetKindChoice
 from datasets.models.dataset import distance_matrix, correlation_matrix
 from .window import FiltrationWindow, MapperWindow
 from .bottleneck import Bottleneck
-from ..consumers import StatusHolder
+from ..consumers import StatusHolder, analysis_logger_decorator
 matplotlib.use('Agg')
-
-
-def logger_decorator(func):
-    def wrapper(instance, *args, **kwargs):
-        status_logger = StatusHolder()
-        status_logger.set_limit(instance.get_expected_window_number())
-        func(instance, *args, **kwargs)
-        status_logger.reset()
-    return wrapper
 
 
 class Analysis(models.Model):
@@ -370,7 +361,7 @@ def start_new_thread(function):
 '''
 
 
-@logger_decorator
+@analysis_logger_decorator
 def single_run(instance):
     analysis_type = type(instance)
     if analysis_type is FiltrationAnalysis:
@@ -389,7 +380,7 @@ def single_run(instance):
             return
 
 
-@logger_decorator
+@analysis_logger_decorator
 def multiple_run(instance, window_generator):
     count = 0
     analysis_type = type(instance)
@@ -415,7 +406,7 @@ def multiple_run(instance, window_generator):
             StatusHolder().set_status(count)
 
 
-@logger_decorator
+@analysis_logger_decorator
 def multiple_run_precomputed(instance, precomputed_matrixes):
     count = 0
     analysis_type = type(instance)

@@ -11,6 +11,24 @@ class Singleton(type):
         return cls._instances[cls]
 
 
+def analysis_logger_decorator(func):
+    def wrapper(instance, *args, **kwargs):
+        status_logger = StatusHolder()
+        status_logger.set_limit(instance.get_expected_window_number())
+        func(instance, *args, **kwargs)
+        status_logger.reset()
+    return wrapper
+
+
+def bottleneck_logger_decorator(func):
+    def wrapper(instance, windows, *args, **kwargs):
+        status_logger = StatusHolder()
+        status_logger.set_limit(windows.count())
+        func(instance, windows, *args, **kwargs)
+        status_logger.reset()
+    return wrapper
+
+
 class StatusHolder(metaclass=Singleton):
 
     def __init__(self):

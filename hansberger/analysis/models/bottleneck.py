@@ -9,6 +9,7 @@ import pandas
 from io import BytesIO
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
+from ..consumers import StatusHolder, bottleneck_logger_decorator
 matplotlib.use('Agg')
 
 
@@ -61,6 +62,7 @@ class Bottleneck(models.Model):
         plt.clf()
         return (0, f"<img src='data:image/png;base64,{data}'/>")
 
+    @bottleneck_logger_decorator
     def bottleneck_calculation_CONS(self, windows):
         for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
             window2 = windows.get(name=i+1)
@@ -73,7 +75,11 @@ class Bottleneck(models.Model):
             image = self.plot_bottleneck(window1, window2, matching, D)
             diagram = Diagram.objects.create_diagram(self, window1, window2, d, image)
             diagram.save()
+            if StatusHolder().get_kill():
+                return
+            StatusHolder().set_status(window1.name)
 
+    @bottleneck_logger_decorator
     def bottleneck_calculation_ONE(self, windows):
         reference_window = self.window
         for window in windows:
@@ -89,7 +95,11 @@ class Bottleneck(models.Model):
                 image = self.plot_bottleneck(reference_window, window, matching, D)
             diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
             diagram.save()
+            if StatusHolder().get_kill():
+                return
+            StatusHolder().set_status(window.name)
 
+    @bottleneck_logger_decorator
     def bottleneck_calculation_ALL(self, windows):
         for reference_window in windows:
             for window in windows:
@@ -107,6 +117,9 @@ class Bottleneck(models.Model):
                     image = self.plot_bottleneck(reference_window, window, matching, D)
                 diagram = Diagram.objects.create_diagram(self, reference_window, window, d, image)
                 diagram.save()
+                if StatusHolder().get_kill():
+                    return
+                StatusHolder().set_status(reference_window.name)
 
     def plot_bottleneck(self, window1, window2, matchidx, D):
         persim.bottleneck_matching(window1.get_diagram(self.homology), window2.get_diagram(self.homology), matchidx, D,
@@ -166,7 +179,9 @@ class Bottleneck(models.Model):
                 i = i + 1
                 row = diagrams.filter(window1__name=i)
                 n_cols = row.count()
-            if matrix == []:
+            if matrix == [] or len(matrix) < expected_cols:
+                for i in range(expected_cols - len(matrix)):
+                    matrix.append([float('NaN')]*expected_cols)
                 out = matrix
             else:
                 matrix = numpy.array(matrix)
