@@ -2,7 +2,18 @@
 {% load static %}
 
 {% block title %} {{ dataset.name }} | {{ dataset.research.name }}{% endblock %}
-
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="nav navbar-nav ml-auto">
+    <li class="nav-item active">
+      <a class="nav-link" href="../delete/">Delete</a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="../../">Back</a>
+      </li>
+  </ul>
+</div>
+{% endblock topbar %}
 {% block content %}
 <div class="container">
 
@@ -19,7 +30,5 @@
       </div>
     </div>
   </div>
-  <a href="../delete/">Delete dataset</a>
-  <a href="../../">Back</a>
   </div>
 {% endblock content %}

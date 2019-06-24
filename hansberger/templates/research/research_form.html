@@ -2,7 +2,14 @@
 {% load crispy_forms_tags %}
 
 {% block title %}New Research{% endblock %}
-
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="nav navbar-nav ml-auto">
+    <li class="nav-item active">
+      <a class="nav-link" href="../">Back</a>
+  </ul>
+</div>
+{% endblock topbar %}
 {% block content %}
   <h1>Create new Research</h1>
   <form class="form-horizontal" method="post" action="{% url 'research:research-create' %}">

@@ -2,7 +2,21 @@
 {% load static %}
 
 {% block title %} {{ window.analysis.name }} | {{ window.analysis.research.name }}{% endblock %}
-
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item active">
+          <a class="nav-link" href="ripser_download/">Download result</a>
+        </li>
+      <li class="nav-item active">
+            <a class="nav-link" href="bottleneck/">Calculate Bottleneck Distance</a>
+        </li>
+      <li class="nav-item active">
+            <a class="nav-link" href="../">Back</a>
+        </li>
+    </ul>
+  </div>
+{% endblock topbar %}
 {% block content %}
 <div class="container">
 
@@ -17,13 +31,8 @@
         {{ window.plot | safe }}
       </div>
       <p id="entropy"></p>
-      <a href="ripser_download/">download</a></br>
       Window starts at position (inclusive): {{window.start}}</br>
       Window ends at position (non-inclusive): {{window.end}}</br>
-      {% for i in homology %}
-      <a href="{{i}}/bottleneck_onetoall/">Bottleneck distance {{i}} </a>
-      {% endfor %}
-      <a href="../">Go back</a>
     </div>
   </div>
 </div>

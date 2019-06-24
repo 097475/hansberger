@@ -2,11 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>{% block title %}HansBerger{% endblock title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -26,55 +23,79 @@
     <!-- This file stores project-specific CSS -->
     
     <link href="{% static 'css/project.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
     
-    
+    <!-- Font Awesome JS -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>   
     {% endblock %}
 
   </head>
 
   <body>
 
-    <div class="mb-1">
-      <nav class="navbar navbar-expand-md navbar-light bg-light">
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand" href="{% url 'home' %}">HansBerger</a>
+    <div class="wrapper">
+      <!-- Sidebar  -->
+      <nav id="sidebar">
+          <div class="sidebar-header">
+              <h3>Hans<b>Berger<b></h3>
+              <strong>HB</strong>
+          </div>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About</a>
-            </li>
-            {% if request.user.is_authenticated %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a>
+          <ul class="list-unstyled components">
+              <li class="active">
+                  <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                      <i class="fas fa-home fa-lg "></i>
+                      Home
+                  </a>
+                  <ul class="collapse list-unstyled" id="homeSubmenu">
+                      <li>
+                          <a href="/">Home </a>
+                      </li>
+                      <li>
+                          <a href="/research/">Research</a>
+                      </li>
+                  </ul>
               </li>
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
+              <li>
+                  <a href="#">
+                      <i class="fas fa-briefcase fa-lg "></i>
+                      About
+                  </a>
               </li>
-            {% else %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
+              <li>
+                  <a href="#">
+                      <i class="fas fa-paper-plane fa-lg "></i>
+                      Contact
+                  </a>
               </li>
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% trans "Sign In" %}</a>
-              </li>
-            {% endif %}
           </ul>
-        </div>
-      </nav>
+     </nav>
 
+  <div class="gradient mt-0 pt-0"  style="background: rgb(212,218,228);background: -moz-linear-gradient(90deg, rgba(212,218,228,1) 0%, rgba(147,175,226,1) 52%);background: -webkit-linear-gradient(90deg, rgba(212,218,228,1) 0%, rgba(147,175,226,1) 52%);background: linear-gradient(90deg, rgba(212,218,228,1) 0%, rgba(147,175,226,1) 52%);filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#d4dae4',endColorstr='#93afe2',GradientType=1);">
+      <div class="container-fluid pb-5 pt-5 ">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-5 m-1">
+          <div class="container-fluid">
+            <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <i class="fas fa-align-justify"></i>
+            </button>
+
+            {% block topbar %}
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="nav navbar-nav ml-auto">
+                <li class="nav-item active">
+                  <a class="nav-link" href="research/">Research</a>
+                </li>
+              </ul>
+            </div>
+            {% endblock topbar %}
+
+          </div>
+        </nav>
+      </div>
     </div>
 
-    <div class="container">
 
       {% if messages %}
           {% for message in messages %}
@@ -82,12 +103,26 @@
           {% endfor %}
       {% endif %}
 
+      <div id="content" class="mt-n5">
+          <div class="container-inner mt-n4">
+              <div class="jumbotron ">
+      
       {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
-      {% endblock content %}
-
-    </div> <!-- /container -->
-
+      <h1 class="display-3">Hansberger, web app!</h1>
+      <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
+      <hr class="my-4">
+      <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
+      <p class="lead text-right">
+          <a class="btn btn-outline-primary btn-lg" href="#" role="button">Learn more</a>
+      </p>       
+    {% endblock content %}
+          </div>
+      </div>
+  </div> <!-- content end -->
+    <div class="footer m-0 p-0 py-2 pr-2 container-fluid bg-dark " >
+      <p class="light-weighted pt-2 text-right">Copyright ©2019 - <a href="#" class="text-white">Alessio Acella</a> - All rights Reserved.</p>
+    </div>
+  </div> <!-- wrapper end -->
     {% block modal %}{% endblock modal %}
 
     <!-- Le javascript
@@ -106,6 +141,13 @@
       
       <script src="{% static 'js/project.js' %}"></script>
       
+      <script type="text/javascript">
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+            });
+        });
+        </script>
 
     {% endblock javascript %}
 

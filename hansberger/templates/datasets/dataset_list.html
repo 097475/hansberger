@@ -1,14 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Research{% endblock %}
-
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="nav navbar-nav ml-auto">
+    <li class="nav-item active">
+      <a class="nav-link" href="create/text/">Add Dataset from Text file</a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="create/edf/">Add Dataset from EDF file</a>
+      </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="../">Back</a>
+      </li>
+  </ul>
+</div>
+{% endblock topbar %}
 {% block content %}
 <div class="container">
   <h2>Datasets</h2>
-  <a href="create/text/">New dataset from text</a>
-  <a href="create/edf">New dataset from EDF</a>
   <div class="list-group">
     {% for dataset in datasets %}
-      <a href="{% url 'datasets:dataset-redirect' dataset.research.slug dataset.slug %}" class="list-group-item">
+      <a href="{% url 'datasets:dataset-detail' dataset.research.slug dataset.slug %}" class="list-group-item">
         <h4 class="list-group-item-heading">{{ dataset.name }} - {{ dataset.creation_date }}</h4>
       </a>
     {% endfor %}

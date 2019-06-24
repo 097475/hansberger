@@ -2,7 +2,27 @@
 {% load static %}
 
 {% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
-
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item active">
+            <a class="nav-link" href="windows/">Results</a>
+        </li>
+      <li class="nav-item active">
+            <a class="nav-link" href="entropy_download/">Download entropy results</a>
+      </li>
+      <li class="nav-item active">
+          <a class="nav-link" href="bottleneck/">Calculate Bottleneck Distance</a>
+      </li>              
+      <li class="nav-item active">
+        <a class="nav-link" href="delete/">Delete</a>
+      </li>
+      <li class="nav-item active">
+          <a class="nav-link" href="../">Back</a>
+        </li>
+    </ul>
+  </div>
+{% endblock topbar %}
 {% block content %}
 <div class="container">
 
@@ -29,16 +49,6 @@
       <div id="fig_container" width=100%>
         {{ analysis.plot_entropy | safe }}
       </div>
-      <a href="delete/">Delete this analysis</a>
-      <a href="../">Go back</a>
-      <a href="windows/">See results</a>
-      <a href="entropy_download/">Download entropy</a>
-      {% for i in homology %}
-      <a href="{{i}}/bottleneck_consecutive/">Bottleneck distance {{i}} </a>
-      {% endfor %}
-      {% for i in homology %}
-      <a href="{{i}}/bottleneck_alltoall/">Bottleneck distance {{i}} </a>
-      {% endfor %}
     </div>
   </div>
 </div>

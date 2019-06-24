@@ -1,9 +1,22 @@
 {% extends "base.html" %}
 {% load static %}
-
-
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item active">
+            <a class="nav-link" href="bottleneck_ALL_download/">Download bottleneck results</a>
+      </li>             
+      <li class="nav-item active">
+        <a class="nav-link" href="delete/">Delete</a>
+      </li>
+      <li class="nav-item active">
+          <a class="nav-link" href="../../">Back</a>
+        </li>
+    </ul>
+  </div>
+{% endblock topbar %}
 {% block content %}
-{{bottleneck.get_bottleneck_matrix}}
+
 <div id="fig_container">
     {% for diagram in bottleneck.get_diagrams %}
     {{ diagram.image | safe }}

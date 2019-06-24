@@ -3,11 +3,10 @@ from django.views.generic import (
     DetailView,
     ListView,
     DeleteView,
-    RedirectView,
 )
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from .models import Dataset, TextDataset, DatasetKindChoice, EDFDataset
+from .models import Dataset, TextDataset, EDFDataset
 from research.models import Research
 from .forms import TextDatasetCreationForm, EDFDatasetCreationForm
 
@@ -40,7 +39,7 @@ class TextDatasetCreateView(DatasetCreateMixin, CreateView):
     form_class = TextDatasetCreationForm
 
     def get_success_url(self):
-        return reverse_lazy('datasets:text-dataset-detail', kwargs={
+        return reverse_lazy('datasets:dataset-detail', kwargs={
             'research_slug': self.kwargs['research_slug'],
             'dataset_slug': self.dataset.slug
         })
@@ -51,58 +50,28 @@ class EDFDatasetCreateView(DatasetCreateMixin, CreateView):
     form_class = EDFDatasetCreationForm
 
     def get_success_url(self):
-        return reverse_lazy('datasets:edf-dataset-detail', kwargs={
+        return reverse_lazy('datasets:dataset-detail', kwargs={
             'research_slug': self.kwargs['research_slug'],
             'dataset_slug': self.dataset.slug
         })
 
 
-class DatasetRedirectView(RedirectView):
-    detail_routes = {
-        DatasetKindChoice.TEXT.value: 'datasets:text-dataset-detail',
-        DatasetKindChoice.EDF.value: 'datasets:edf-dataset-detail',
-    }
-
-    @property
-    def dataset_detail_route(self):
-        dataset = get_object_or_404(
-            Dataset,
-            research__slug=self.kwargs['research_slug'],
-            slug=self.kwargs['dataset_slug']
-        )
-        return self.detail_routes.get(dataset.kind)
-
-    def get_redirect_url(self, **kwargs):
-        return reverse_lazy(self.dataset_detail_route, kwargs={
-            'research_slug': kwargs['research_slug'],
-            'dataset_slug': kwargs['dataset_slug']
-        })
-
-
-class TextDatasetDetailView(DetailView):
-    model = TextDataset
+class DatasetDetailView(DetailView):
+    model = Dataset
     context_object_name = 'dataset'
     template_name = "datasets/dataset_detail.html"
 
     def get_object(self):
-        return get_object_or_404(
-            TextDataset,
+        my_dataset = (TextDataset.objects.filter(
             research__slug=self.kwargs['research_slug'],
             slug=self.kwargs['dataset_slug']
-        )
-
-
-class EDFDatasetDetailView(DetailView):
-    model = EDFDataset
-    context_object_name = 'dataset'
-    template_name = "datasets/dataset_detail.html"
-
-    def get_object(self):
-        return get_object_or_404(
-            EDFDataset,
-            research__slug=self.kwargs['research_slug'],
-            slug=self.kwargs['dataset_slug'],
-        )
+            ).first()
+            or
+            EDFDataset.objects.filter(
+                research__slug=self.kwargs['research_slug'],
+                slug=self.kwargs['dataset_slug']
+            ).first())
+        return my_dataset
 
 
 class DatasetListView(ListView):

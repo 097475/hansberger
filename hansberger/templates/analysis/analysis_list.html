@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Research{% endblock %}
-
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="nav navbar-nav ml-auto">
+    <li class="nav-item active">
+      <a class="nav-link" href="add/">New Analysis</a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="../">Back</a>
+      </li>
+  </ul>
+</div>
+{% endblock topbar %}
 {% block content %}
 <div class="container">
   <h2>Analysis</h2>
-  <a href="filtrationanalysis/add/">New Ripser Analysis</a>
-  <a href="mapperanalysis/add/">New KeplerMapper Analysis</a>
   <div class="list-group">
     {% for analysis in analyses %}
         <a href="{% url 'analysis:analysis-detail' analysis.research.slug analysis.slug %}" class="list-group-item">
