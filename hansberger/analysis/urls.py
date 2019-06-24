@@ -18,7 +18,10 @@ from .views import (
     BottleneckCONSDownloadView,
     BottleneckONEDownloadView,
     AnalysisBottleneckCreateView,
-    WindowBottleneckCreateView
+    WindowBottleneckCreateView,
+    ONEBottleneckDeleteView,
+    CONSBottleneckDeleteView,
+    ALLBottleneckDeleteView
 )
 
 app_name = 'analysis'
@@ -37,9 +40,12 @@ urlpatterns = [
     path("<slug:analysis_slug>/bottleneck/", view=AnalysisBottleneckCreateView, name="analysis-bottleneck-create"), # noqa          
     path("<slug:analysis_slug>/<int:homology>/bottleneck_consecutive/", view=AnalysisConsecutiveBottleneckView.as_view(), name="analysis-bottleneck-consecutive"), # noqa      
     path("<slug:analysis_slug>/<int:homology>/bottleneck_alltoall/", view=AnalysisAlltoallBottleneckView.as_view(), name="analysis-bottleneck-alltoall"), # noqa  
-    path("<slug:analysis_slug>/windows/<slug:window_slug>/ripser_download/", view=RipserDownloadView.as_view(), name="ripser-download-view"), # noqa 
-    path("<slug:analysis_slug>/entropy_download/", view=EntropyDownloadView.as_view(), name="entropy-download-view"), # noqa    
-    path("<slug:analysis_slug>/<int:homology>/bottleneck_alltoall/bottleneck_ALL_download/", view=BottleneckALLDownloadView.as_view(), name="bottleneck-ALL-download-view"), # noqa
-    path("<slug:analysis_slug>/<int:homology>/bottleneck_consecutive/bottleneck_CONS_download/", view=BottleneckCONSDownloadView.as_view(), name="bottleneck-CONS-download-view"), # noqa    
-    path("<slug:analysis_slug>/windows/<slug:window_slug>/<int:homology>/bottleneck_onetoall/bottleneck_ONE_download/", view=BottleneckONEDownloadView.as_view(), name="bottleneck-ONE-download-view"), # noqa 
+    path("<slug:analysis_slug>/windows/<slug:window_slug>/ripser_download/", view=RipserDownloadView.as_view(), name="ripser-download"), # noqa 
+    path("<slug:analysis_slug>/entropy_download/", view=EntropyDownloadView.as_view(), name="entropy-download"), # noqa    
+    path("<slug:analysis_slug>/<int:homology>/bottleneck_alltoall/bottleneck_ALL_download/", view=BottleneckALLDownloadView.as_view(), name="bottleneck-ALL-download"), # noqa
+    path("<slug:analysis_slug>/<int:homology>/bottleneck_consecutive/bottleneck_CONS_download/", view=BottleneckCONSDownloadView.as_view(), name="bottleneck-CONS-download"), # noqa    
+    path("<slug:analysis_slug>/windows/<slug:window_slug>/<int:homology>/bottleneck_onetoall/bottleneck_ONE_download/", view=BottleneckONEDownloadView.as_view(), name="bottleneck-ONE-download"), # noqa
+    path("<slug:analysis_slug>/windows/<slug:window_slug>/<int:homology>/bottleneck_onetoall/delete/", view=ONEBottleneckDeleteView.as_view(), name="bottleneck-delete-ONE"), # noqa  
+    path("<slug:analysis_slug>/<int:homology>/bottleneck_consecutive/delete/", view=CONSBottleneckDeleteView.as_view(), name="bottleneck-delete-CONS"), # noqa      
+    path("<slug:analysis_slug>/<int:homology>/bottleneck_alltoall/delete/", view=ALLBottleneckDeleteView.as_view(), name="bottleneck-delete-ALL"), # noqa  
 ]

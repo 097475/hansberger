@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<form method="post" action="{% url 'analysis:bottleneck-delete-ONE' bottleneck.window.analysis.research.slug bottleneck.window.analysis.slug bottleneck.window.slug bottleneck.homology%}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <p> Are you sure you want to delete the bottleneck? </p>
+    <input type="submit" value="Confirm">
+</form>
+
+{% endblock %}

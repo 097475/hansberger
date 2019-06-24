@@ -511,3 +511,84 @@ def WindowBottleneckCreateView(request, research_slug, analysis_slug, window_slu
 
     return render(request, 'analysis/window/window_bottleneck_form.html',
                   {'form': form, 'research': research, 'analysis': analysis, 'window': window})
+
+
+class ALLBottleneckDeleteView(DeleteView):
+    model = Bottleneck
+    context_object_name = 'bottleneck'
+    template_name = "analysis/bottleneck_confirm_delete_ALL.html"
+
+    def get_object(self):
+        my_analysis = get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            )
+        return get_object_or_404(
+            Bottleneck,
+            analysis=my_analysis,
+            homology=self.kwargs['homology'],
+            kind=Bottleneck.ALL
+        )
+
+    def get_success_url(self):
+        return reverse_lazy('analysis:analysis-detail', kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'analysis_slug': self.kwargs['analysis_slug']
+        })
+
+
+class CONSBottleneckDeleteView(DeleteView):
+    model = Bottleneck
+    context_object_name = 'bottleneck'
+    template_name = "analysis/bottleneck_confirm_delete_CONS.html"
+
+    def get_object(self):
+        my_analysis = get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            )
+        return get_object_or_404(
+            Bottleneck,
+            analysis=my_analysis,
+            homology=self.kwargs['homology'],
+            kind=Bottleneck.CONS
+        )
+
+    def get_success_url(self):
+        return reverse_lazy('analysis:analysis-detail', kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'analysis_slug': self.kwargs['analysis_slug']
+        })
+
+
+class ONEBottleneckDeleteView(DeleteView):
+    model = Bottleneck
+    context_object_name = 'bottleneck'
+    template_name = "analysis/window/bottleneck_confirm_delete_ONE.html"
+
+    def get_object(self):
+        my_analysis = get_object_or_404(
+            FiltrationAnalysis,
+            research__slug=self.kwargs['research_slug'],
+            slug=self.kwargs['analysis_slug']
+            )
+        my_window = get_object_or_404(
+            FiltrationWindow,
+            analysis=my_analysis,
+            slug=self.kwargs['window_slug']
+        )
+        return get_object_or_404(
+            Bottleneck,
+            window=my_window,
+            homology=self.kwargs['homology'],
+            kind=Bottleneck.ONE
+        )
+
+    def get_success_url(self):
+        return reverse_lazy('analysis:window-detail', kwargs={
+                'research_slug': self.kwargs['research_slug'],
+                'analysis_slug': self.kwargs['analysis_slug'],
+                'window_slug': self.kwargs['window_slug']
+        })
