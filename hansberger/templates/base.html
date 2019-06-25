@@ -17,7 +17,6 @@
     <!-- Latest compiled and minified Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <!-- Your stuff: Third-party CSS libraries go here -->
     
@@ -27,8 +26,10 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     
     <!-- Font Awesome JS -->
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+    <link 
+    rel="stylesheet"
+    href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
+    integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>   
     {% endblock %}
 
@@ -47,8 +48,8 @@
           <ul class="list-unstyled components">
               <li class="active">
                   <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
-                      <i class="fas fa-home fa-lg "></i>
-                      Home
+                      <i class="fas fa-history fa-lg "></i>
+                      Navigation
                   </a>
                   <ul class="collapse list-unstyled" id="homeSubmenu">
                       <li>
@@ -113,12 +114,7 @@
       
       {% block content %}
       <h1 class="display-3">Hansberger, web app!</h1>
-      <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p>
-      <hr class="my-4">
-      <p>It uses utility classes for typography and spacing to space content out within the larger container.</p>
-      <p class="lead text-right">
-          <a class="btn btn-outline-primary btn-lg" href="#" role="button">Learn more</a>
-      </p>       
+      <p class="lead">This application is a tool to perform Topological Data Analysis (TDA).</p>  
     {% endblock content %}
           </div>
       </div>
