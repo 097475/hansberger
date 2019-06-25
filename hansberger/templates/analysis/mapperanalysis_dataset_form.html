@@ -63,14 +63,15 @@ a:hover + .box,.box:hover{
                 var dataset = select.options[select.selectedIndex].text
                 var value = select.options[select.selectedIndex].value
                 if(dataset != undefined && value != ''){
-                    document.getElementById("peek_dataset").innerHTML = `<a href="../../../../datasets/`+dataset+`">Peek dataset</a>
+                    document.getElementById("peek_dataset").innerHTML = `<a href="../../../../datasets/`+dataset+`" class="btn btn-info">Peek dataset</a>
                     <div class="box"><iframe src="../../../../datasets/`+dataset+`" width = "500px" height = "500px"></iframe></div>`;
                 }
                 else{
                     document.getElementById("peek_dataset").innerHTML = ''
                 }
             }
-        document.getElementById("id_dataset").setAttribute("onchange","getDataset(this)")
+        getDataset(document.getElementById("id_dataset"));
+        document.getElementById("id_dataset").setAttribute("onclick","getDataset(this)")
         document.getElementById("id_window_size").setAttribute("onchange", "hideOverlap(this)")
         document.getElementById("id_window_size").setAttribute("onclick", "hideOverlap(this)")
         document.getElementById("id_projection").setAttribute("onchange", "hideKnnValue(this)")
