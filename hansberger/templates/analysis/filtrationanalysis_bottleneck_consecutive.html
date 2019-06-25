@@ -46,13 +46,13 @@
     <div class="pagination">
         <span class="page-links">
             {% if diagrams.has_previous %}
-                <a href="?page={{ diagrams.previous_page_number }}">previous</a>
+                <a class="btn btn-link btn-light btn-sm" href="?page={{ diagrams.previous_page_number }}">previous</a>
             {% endif %}
             <span class="page-current">
                 Page {{ diagrams.number }} of {{ diagrams.paginator.num_pages }}.
             </span>
             {% if diagrams.has_next %}
-                <a href="?page={{ diagrams.next_page_number }}">next</a>
+                <a class="btn btn-link btn-light btn-sm" href="?page={{ diagrams.next_page_number }}">next</a>
             {% endif %}
         </span>
     </div>
