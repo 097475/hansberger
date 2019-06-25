@@ -2,6 +2,23 @@
 {% load static %}
 
 {% block title %} {{ window.analysis.name }} | {{ window.analysis.research.name }}{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{window.analysis.research.slug}}/">
+        Research: {{window.analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{window.analysis.research.slug}}/analysis/{{window.analysis.slug}}">
+        Analysis: {{window.analysis.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{window.analysis.research.slug}}/analysis/{{window.analysis.slug}}/windows/{{window.slug}}">
+        Window: {{window.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="nav navbar-nav ml-auto">
@@ -27,12 +44,20 @@
       {% if window.analysis.description %}
         <p>{{ window.analysis.description }}</p>
       {% endif %}
+      <p>
+          {% if window.start == None and window.end == None%}
+             This window is part of an analysis with precomputed distance matrices
+          {% else %}
+             Window starts at position (inclusive): {{window.start}}</br>
+             Window ends at position (non-inclusive): {{window.end}}</br>
+          {% endif %}
+      </p>
+      <h4>Ripser graph:</h4>
       <div id="fig_container">
         {{ window.plot | safe }}
       </div>
+      <h4>Entropy</h4>
       <p id="entropy"></p>
-      Window starts at position (inclusive): {{window.start}}</br>
-      Window ends at position (non-inclusive): {{window.end}}</br>
     </div>
   </div>
 </div>
@@ -41,10 +66,10 @@
 {{ block.super }}
 <script>
   var entropy = JSON.parse('{{ window.result_entropy|safe }}');
+  entropy_p=document.getElementById("entropy")
   for (var key in entropy) {
     if (entropy.hasOwnProperty(key)) {
-          console.log(key + " -> " + entropy[key]);
-          document.getElementById("entropy").innerHTML += key + " -> " + entropy[key] + "<br>";
+          entropy_p.innerHTML += key + ": " + entropy[key] + "<br>";
         }
   }
 </script>

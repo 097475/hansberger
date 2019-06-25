@@ -1,5 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Research{% endblock %}
+{% block title %}Dataset List{% endblock %}
+{% block sidebar %}
+<li>
+  <a href="/research/{{research.slug}}/">
+      Research: {{research.slug}}
+  </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
   <ul class="nav navbar-nav ml-auto">

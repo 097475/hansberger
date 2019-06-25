@@ -2,6 +2,18 @@
 {% load static %}
 
 {% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{analysis.research.slug}}/">
+        Research: {{analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{analysis.research.slug}}/analysis/{{analysis.slug}}">
+        Analysis: {{analysis.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="nav navbar-nav ml-auto">
@@ -24,32 +36,34 @@
   </div>
 {% endblock topbar %}
 {% block content %}
-<div class="container">
-
-
-  <div class="row">
-    <div class="col-sm-12">
-      <h2>{{ analysis.name }} : {{ analysis.research.name }}</h2>
+      <h1>{{ analysis.name }}</h1>
       {% if analysis.description %}
         <p>{{ analysis.description }}</p>
       {% endif %}
       <p>
-        analysis type: {{analysis.get_type}} </br>
-        filtration type: {{analysis.filtration_type}} </br>
+        Research: {{analysis.research.name}} <br>
+        Analysis Type: {{analysis.get_type}} </br>
+        {% if analysis.filtration_type %}
+        Filtration Type: {{analysis.filtration_type}} </br>
+        {% endif %}
+        {% if analysis.window_size %}
         window size: {{analysis.window_size}} </br>
         window overlap: {{analysis.window_overlap}} </br>
+        {% endif %}
+        {% if analysis.distance_matrix_metric %}
         distance matrix metric: {{analysis.distance_matrix_metric}} </br>
-        maximum homology dimension considered: {{analysis.max_homology_dimension}} </br>
-        maximum distance considered: {{analysis.max_distances_considered}} </br>
+        {% endif %}
+        <h4>Ripser.ripser parameters:</h4>
+        <p>
+        maxdim: {{analysis.max_homology_dimension}} </br>
+        thresh: {{analysis.max_distances_considered}} </br>
         coeff: {{analysis.coeff}} </br>
-        do cocycles: {{analysis.do_cocycles}} </br>
-        n perm: {{analysis.n_perm}} </br>
+        do_cocycles: {{analysis.do_cocycles}} </br>
+        n_perm: {{analysis.n_perm}} </br>
+        </p>
       </p>
-      <p id="entropy"></p>
+      <h4 id="entropy">Entropy graph:</h4>
       <div id="fig_container" width=100%>
         {{ analysis.plot_entropy | safe }}
       </div>
-    </div>
-  </div>
-</div>
 {% endblock content %}

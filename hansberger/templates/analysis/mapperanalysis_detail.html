@@ -2,6 +2,18 @@
 {% load static %}
 
 {% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{analysis.research.slug}}/">
+        Research: {{analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{analysis.research.slug}}/analysis/{{analysis.slug}}">
+        Analysis: {{analysis.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="nav navbar-nav ml-auto">
@@ -23,31 +35,31 @@
 
   <div class="row">
     <div class="col-sm-12">
-      <h2>{{ analysis.name }} : {{ analysis.research.name }}</h2>
+      <h1>{{ analysis.name }}</h1>
       {% if analysis.description %}
         <p>{{ analysis.description }}</p>
       {% endif %}
       <p>
         analysis type: {{analysis.get_type}} </br>
+        {% if analysis.distance_matrix_metric %}
         distance matrix metric: {{analysis.distance_matrix_metric}} </br>
-        fit_transform parameters</br>
+        {% endif %}
+        <h4>fit_transform parameters</h4>
+        <p>
         projection: {{analysis.projection}} </br>
         scaler: {{analysis.scaler}} </br>
-        map parameters</br>
-        use original data: {{analysis.use_original_data}} </br>
+        distance_matrix: False </br>
+        </p>
+        <h4>map parameters</h4>
+        <p>
+        use_original_data (X in original docs): {{analysis.use_original_data}} </br>
         clusterer: {{analysis.clusterer}} </br>
-        &nbsp;&nbsp;&nbsp;&nbsp;Cover arguments</br>
-        &nbsp;&nbsp;&nbsp;&nbsp;n cubes: {{analysis.cover_n_cubes}} </br>
-        &nbsp;&nbsp;&nbsp;&nbsp;percentage overlap: {{analysis.cover_perc_overlap}} </br>
-        &nbsp;&nbsp;&nbsp;&nbsp;GraphNerve arguments</br>
-        &nbsp;&nbsp;&nbsp;&nbsp;min intersection: {{analysis.graph_nerve_min_intersection}} </br>
+        cover: Cover(n_cubes={{analysis.cover_n_cubes}}, perc_overlap={{analysis.cover_perc_overlap}}) </br>
+        nerve: GraphNerve(min_intersection={{analysis.graph_nerve_min_intersection}}) </br>    
         precomputed: {{analysis.precomputed}} </br>
-        remove duplicate nodes: {{analysis.remove_duplicate_nodes}} </br>
+        remove_duplicate_nodes: {{analysis.remove_duplicate_nodes}} </br>
+        </p>
       </p>
-      <p id="entropy"></p>
-      <a href="delete/">Delete this analysis</a>
-      <a href="../">Go back</a>
-      <a href="windows/">See results</a>
     </div>
   </div>
 </div>

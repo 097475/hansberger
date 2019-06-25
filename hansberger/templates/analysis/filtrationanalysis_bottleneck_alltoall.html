@@ -1,5 +1,30 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}Bottleneck of all Windows{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{analysis.research.slug}}/">
+        Research: {{analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{analysis.research.slug}}/analysis/{{analysis.slug}}">
+        Analysis: {{analysis.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{analysis.research.slug}}/">
+        Research: {{analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{analysis.research.slug}}/analysis/{{analysis.slug}}">
+        Analysis: {{analysis.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="nav navbar-nav ml-auto">
@@ -16,11 +41,31 @@
   </div>
 {% endblock topbar %}
 {% block content %}
-
+<h1>Bottleneck of all Windows</h1><br>
 <div id="fig_container">
-    {% for diagram in bottleneck.get_diagrams %}
-    {{ diagram.image | safe }}
-    {% endfor %}
+    <div id="fig_container">
+        {% for diagram in diagrams %}
+        <div style="text-align: center;">
+        <h4>Bottleneck diagram of window {{diagram.window1.name}} to window {{diagram.window2.name}}</h4>
+        {{ diagram.image | safe }}
+        <p>Distance value: {{diagram.bottleneck_distance}}</p> <br>
+        </div>
+        {% endfor %}
 </div>
-<a href="bottleneck_ALL_download/">download</a>
+{# .... **Now the pagination section** .... #}
+{% if diagrams.has_other_pages %}
+    <div class="pagination">
+        <span class="page-links">
+            {% if diagrams.has_previous %}
+                <a href="?page={{ diagrams.previous_page_number }}">previous</a>
+            {% endif %}
+            <span class="page-current">
+                Page {{ diagrams.number }} of {{ diagrams.paginator.num_pages }}.
+            </span>
+            {% if diagrams.has_next %}
+                <a href="?page={{ diagrams.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+{% endif %}
 {% endblock content %}

@@ -115,7 +115,7 @@ class FiltrationWindow(Window):
         plt.savefig(buf, format="png")
         # Embed the result in the html output.
         data = base64.b64encode(buf.getbuffer()).decode("ascii")
-        plt.clf()
+        plt.close()
         return f"<img src='data:image/png;base64,{data}'/>"
 
     def bottleneck_calculation_onetoall(self, homology):

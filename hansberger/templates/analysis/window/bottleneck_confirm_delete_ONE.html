@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% block title %}Delete Bottleneck{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{bottleneck.window.analysis.research.slug}}/">
+        Research: {{bottleneck.window.analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{bottleneck.window.analysis.research.slug}}/analysis/{{bottleneck.window.analysis.slug}}">
+        Analysis: {{bottleneck.window.analysis.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{bottleneck.window.analysis.research.slug}}/analysis/{{bottleneck.window.analysis.slug}}/windows/{{bottleneck.window.slug}}">
+        Window: {{bottleneck.window.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="nav navbar-nav ml-auto">
@@ -15,7 +33,7 @@
     {% csrf_token %}
     {{ form|crispy }}
     <p> Are you sure you want to delete the bottleneck? </p>
-    <input type="submit" value="Confirm">
+    <input type="submit" class="btn btn-success" value="Confirm">
 </form>
 
 {% endblock %}

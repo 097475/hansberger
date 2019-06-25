@@ -1,15 +1,27 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %} {{ dataset.name }} | {{ dataset.research.name }}{% endblock %}
+{% block title %}{{ dataset.name }} | {{ dataset.research.name }}{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{dataset.research.slug}}/">
+        Research: {{dataset.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{dataset.research.slug}}/datasets/{{dataset.slug}}/">
+        Dataset: {{dataset.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-  <ul class="nav navbar-nav ml-auto">
+  <ul class="nav navbar-nav ml-auto">   
     <li class="nav-item active">
-      <a class="nav-link" href="../delete/">Delete</a>
+      <a class="nav-link" href="delete/">Delete</a>
     </li>
     <li class="nav-item active">
-        <a class="nav-link" href="../../">Back</a>
+        <a class="nav-link" href="../">Back</a>
       </li>
   </ul>
 </div>
@@ -19,12 +31,17 @@
 
   <div class="row">
     <div class="col-sm-12">
-      <h2>{{ dataset.name }} : {{ dataset.research.name }}</h2>
+      <h2>{{ dataset.name }}</h2>
       {% if dataset.description %}
         <p>{{ dataset.description }}</p>
       {% endif %}
-      Rows:{{dataset.rows}}</br>
-      Columns:{{dataset.cols}}
+      <p>
+        Research: {{ dataset.research.name }}<br>
+        Type: {{dataset.kind}}<br>
+        Added: {{dataset.creation_date}}<br>
+        Rows: {{dataset.rows}}<br>
+        Columns: {{dataset.cols}}
+      </p>
       <div id="fig_container">
         {{ dataset.plot | safe }}
       </div>

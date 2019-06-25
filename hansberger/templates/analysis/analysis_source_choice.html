@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% block title %}New Analysis | Select Source{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{research.slug}}/">
+        Research: {{research.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
   <ul class="nav navbar-nav ml-auto">

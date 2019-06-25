@@ -6,6 +6,8 @@ import environ
 
 ASGI_APPLICATION = 'hansberger.routing.application'
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
+
 ROOT_DIR = (
     environ.Path(__file__) - 3
 )  # (hansberger/config/settings/base.py - 3 = hansberger/)

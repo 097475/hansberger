@@ -1,21 +1,22 @@
 {% extends "base.html" %}
 {% load static i18n %}
-{% block title %}Members{% endblock %}
+{% block title %}Research List{% endblock %}
+
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
   <ul class="nav navbar-nav ml-auto">
     <li class="nav-item active">
-      <a class="nav-link" href="create/">New Research</a>
+      <a class="nav-link" href="create/" role="button" >New Research</a>
     </li>
     <li class="nav-item active">
-      <a class="nav-link" href="../"> Back</a>
+      <a class="nav-link" href="../" role="button"> Back</a>
     </li>
   </ul>
 </div>
 {% endblock topbar %}
 {% block content %}
 <div class="container">
-  <h2>Research</h2>
+  <h2>Researches</h2>
   <div class="list-group">
     {% for research in research_list %}
       <a href="{% url 'research:research-detail' research.slug %}" class="list-group-item">

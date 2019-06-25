@@ -1,5 +1,18 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% block title %}Delete Dataset{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{dataset.research.slug}}/">
+        Research: {{dataset.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{dataset.research.slug}}/datasets/{{dataset.slug}}/">
+        Dataset: {{dataset.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
   <ul class="nav navbar-nav ml-auto">
@@ -14,8 +27,8 @@
 <form method="post" action="{% url 'datasets:dataset-delete' dataset.research.slug dataset.slug %}">
     {% csrf_token %}
     {{ form|crispy }}
-    <p> Are you sure you want to delete the research? </p>
-    <input type="submit" value="Confirm">
+    <p> Are you sure you want to delete the dataset? </p>
+    <input type="submit" class='btn btn-success' value="Confirm">
 </form>
 
 {% endblock %}

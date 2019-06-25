@@ -14,6 +14,7 @@ from django.views.generic import (
     DetailView,
     ListView,
 )
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import (
     Analysis,
     FiltrationAnalysis,
@@ -292,6 +293,11 @@ class WindowListView(ListView):
     paginate_by = 10
     template_name = "analysis/window/window_list.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['analysis'] = self.analysis
+        return context
+
     def get_queryset(self):
         self.analysis = (FiltrationAnalysis.objects.filter(
             research__slug=self.kwargs['research_slug'],
@@ -327,7 +333,17 @@ class WindowBottleneckView(View):
         )
         my_window.bottleneck_calculation_onetoall(self.kwargs['homology'])
         bottleneck = my_window.get_bottleneck(self.kwargs['homology'])
-        return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'bottleneck': bottleneck})
+        diagram_list = bottleneck.get_diagrams()
+        page = request.GET.get('page', 1)
+        paginator = Paginator(diagram_list, 10)
+        try:
+            diagrams = paginator.page(page)
+        except PageNotAnInteger:
+            diagrams = paginator.page(1)
+        except EmptyPage:
+            diagrams = paginator.page(paginator.num_pages)
+        return render(request, 'analysis/window/filtrationwindow_bottleneck.html', context={'diagrams': diagrams,
+                                                                                            'window': my_window})
 
 
 class AnalysisConsecutiveBottleneckView(View):
@@ -339,8 +355,19 @@ class AnalysisConsecutiveBottleneckView(View):
                         )
         my_analysis.bottleneck_calculation_consecutive(self.kwargs['homology'])
         bottleneck = my_analysis.get_bottleneck(Bottleneck.CONS, self.kwargs['homology'])
+        diagram_list = bottleneck.get_diagrams()
+        page = request.GET.get('page', 1)
+        paginator = Paginator(diagram_list, 10)
+        try:
+            diagrams = paginator.page(page)
+        except PageNotAnInteger:
+            diagrams = paginator.page(1)
+        except EmptyPage:
+            diagrams = paginator.page(paginator.num_pages)
         return render(request, 'analysis/filtrationanalysis_bottleneck_consecutive.html',
-                      context={'bottleneck': bottleneck})
+                      context={'diagrams': diagrams,
+                               'analysis': my_analysis
+                               })
 
 
 class AnalysisAlltoallBottleneckView(View):
@@ -353,8 +380,19 @@ class AnalysisAlltoallBottleneckView(View):
 
         my_analysis.bottleneck_calculation_alltoall(self.kwargs['homology'])
         bottleneck = my_analysis.get_bottleneck(Bottleneck.ALL, self.kwargs['homology'])
+        diagram_list = bottleneck.get_diagrams()
+        page = request.GET.get('page', 1)
+        paginator = Paginator(diagram_list, 10)
+        try:
+            diagrams = paginator.page(page)
+        except PageNotAnInteger:
+            diagrams = paginator.page(1)
+        except EmptyPage:
+            diagrams = paginator.page(paginator.num_pages)
         return render(request, 'analysis/filtrationanalysis_bottleneck_alltoall.html',
-                      context={'bottleneck': bottleneck})
+                      context={'diagrams': diagrams,
+                               'analysis': my_analysis
+                               })
 
 
 class RipserDownloadView(VirtualDownloadView):

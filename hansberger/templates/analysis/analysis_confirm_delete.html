@@ -1,5 +1,18 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% block title %}Delete Analysis{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{analysis.research.slug}}/">
+        Research: {{analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{analysis.research.slug}}/analysis/{{analysis.slug}}">
+        Analysis: {{analysis.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="nav navbar-nav ml-auto">
@@ -15,7 +28,7 @@
     {% csrf_token %}
     {{ form|crispy }}
     <p> Are you sure you want to delete the analysis? </p>
-    <input type="submit" value="Confirm">
+    <input type="submit" class="btn btn-success" value="Confirm">
 </form>
 
 {% endblock %}

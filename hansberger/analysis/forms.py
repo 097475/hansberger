@@ -52,6 +52,7 @@ class FiltrationAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
         self.fields['dataset'].queryset = Dataset.objects.filter(research__slug=research.slug)
+        self.fields['dataset'].required = True
         self.helper = FormHelper(self)
         self.helper.form_method = 'POST'
         self.helper.form_action = reverse_lazy('analysis:filtrationanalysis-create', kwargs={
@@ -150,6 +151,7 @@ class MapperAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
         super().__init__(*args, **kwargs)
         self.fields['research'].initial = research
         self.fields['dataset'].queryset = Dataset.objects.filter(research__slug=research.slug)
+        self.fields['dataset'].required = True
         self.helper = FormHelper(self)
         self.helper.form_method = 'POST'
         self.helper.form_action = reverse_lazy('analysis:mapperanalysis-create', kwargs={
@@ -192,11 +194,14 @@ class MapperAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
         research = cleaned_data.get("research")
         projection = cleaned_data.get("projection")
         knn_n_value = cleaned_data.get("knn_n_value")
+        distance_matrix_metric = cleaned_data.get("distance_matrix_metric")
         if analysis_name_unique_check(name, research):
             self.add_error("name", "An analysis with this name already exists.")
             raise forms.ValidationError("An analysis with this name already exists.")
         if window_size is not None:
             self.window_overlap_checks(window_size, window_overlap, dataset)
+        if distance_matrix_metric == '':
+            self.add_error('distance_matrix_metric', 'Field required')
         if projection == 'knn_distance_n' and not knn_n_value:
             self.add_error("projection", "You must provide a value for n in knn_distance_n")
             raise forms.ValidationError("You must provide a value for n in knn_distance_n")
@@ -263,8 +268,8 @@ class MapperAnalysisCreationForm_Precomputed(PrecomputedAnalysisCreationForm):
 
 
 class AnalysisBottleneckCreationForm(forms.Form):
-    BOTTLENECK_OPTIONS = [(Bottleneck.CONS, Bottleneck.CONS),
-                          (Bottleneck.ALL, Bottleneck.ALL)]
+    BOTTLENECK_OPTIONS = [(Bottleneck.CONS, 'Bottleneck of consecutive windows'),
+                          (Bottleneck.ALL, 'Bottleneck of each window to each window')]
     bottleneck_type = forms.ChoiceField(widget=forms.RadioSelect, choices=BOTTLENECK_OPTIONS)
     homology = forms.ChoiceField(widget=forms.RadioSelect)
 

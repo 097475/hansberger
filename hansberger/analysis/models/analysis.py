@@ -65,6 +65,7 @@ class Analysis(models.Model):
         on_delete=models.CASCADE,
         help_text="Select the source dataset from the loaded datasets",
         default=None,
+        blank=True,
         null=True
     )
 
@@ -128,7 +129,7 @@ class MapperAnalysis(Analysis):
         'mean-shift': sklearn.cluster.MeanShift(),
         'spectral_clustering': sklearn.cluster.SpectralClustering(),
         'agglomerative_clustering': sklearn.cluster.AgglomerativeClustering(),
-        'DBSCAN(default)': sklearn.cluster.DBSCAN(min_samples=3),  # should be 3
+        'DBSCAN': sklearn.cluster.DBSCAN(min_samples=3),  # should be 3
         'DBSCAN(min_samples=1)': sklearn.cluster.DBSCAN(min_samples=1),  # should be 3
         'gaussian_mixtures': sklearn.mixture.GaussianMixture(),
         'birch': sklearn.cluster.Birch()
@@ -161,7 +162,7 @@ class MapperAnalysis(Analysis):
         ('spectral_clustering', 'Spectral clustering'),
         ('agglomerative_clustering', 'StandardScaler'),
         ('DBSCAN(min_samples=1)', 'DBSCAN(min_samples=1)'),
-        ('DBSCAN(default)', 'DBSCAN(default)'),
+        ('DBSCAN', 'DBSCAN'),
         ('gaussian_mixtures', 'Gaussian mixtures'),
         ('birch', 'Birch')
     )
@@ -169,8 +170,8 @@ class MapperAnalysis(Analysis):
     distance_matrix_metric = models.CharField(
         max_length=20,
         choices=Analysis.METRIC_CHOICES,
-        default='euclidean',
-        help_text="If not using a precomputed matrix, choose the distance metric to use on the dataset."
+        help_text="If not using a precomputed matrix, choose the distance metric to use on the dataset.",
+        blank=True
     )
 
     projection = models.CharField(
@@ -302,12 +303,13 @@ class FiltrationAnalysis(Analysis):
     @property
     def plot_entropy(self):
         entropies = self.get_entropy_data()
+        plt.figure(figsize=(10, 5))
         for key in entropies:
             plt.plot(entropies[key], 'o')
         plt.legend([key for key in entropies])
         figure = plt.gcf()
         html_figure = mpld3.fig_to_html(figure, template_type='general')
-        plt.clf()
+        plt.close()
         return html_figure
 
     def get_entropy_data(self):

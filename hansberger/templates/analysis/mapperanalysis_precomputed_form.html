@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% block title %}New Mappern Analysis from Precomputed Distance Matrices{% endblock %}
 {% block css %}
 {{ block.super }}
 <style>
@@ -15,6 +16,13 @@ a:hover + .box,.box:hover{
     }    
 </style>
 {% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{research.slug}}/">
+        Research: {{research.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
 {% block topbar %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
   <ul class="nav navbar-nav ml-auto">
@@ -64,7 +72,6 @@ a:hover + .box,.box:hover{
         var status = data['status'];
         var limit = data['limit'];
         document.getElementById("domMessage").innerHTML = "Processing window "+status+"/"+limit;
-        console.log(message)
     };
 
     analysisSocket.onclose = function(e) {

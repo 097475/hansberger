@@ -113,10 +113,11 @@ class EDFDataset(Dataset):
 
     @property
     def plot(self):
+        plt.figure(figsize=(10, 5))
         self.plot_EDF()
         figure = plt.gcf()
         html_figure = mpld3.fig_to_html(figure, template_type='general')
-        plt.clf()
+        plt.close()
         return html_figure
 
     def get_matrix_data(self):
