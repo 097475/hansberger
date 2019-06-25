@@ -6,6 +6,7 @@ import base64
 import json
 import numpy
 import pandas
+import math
 from io import BytesIO
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
@@ -47,13 +48,13 @@ class Bottleneck(models.Model):
     kind = models.CharField(choices=BOTTLENECK_TYPES, max_length=20)
     objects = BottleneckManager()
 
-    def manage_persim_crash(self, window):
+    def manage_persim_crash(self, window, other_window_name):
         diagram = json.loads(window.diagrams)[self.homology]
         if diagram == []:
             diagram = numpy.empty(shape=(0, 2))
         else:
             diagram = numpy.array(diagram)
-        ripser.Rips().plot(diagram, labels='window_'+str(window.name))
+        ripser.Rips().plot(diagram, labels='window_'+str(window.name)+', window_'+str(other_window_name))
         # Save it to a temporary buffer.
         buf = BytesIO()
         plt.savefig(buf, format="png")
@@ -71,8 +72,11 @@ class Bottleneck(models.Model):
             diag2 = json.loads(window2.diagrams)[self.homology]
             if diag1 == [] or diag2 == []:
                 continue
-            (d, (matching, D)) = persim.bottleneck(diag1, diag2, True) # noqa
-            image = self.plot_bottleneck(window1, window2, matching, D)
+            if (len(diag1) == 1 and len(diag2) == 1 and diag1[0][1] == math.inf and diag2[0][1] == math.inf):
+                (d, image) = self.manage_persim_crash(window1, window2.name)
+            else:
+                (d, (matching, D)) = persim.bottleneck(diag1, diag2, True) # noqa
+                image = self.plot_bottleneck(window1, window2, matching, D)
             diagram = Diagram.objects.create_diagram(self, window1, window2, d, image)
             diagram.save()
             if StatusHolder().get_kill():
@@ -88,8 +92,9 @@ class Bottleneck(models.Model):
             diag2 = json.loads(window.diagrams)[self.homology]
             if diag1 == [] or diag2 == []:
                 continue
-            if reference_window == window and len(diag1) == 1:
-                (d, image) = self.manage_persim_crash(window)
+            if (reference_window == window and len(diag1) == 1) or (len(diag1) == 1 and len(diag2) == 1 and
+               diag1[0][1] == math.inf and diag2[0][1] == math.inf):
+                (d, image) = self.manage_persim_crash(reference_window, window.name)
             else:
                 (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
                 image = self.plot_bottleneck(reference_window, window, matching, D)
@@ -110,8 +115,9 @@ class Bottleneck(models.Model):
                 diag2 = json.loads(window.diagrams)[self.homology]
                 if diag1 == [] or diag2 == []:
                     continue
-                if reference_window == window and len(diag1) == 1:
-                    (d, image) = self.manage_persim_crash(window)
+                if (reference_window == window and len(diag1) == 1) or (len(diag1) == 1 and len(diag2) == 1 and
+                   diag1[0][1] == math.inf and diag2[0][1] == math.inf):
+                    (d, image) = self.manage_persim_crash(reference_window, window.name)
                 else:
                     (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
                     image = self.plot_bottleneck(reference_window, window, matching, D)
