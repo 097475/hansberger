@@ -1,7 +1,7 @@
 from django import template
 import matplotlib.pyplot as plt
 import mpld3
-
+import gc
 register = template.Library()
 
 
@@ -15,4 +15,5 @@ def plot_entropy(obj, normalized):
     figure = plt.gcf()
     html_figure = mpld3.fig_to_html(figure, template_type='general')
     plt.close()
+    gc.collect()
     return html_figure

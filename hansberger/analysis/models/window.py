@@ -13,6 +13,15 @@ from .bottleneck import Bottleneck
 matplotlib.use('Agg')
 
 
+def window_batch_generator(analysis):
+    window_count = FiltrationWindow.objects.filter(analysis=analysis).order_by('name').count()
+    batch_size = window_count // 4
+    for window_batch in range(window_count // batch_size + 1):
+        windows = FiltrationWindow.objects.filter(analysis=analysis).order_by(
+                  'name')[batch_size*window_batch:batch_size*window_batch+batch_size]
+        yield windows
+
+
 class WindowManager(models.Manager):
     def create_window(self, name, analysis):
         window = self.create(name=name, analysis=analysis)

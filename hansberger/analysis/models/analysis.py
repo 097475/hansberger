@@ -1,5 +1,6 @@
 import math
 import json
+import gc
 import matplotlib
 import pandas
 from django.db import models
@@ -14,7 +15,7 @@ import numpy
 from research.models import Research
 from datasets.models import Dataset, DatasetKindChoice
 from datasets.models.dataset import distance_matrix, correlation_matrix
-from .window import FiltrationWindow, MapperWindow
+from .window import FiltrationWindow, MapperWindow, window_batch_generator
 from .bottleneck import Bottleneck
 from ..consumers import StatusHolder, analysis_logger_decorator
 matplotlib.use('Agg')
@@ -299,16 +300,12 @@ class FiltrationAnalysis(Analysis):
         window.save_data(result)
 
     def get_entropy_data(self, normalized=False):
-        window_count = FiltrationWindow.objects.filter(analysis=self).order_by('name').count()
-        batch_size = window_count // 4
         entropies = {"H"+str(i): [] for i in range(self.max_homology_dimension + 1)}  # initialize result dict
-        for window_batch in range(window_count // batch_size + 1):
-            windows = FiltrationWindow.objects.filter(analysis=self).order_by(
-                      'name')[batch_size*window_batch:batch_size*window_batch+batch_size]
+        for window_batch in window_batch_generator(self):
             if normalized:
-                entropy_dicts = map(lambda window: json.loads(window.result_entropy_normalized), windows)
+                entropy_dicts = map(lambda window: json.loads(window.result_entropy_normalized), window_batch)
             else:
-                entropy_dicts = map(lambda window: json.loads(window.result_entropy_unnormalized), windows)
+                entropy_dicts = map(lambda window: json.loads(window.result_entropy_unnormalized), window_batch)
             for entropy_dict in entropy_dicts:
                 for key, value in entropy_dict.items():
                     entropies[key].append(value)
@@ -428,3 +425,4 @@ def run_analysis(instance):
         multiple_run_precomputed(instance, precomputed_distance_matrixes)
     else:
         single_run(instance)
+    gc.collect()
