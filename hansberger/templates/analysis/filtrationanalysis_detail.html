@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% load entropy %}
 {% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
 {% block sidebar %}
 <li>
@@ -41,7 +41,10 @@
         <p>{{ analysis.description }}</p>
       {% endif %}
       <p>
-        Research: {{analysis.research.name}} <br>
+        Research: <a href="/research/{{analysis.research.slug}}/">{{analysis.research.name}} <i class="fas fa-external-link-alt fa-sm"></i></a> <br>
+        {% if analysis.dataset %}
+        Dataset: <a href="/research/{{analysis.research.slug}}/datasets/{{analysis.dataset.slug}}/">{{analysis.dataset.name}} <i class="fas fa-external-link-alt fa-sm"></i></a> <br>
+        {% endif %}
         Analysis Type: {{analysis.get_type}} </br>
         {% if analysis.filtration_type %}
         Filtration Type: {{analysis.filtration_type}} </br>
@@ -63,7 +66,46 @@
         </p>
       </p>
       <h4 id="entropy">Entropy graph:</h4>
-      <div id="fig_container" width=100%>
-        {{ analysis.plot_entropy | safe }}
+      <div class="tab">
+        <button class="tablinks" id="default_tab" onclick="openEntropyGraph(event, 'normalized')">Normalized entropy graph</button>
+        <button class="tablinks" onclick="openEntropyGraph(event, 'unnormalized')">Unnormalized entropy graph</button>
+      </div>
+      <!-- Tab content -->
+      <div id="normalized" class="tabcontent">
+        <div id="fig_container" width=100%>
+          {{ analysis|plot_entropy:True|safe }}
+        </div>
+      </div>
+
+      <div id="unnormalized" class="tabcontent">
+        <div id="fig_container" width=100%>
+          {{ analysis|plot_entropy:False|safe }}
+        </div>
       </div>
 {% endblock content %}
+{% block javascript %}
+{{ block.super }}
+<script>
+document.getElementById("default_tab").click();
+function openEntropyGraph(evt, type) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(type).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+</script>
+{% endblock javascript %}

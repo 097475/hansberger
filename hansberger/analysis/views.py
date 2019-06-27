@@ -7,6 +7,8 @@ from django_downloadview import VirtualDownloadView
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
+from django.db.transaction import non_atomic_requests
+from django.utils.decorators import method_decorator
 from django.views.generic import (
     View,
     CreateView,
@@ -22,7 +24,7 @@ from .models import (
     Window,
     FiltrationWindow,
     MapperWindow,
-    Bottleneck
+    Bottleneck,
 )
 from research.models import Research
 from .forms import (
@@ -135,6 +137,7 @@ class AnalysisListView(ListView):
         return sorted(chain(filtration_analyses, mapper_analyses), key=lambda x: x.creation_date, reverse=True)
 
 
+@method_decorator(non_atomic_requests, name='dispatch')
 class FiltrationAnalysisCreateView(CreateView):
     model = FiltrationAnalysis
 
@@ -189,6 +192,7 @@ class FiltrationAnalysisCreateView(CreateView):
             return self.form_invalid(form)
 
 
+@method_decorator(non_atomic_requests, name='dispatch')
 class MapperAnalysisCreateView(CreateView):
     model = MapperAnalysis
 

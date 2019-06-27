@@ -55,7 +55,8 @@ class FiltrationWindow(Window):
     )
     result_matrix = JSONField(blank=True, null=True)
     diagrams = JSONField(blank=True, null=True)
-    result_entropy = JSONField(blank=True, null=True)
+    result_entropy_normalized = JSONField(blank=True, null=True)
+    result_entropy_unnormalized = JSONField(blank=True, null=True)
     objects = WindowManager()
 
     def save_data(self, result):
@@ -82,15 +83,18 @@ class FiltrationWindow(Window):
         self.result_matrix = json.dumps(analysis_result_matrix)
 
     def save_entropy_json(self, diagrams):
-        entropies = dict()
+        entropies_normalized = dict()
+        entropies_unnormalized = dict()
         i = 0
         for ripser_matrix in diagrams:
-            entropies["H"+str(i)] = FiltrationWindow.calculate_entropy(ripser_matrix)
+            entropies_normalized["H"+str(i)] = FiltrationWindow.calculate_entropy(ripser_matrix, True)
+            entropies_unnormalized["H"+str(i)] = FiltrationWindow.calculate_entropy(ripser_matrix, False)
             i = i + 1
-        self.result_entropy = json.dumps(entropies)
+        self.result_entropy_normalized = json.dumps(entropies_normalized)
+        self.result_entropy_unnormalized = json.dumps(entropies_unnormalized)
 
     @staticmethod
-    def calculate_entropy(ripser_matrix):
+    def calculate_entropy(ripser_matrix, normalize=False):
         if ripser_matrix.size == 0:
             return 0
         non_infinity = list(filter((lambda x: x[1] != math.inf), ripser_matrix))
@@ -99,7 +103,11 @@ class FiltrationWindow(Window):
         max_death = max(map((lambda x: x[1]), non_infinity)) + 1
         li = list(map((lambda x: x[1]-x[0] if x[1] != math.inf else max_death - x[0]), ripser_matrix))
         ltot = sum(li)
-        return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
+        if normalize:
+            norm_value = (1 / numpy.log10(len(ripser_matrix))) if len(ripser_matrix) != 1 else 1
+            return norm_value * -sum(map((lambda x: x/ltot * numpy.log10(x/ltot)), li))
+        else:
+            return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
     @property
     def plot(self):

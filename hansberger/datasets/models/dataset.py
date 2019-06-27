@@ -84,4 +84,10 @@ def distance_matrix(matrix, metric):
 
 
 def correlation_matrix(matrix):
-    return numpy.corrcoef(numpy.array(matrix))
+    out = numpy.corrcoef(numpy.array(matrix))
+    out = numpy.vectorize(lambda x: 1-x)(out)
+    numpy.fill_diagonal(out, 0)
+    print(out)
+    # per ogni elemento 1-elemento
+    # 0 sulla diagonale
+    return out

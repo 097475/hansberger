@@ -40,20 +40,23 @@
         <p>{{ analysis.description }}</p>
       {% endif %}
       <p>
-        analysis type: {{analysis.get_type}} </br>
+        Research: <a href="/research/{{analysis.research.slug}}/">{{analysis.research.name}} <i class="fas fa-external-link-alt fa-sm"></i></a> <br>
+        {% if analysis.dataset %}
+        Dataset: <a href="/research/{{analysis.research.slug}}/datasets/{{analysis.dataset.slug}}/">{{analysis.dataset.name}} <i class="fas fa-external-link-alt fa-sm"></i></a> <br>
+        {% endif %}
         {% if analysis.distance_matrix_metric %}
         distance matrix metric: {{analysis.distance_matrix_metric}} </br>
         {% endif %}
         <h4>fit_transform parameters</h4>
         <p>
-        projection: {{analysis.projection}} </br>
-        scaler: {{analysis.scaler}} </br>
+        projection: {{analysis.projection}}</br>
+        scaler: {{analysis.scaler}}() </br>
         distance_matrix: False </br>
         </p>
         <h4>map parameters</h4>
         <p>
         use_original_data (X in original docs): {{analysis.use_original_data}} </br>
-        clusterer: {{analysis.clusterer}} </br>
+        clusterer: {{analysis.clusterer}}() </br>
         cover: Cover(n_cubes={{analysis.cover_n_cubes}}, perc_overlap={{analysis.cover_perc_overlap}}) </br>
         nerve: GraphNerve(min_intersection={{analysis.graph_nerve_min_intersection}}) </br>    
         precomputed: {{analysis.precomputed}} </br>

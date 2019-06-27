@@ -1,8 +1,6 @@
 import math
 import json
 import matplotlib
-import matplotlib.pyplot as plt
-import mpld3
 import pandas
 from django.db import models
 from django.utils.text import slugify
@@ -300,25 +298,20 @@ class FiltrationAnalysis(Analysis):
         window = FiltrationWindow.objects.create_window(number, self)
         window.save_data(result)
 
-    @property
-    def plot_entropy(self):
-        entropies = self.get_entropy_data()
-        plt.figure(figsize=(10, 5))
-        for key in entropies:
-            plt.plot(entropies[key], 'o')
-        plt.legend([key for key in entropies])
-        figure = plt.gcf()
-        html_figure = mpld3.fig_to_html(figure, template_type='general')
-        plt.close()
-        return html_figure
-
-    def get_entropy_data(self):
-        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+    def get_entropy_data(self, normalized=False):
+        window_count = FiltrationWindow.objects.filter(analysis=self).order_by('name').count()
+        batch_size = window_count // 4
         entropies = {"H"+str(i): [] for i in range(self.max_homology_dimension + 1)}  # initialize result dict
-        entropy_dicts = map(lambda window: json.loads(window.result_entropy), windows)
-        for entropy_dict in entropy_dicts:
-            for key, value in entropy_dict.items():
-                entropies[key].append(value)
+        for window_batch in range(window_count // batch_size + 1):
+            windows = FiltrationWindow.objects.filter(analysis=self).order_by(
+                      'name')[batch_size*window_batch:batch_size*window_batch+batch_size]
+            if normalized:
+                entropy_dicts = map(lambda window: json.loads(window.result_entropy_normalized), windows)
+            else:
+                entropy_dicts = map(lambda window: json.loads(window.result_entropy_unnormalized), windows)
+            for entropy_dict in entropy_dicts:
+                for key, value in entropy_dict.items():
+                    entropies[key].append(value)
         return entropies
 
     def get_entropy_csv(self):
@@ -375,7 +368,7 @@ def single_run(instance):
         instance.execute(input_matrix)
     elif analysis_type is MapperAnalysis:
         input_matrix = instance.dataset.get_distance_matrix(instance.distance_matrix_metric)
-        original_matrix = numpy.array(instance.dataset.data)
+        original_matrix = numpy.array(instance.dataset.get_matrix_data())
         instance.execute(input_matrix, original_matrix)
 
 
