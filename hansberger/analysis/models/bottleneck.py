@@ -79,37 +79,45 @@ class Bottleneck(models.Model):
 
     @bottleneck_logger_decorator
     def bottleneck_calculation_CONS(self, windows):
+        last = None
         for window_batch in windows:
             batch = list(window_batch)
-            for i, window1 in enumerate(batch):
+            if last is not None and batch != []:
+                self.__bottleneck(last, batch[0])
+            for i, window1 in enumerate(batch[:-1]):
                 window2 = batch[i+1]
                 self.__bottleneck(window1, window2)
                 if StatusHolder().get_kill():
                     return
                 StatusHolder().set_status(window1.name)
+            last = batch[-1]
 
     @bottleneck_logger_decorator
     def bottleneck_calculation_ONE(self, windows):
         reference_window = self.window
-        for window in windows:
-            self.__bottleneck(reference_window, window)
-            if StatusHolder().get_kill():
-                return
-            StatusHolder().set_status(window.name)
-        gc.collect()
+        for window_batch in windows:
+            for window in window_batch:
+                self.__bottleneck(reference_window, window)
+                if StatusHolder().get_kill():
+                    return
+                StatusHolder().set_status(window.name)
+            gc.collect()
 
     @bottleneck_logger_decorator
-    def bottleneck_calculation_ALL(self, windows):
-        for reference_window in windows:
-            for window in windows:
-                if window.name < reference_window.name:
-                    continue
-                self.__bottleneck(reference_window, window)
-            if StatusHolder().get_kill():
-                return
-            StatusHolder().set_status(window.name)
+    def bottleneck_calculation_ALL(self, batch_1, batch_2):
+        batch_2 = list(batch_2)
+        for window_batch_1 in batch_1:
+            for reference_window in window_batch_1:
+                StatusHolder().set_status(reference_window.name)
+                for window_batch_2 in batch_2:
+                    for window in window_batch_2:
+                        if window.name < reference_window.name:
+                            continue
+                        self.__bottleneck(reference_window, window)
+                    if StatusHolder().get_kill():
+                        return
+                    gc.collect()
             gc.collect()
-        gc.collect()
 
     def plot_bottleneck(self, window1, window2, matchidx, D):
         persim.bottleneck_matching(window1.get_diagram(self.homology), window2.get_diagram(self.homology), matchidx, D,
@@ -121,13 +129,13 @@ class Bottleneck(models.Model):
         plt.close()
         return f"<img src='data:image/png;base64,{data}'/>"
 
-    def run_bottleneck(self, windows):
+    def run_bottleneck(self, *args):
         if self.kind == self.ONE:
-            self.bottleneck_calculation_ONE(windows)
+            self.bottleneck_calculation_ONE(*args)
         elif self.kind == self.CONS:
-            self.bottleneck_calculation_CONS(windows)
+            self.bottleneck_calculation_CONS(*args)
         elif self.kind == self.ALL:
-            self.bottleneck_calculation_ALL(windows)
+            self.bottleneck_calculation_ALL(*args)
 
     def get_bottleneck_matrix(self):
         diagrams = Diagram.objects.filter(bottleneck=self).order_by('window1__name', 'window2__name')

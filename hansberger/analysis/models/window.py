@@ -16,7 +16,8 @@ matplotlib.use('Agg')
 def window_batch_generator(analysis):
     window_count = FiltrationWindow.objects.filter(analysis=analysis).order_by('name').count()
     batch_size = window_count // 16 if window_count > 16 else 16
-    for window_batch in range(window_count // batch_size + 1):
+    remainder = 1 if window_count % 16 != 0 else 0
+    for window_batch in range(window_count // batch_size + remainder):
         windows = FiltrationWindow.objects.filter(analysis=analysis).order_by(
                   'name')[batch_size*window_batch:batch_size*window_batch+batch_size]
         yield windows
@@ -131,14 +132,17 @@ class FiltrationWindow(Window):
     def bottleneck_calculation_onetoall(self, homology):
         if Bottleneck.objects.filter(window=self, kind=Bottleneck.ONE, homology=homology).count() == 1:
             return
-        windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
-        # windows = window_batch_generator(self.analysis)
+        # windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
+        windows = window_batch_generator(self.analysis)
         bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ONE, homology)
         bottleneck.run_bottleneck(windows)
         bottleneck.save()
 
     def get_bottleneck(self, homology):
         return Bottleneck.objects.get(window=self, kind=Bottleneck.ONE, homology=homology)
+
+    def get_window_number(self):
+        return self.analysis.get_window_number()
 
 
 class MapperWindow(Window):

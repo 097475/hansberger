@@ -338,7 +338,8 @@ class FiltrationAnalysis(Analysis):
     def bottleneck_calculation_consecutive(self, homology):
         if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.CONS, homology=homology).count() == 1:
             return
-        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        # windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        windows = window_batch_generator(self)
         bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.CONS, homology)
         bottleneck.run_bottleneck(windows)
         bottleneck.save()
@@ -346,9 +347,11 @@ class FiltrationAnalysis(Analysis):
     def bottleneck_calculation_alltoall(self, homology):
         if Bottleneck.objects.filter(analysis=self, kind=Bottleneck.ALL, homology=homology).count() == 1:
             return
-        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        # windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
+        batch_1 = window_batch_generator(self)
+        batch_2 = window_batch_generator(self)
         bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ALL, homology)
-        bottleneck.run_bottleneck(windows)
+        bottleneck.run_bottleneck(batch_1, batch_2)
         bottleneck.save()
 
     def get_bottleneck(self, kind, homology):
