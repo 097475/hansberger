@@ -12,7 +12,7 @@ class TextDataset(Dataset):
     identity_column_index = models.PositiveIntegerField(default=0, help_text="""column number that identifies the
                                                         progressive number of rows in the file""")
     header_row_index = models.PositiveIntegerField(default=0, help_text="""row number that identifies the column in
-                                                   the file""")
+                                                   the file""", blank=True, null=True)
     transpose = models.BooleanField(default=True, help_text="""Transpose the text file's values so that features'
                                     values are laid out horizontally. If the input is a csv file, you might want
                                     to leave this box checked in.""")
