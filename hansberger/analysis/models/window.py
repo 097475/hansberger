@@ -15,7 +15,7 @@ matplotlib.use('Agg')
 
 def window_batch_generator(analysis):
     window_count = FiltrationWindow.objects.filter(analysis=analysis).order_by('name').count()
-    batch_size = window_count // 4
+    batch_size = window_count // 16 if window_count > 16 else 16
     for window_batch in range(window_count // batch_size + 1):
         windows = FiltrationWindow.objects.filter(analysis=analysis).order_by(
                   'name')[batch_size*window_batch:batch_size*window_batch+batch_size]
@@ -63,20 +63,21 @@ class FiltrationWindow(Window):
         on_delete=models.CASCADE
     )
     result_matrix = JSONField(blank=True, null=True)
-    diagrams = JSONField(blank=True, null=True)
+    # diagrams = JSONField(blank=True, null=True)
+    diagram = models.TextField(blank=True, null=True)
     result_entropy_normalized = JSONField(blank=True, null=True)
     result_entropy_unnormalized = JSONField(blank=True, null=True)
     objects = WindowManager()
 
     def save_data(self, result):
-        self.save_diagrams(result['dgms'])
+        self.save_diagram(result['dgms'])
         self.save_entropy_json(result['dgms'])
         self.save_matrix_json(result)  # this method modifies permanently the result dict
         self.save_window_info()
         self.save()
 
-    def save_diagrams(self, diagrams):
-        self.diagrams = json.dumps([d.tolist() for d in diagrams])
+    def save_diagram(self, diagrams):
+        self.diagram = self.plot(diagrams)
 
     def get_diagram(self, homology):
         diagrams = json.loads(self.diagrams)
@@ -118,14 +119,7 @@ class FiltrationWindow(Window):
         else:
             return -sum(map((lambda x: x/ltot * math.log10(x/ltot)), li))
 
-    @property
-    def plot(self):
-        diagrams = []
-        for diagram in json.loads(self.diagrams):
-            if diagram == []:
-                diagrams.append(numpy.empty(shape=(0, 2)))
-            else:
-                diagrams.append(numpy.array(diagram))
+    def plot(self, diagrams):
         ripser.Rips().plot(diagrams)
         # Save it to a temporary buffer.
         buf = BytesIO()

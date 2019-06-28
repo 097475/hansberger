@@ -100,7 +100,8 @@ class FiltrationAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):
 
     class Meta:
         model = FiltrationAnalysis
-        exclude = ['slug', 'precomputed_distance_matrix', 'precomputed_distance_matrix_json']
+        exclude = ['slug', 'precomputed_distance_matrix', 'precomputed_distance_matrix_json',
+                   'entropy_normalized_graph', 'entropy_unnormalized_graph']
 
 
 class FiltrationAnalysisCreationForm_Precomputed(PrecomputedAnalysisCreationForm):
@@ -143,7 +144,8 @@ class FiltrationAnalysisCreationForm_Precomputed(PrecomputedAnalysisCreationForm
 
     class Meta:
         model = FiltrationAnalysis
-        exclude = ['slug', 'dataset', 'window_size', 'window_overlap', 'filtration_type', 'distance_matrix_metric']
+        exclude = ['slug', 'dataset', 'window_size', 'window_overlap', 'filtration_type', 'distance_matrix_metric',
+                   'entropy_normalized_graph', 'entropy_unnormalized_graph']
 
 
 class MapperAnalysisCreationForm_Dataset(DatasetAnalysisCreationForm):

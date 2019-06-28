@@ -71,7 +71,11 @@ a:hover + .box,.box:hover{
         var data = JSON.parse(e.data);
         var status = data['status'];
         var limit = data['limit'];
-        document.getElementById("domMessage").innerHTML = "Processing window "+status+"/"+limit;
+        if(status == 0 && limit == 0){
+            document.getElementById("domMessage").innerHTML = "Loading...";
+        }else{
+            document.getElementById("domMessage").innerHTML = "Processing window "+status+"/"+limit;
+        }
     };
 
     analysisSocket.onclose = function(e) {

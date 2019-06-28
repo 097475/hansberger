@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% load static %}
-{% load entropy %}
 {% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
 {% block sidebar %}
 <li>
@@ -73,13 +72,13 @@
       <!-- Tab content -->
       <div id="normalized" class="tabcontent">
         <div id="fig_container" width=100%>
-          {{ analysis|plot_entropy:True|safe }}
+          {{ analysis.entropy_normalized_graph|safe }}
         </div>
       </div>
 
       <div id="unnormalized" class="tabcontent">
         <div id="fig_container" width=100%>
-          {{ analysis|plot_entropy:False|safe }}
+          {{ analysis.entropy_unnormalized_graph|safe }}
         </div>
       </div>
 {% endblock content %}

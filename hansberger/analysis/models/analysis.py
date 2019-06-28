@@ -2,6 +2,8 @@ import math
 import json
 import gc
 import matplotlib
+import matplotlib.pyplot as plt
+import mpld3
 import pandas
 from django.db import models
 from django.utils.text import slugify
@@ -278,6 +280,8 @@ class FiltrationAnalysis(Analysis):
                                  be used in lieu of the full point cloud for a faster computation, at the expense of
                                  some accuracy, which can be bounded as a maximum bottleneck distance to all diagrams
                                  on the original point set""")
+    entropy_normalized_graph = models.TextField(blank=True, null=True)
+    entropy_unnormalized_graph = models.TextField(blank=True, null=True)
 
     class Meta(Analysis.Meta):
         verbose_name = "filtration analysis"
@@ -286,6 +290,9 @@ class FiltrationAnalysis(Analysis):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         run_analysis(self)
+        self.entropy_normalized_graph = self.plot_entropy(True)
+        self.entropy_unnormalized_graph = self.plot_entropy(False)
+        super().save(*args, **kwargs)
 
     @models.permalink
     def get_absolute_url(self):
@@ -310,6 +317,17 @@ class FiltrationAnalysis(Analysis):
                 for key, value in entropy_dict.items():
                     entropies[key].append(value)
         return entropies
+
+    def plot_entropy(self, normalized):
+        entropies = self.get_entropy_data(normalized)
+        plt.figure(figsize=(10, 5))
+        for key in entropies:
+            plt.plot(entropies[key], '-o')
+        plt.legend([key for key in entropies])
+        figure = plt.gcf()
+        html_figure = mpld3.fig_to_html(figure, template_type='general')
+        plt.close()
+        return html_figure
 
     def get_entropy_csv(self):
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')

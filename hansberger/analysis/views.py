@@ -323,6 +323,7 @@ class WindowListView(ListView):
         return windows.only('name', 'creation_date', 'slug').order_by('name')
 
 
+@method_decorator(non_atomic_requests, name='dispatch')
 class WindowBottleneckView(View):
     def get(self, request, *args, **kwargs):
         my_analysis = get_object_or_404(
