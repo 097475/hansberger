@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import persim
 import ripser
 import base64
-import json
 import numpy
 import pandas
 import math
@@ -50,7 +49,7 @@ class Bottleneck(models.Model):
     objects = BottleneckManager()
 
     def manage_persim_crash(self, window, other_window_name):
-        diagram = json.loads(window.diagrams)[self.homology]
+        diagram = window.get_diagram(self.homology)
         if diagram == []:
             diagram = numpy.empty(shape=(0, 2))
         else:
@@ -65,9 +64,8 @@ class Bottleneck(models.Model):
         return (0, f"<img src='data:image/png;base64,{data}'/>")
 
     def __bottleneck(self, reference_window, window):
-        print(window.name)
-        diag1 = json.loads(reference_window.diagrams)[self.homology]
-        diag2 = json.loads(window.diagrams)[self.homology]
+        diag1 = reference_window.get_diagram(self.homology)
+        diag2 = window.get_diagram(self.homology)
         if diag1 == [] or diag2 == []:
             return
         if (reference_window == window and len(diag1) == 1) or (len(diag1) == 1 and len(diag2) == 1 and
@@ -81,13 +79,14 @@ class Bottleneck(models.Model):
 
     @bottleneck_logger_decorator
     def bottleneck_calculation_CONS(self, windows):
-        for i, window1 in enumerate(windows.exclude(name=windows.count()-1)):
-            window2 = windows.get(name=i+1)
-            self.__bottleneck(window1, window2)
-            if StatusHolder().get_kill():
-                return
-            StatusHolder().set_status(window1.name)
-        gc.collect()
+        for window_batch in windows:
+            batch = list(window_batch)
+            for i, window1 in enumerate(batch):
+                window2 = batch[i+1]
+                self.__bottleneck(window1, window2)
+                if StatusHolder().get_kill():
+                    return
+                StatusHolder().set_status(window1.name)
 
     @bottleneck_logger_decorator
     def bottleneck_calculation_ONE(self, windows):

@@ -63,7 +63,6 @@ class FiltrationWindow(Window):
         on_delete=models.CASCADE
     )
     result_matrix = JSONField(blank=True, null=True)
-    # diagrams = JSONField(blank=True, null=True)
     diagram = models.TextField(blank=True, null=True)
     result_entropy_normalized = JSONField(blank=True, null=True)
     result_entropy_unnormalized = JSONField(blank=True, null=True)
@@ -80,7 +79,7 @@ class FiltrationWindow(Window):
         self.diagram = self.plot(diagrams)
 
     def get_diagram(self, homology):
-        diagrams = json.loads(self.diagrams)
+        diagrams = json.loads(self.result_matrix)['dgms']
         return numpy.array(diagrams[homology])
 
     def save_matrix_json(self, analysis_result_matrix):
@@ -133,6 +132,7 @@ class FiltrationWindow(Window):
         if Bottleneck.objects.filter(window=self, kind=Bottleneck.ONE, homology=homology).count() == 1:
             return
         windows = FiltrationWindow.objects.filter(analysis=self.analysis).order_by('name')
+        # windows = window_batch_generator(self.analysis)
         bottleneck = Bottleneck.objects.create_bottleneck(self, Bottleneck.ONE, homology)
         bottleneck.run_bottleneck(windows)
         bottleneck.save()

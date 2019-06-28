@@ -23,7 +23,7 @@ def analysis_logger_decorator(func):
 def bottleneck_logger_decorator(func):
     def wrapper(instance, windows, *args, **kwargs):
         status_logger = StatusHolder()
-        status_logger.set_limit(windows.count())
+        status_logger.set_limit(0)
         func(instance, windows, *args, **kwargs)
         status_logger.reset()
     return wrapper

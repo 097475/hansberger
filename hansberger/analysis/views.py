@@ -90,6 +90,7 @@ class AnalysisDetailView(View):
             return render(request, 'analysis/mapperanalysis_detail.html', context={'analysis': my_analysis})
 
 
+@method_decorator(non_atomic_requests, name='dispatch')
 class AnalysisDeleteView(DeleteView):
     model = Analysis
     context_object_name = 'analysis'

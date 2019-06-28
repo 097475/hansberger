@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-
-{% block title %} {{ window.analysis.name }} | {{ window.analysis.research.name }}{% endblock %}
+{% block title %}Window {{ window.name }} | {{ window.analysis.name }}{% endblock %}
 {% block sidebar %}
 <li>
     <a href="/research/{{window.analysis.research.slug}}/">
@@ -34,7 +33,7 @@
 
   <div class="row">
     <div class="col-sm-12">
-      <h2>{{ window.analysis.name }} : {{ window.analysis.research.name }}</h2>
+        <h2>Window {{ window.name }}</h2>
       {% if window.analysis.description %}
         <p>{{ window.analysis.description }}</p> 
       {% endif %}
