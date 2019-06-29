@@ -90,7 +90,6 @@ class AnalysisDetailView(View):
             return render(request, 'analysis/mapperanalysis_detail.html', context={'analysis': my_analysis})
 
 
-@method_decorator(non_atomic_requests, name='dispatch')
 class AnalysisDeleteView(DeleteView):
     model = Analysis
     context_object_name = 'analysis'
@@ -184,8 +183,7 @@ class FiltrationAnalysisCreateView(CreateView):
         files = request.FILES.getlist('precomputed_distance_matrix')
         if form.is_valid():
             precomputed_distance_matrixes = []
-            for f in files:
-                print(f)
+            for f in sorted(files):
                 precomputed_distance_matrixes.append(numpy.loadtxt(f).tolist())
             self.precomputed_distance_matrix_json = json.dumps(precomputed_distance_matrixes)
             return self.form_valid(form)
@@ -239,7 +237,6 @@ class MapperAnalysisCreateView(CreateView):
         if form.is_valid():
             precomputed_distance_matrixes = []
             for f in files:
-                print(f)
                 precomputed_distance_matrixes.append(numpy.loadtxt(f).tolist())
             self.precomputed_distance_matrix_json = json.dumps(precomputed_distance_matrixes)
             return self.form_valid(form)
@@ -324,7 +321,6 @@ class WindowListView(ListView):
         return windows.only('name', 'creation_date', 'slug').order_by('name')
 
 
-@method_decorator(non_atomic_requests, name='dispatch')
 class WindowBottleneckView(View):
     def get(self, request, *args, **kwargs):
         my_analysis = get_object_or_404(
