@@ -330,7 +330,6 @@ class FiltrationAnalysis(Analysis):
         return html_figure
 
     def get_entropy_csv(self):
-        windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
         entropies_normalized = self.get_entropy_data(True)
         entropies_unnormalized = self.get_entropy_data(False)
         entropies = {}
@@ -338,7 +337,7 @@ class FiltrationAnalysis(Analysis):
             entropies[key+"_normalized"] = entropies_normalized[key]
         for key in entropies_unnormalized:
             entropies[key+"_unnormalized"] = entropies_unnormalized[key]
-        df = pandas.DataFrame(entropies.values(), index=entropies.keys(), columns=[i for i in range(windows.count())])
+        df = pandas.DataFrame(entropies)
         return df.to_csv(index=True, header=True)
 
     def bottleneck_calculation_consecutive(self, homology):
