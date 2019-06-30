@@ -306,7 +306,7 @@ class FiltrationAnalysis(Analysis):
         window = FiltrationWindow.objects.create_window(number, self)
         window.save_data(result)
 
-    def get_entropy_data(self, normalized=False):
+    def get_entropy_data(self, normalized):
         entropies = {"H"+str(i): [] for i in range(self.max_homology_dimension + 1)}  # initialize result dict
         for window_batch in window_batch_generator(self):
             if normalized:
@@ -331,7 +331,13 @@ class FiltrationAnalysis(Analysis):
 
     def get_entropy_csv(self):
         windows = FiltrationWindow.objects.filter(analysis=self).order_by('name')
-        entropies = self.get_entropy_data()
+        entropies_normalized = self.get_entropy_data(True)
+        entropies_unnormalized = self.get_entropy_data(False)
+        entropies = {}
+        for key in entropies_normalized:
+            entropies[key+"_normalized"] = entropies_normalized[key]
+        for key in entropies_unnormalized:
+            entropies[key+"_unnormalized"] = entropies_unnormalized[key]
         df = pandas.DataFrame(entropies.values(), index=entropies.keys(), columns=[i for i in range(windows.count())])
         return df.to_csv(index=True, header=True)
 
