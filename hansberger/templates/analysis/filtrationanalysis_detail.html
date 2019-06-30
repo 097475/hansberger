@@ -46,14 +46,21 @@
         {% endif %}
         Analysis Type: {{analysis.get_type}} </br>
         {% if analysis.filtration_type %}
-        Filtration Type: {{analysis.filtration_type}} </br>
+        Filtration Type: 
+        {% if analysis.filtration_type == "VRF" %}
+        Vietoris-Rips Filtration
+        {% elif analysis.filtration_type == "CWRF" %}
+        Clique Weighted Rank Filtration
+        {% endif %}
+        </br>
         {% endif %}
         {% if analysis.window_size %}
-        window size: {{analysis.window_size}} </br>
-        window overlap: {{analysis.window_overlap}} </br>
+        Window size: {{analysis.window_size}} </br>
+        Window overlap: {{analysis.window_overlap}} </br>
+        Windows: {{analysis.get_window_number}} </br>
         {% endif %}
         {% if analysis.distance_matrix_metric %}
-        distance matrix metric: {{analysis.distance_matrix_metric}} </br>
+        Distance matrix metric: {{analysis.distance_matrix_metric}} </br>
         {% endif %}
         <h4>Ripser.ripser parameters:</h4>
         <p>

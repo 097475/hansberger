@@ -44,8 +44,13 @@
         {% if analysis.dataset %}
         Dataset: <a href="/research/{{analysis.research.slug}}/datasets/{{analysis.dataset.slug}}/">{{analysis.dataset.name}} <i class="fas fa-external-link-alt fa-sm"></i></a> <br>
         {% endif %}
+        {% if analysis.window_size %}
+        Window size: {{analysis.window_size}} </br>
+        Window overlap: {{analysis.window_overlap}} </br>
+        Windows: {{analysis.get_window_number}} </br>
+        {% endif %}
         {% if analysis.distance_matrix_metric %}
-        distance matrix metric: {{analysis.distance_matrix_metric}} </br>
+        Distance matrix metric: {{analysis.distance_matrix_metric}} </br>
         {% endif %}
         <h4>fit_transform parameters</h4>
         <p>
