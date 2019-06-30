@@ -5,7 +5,6 @@ import ripser
 import base64
 import numpy
 import pandas
-import math
 import gc
 from io import BytesIO
 from django.db import models
@@ -66,10 +65,9 @@ class Bottleneck(models.Model):
     def __bottleneck(self, reference_window, window):
         diag1 = reference_window.get_diagram(self.homology)
         diag2 = window.get_diagram(self.homology)
-        if diag1 == [] or diag2 == []:
+        if diag1.size == 0 or diag2.size == 0:
             return
-        if (reference_window == window and len(diag1) == 1) or (len(diag1) == 1 and len(diag2) == 1 and
-           diag1[0][1] == math.inf and diag2[0][1] == math.inf):
+        if reference_window == window and len(diag1) == 1:
             (d, image) = self.manage_persim_crash(reference_window, window.name)
         else:
             (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
