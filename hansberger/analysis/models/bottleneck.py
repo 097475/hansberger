@@ -67,7 +67,7 @@ class Bottleneck(models.Model):
         diag2 = window.get_diagram(self.homology)
         if diag1.size == 0 or diag2.size == 0:
             return
-        if reference_window == window and len(diag1) == 1:
+        if reference_window == window:
             (d, image) = self.manage_persim_crash(reference_window, window.name)
         else:
             (d, (matching, D)) = persim.bottleneck(diag1, diag2, True)
