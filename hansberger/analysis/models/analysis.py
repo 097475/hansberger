@@ -253,7 +253,7 @@ class FiltrationAnalysis(Analysis):
 
     FILTRATION_TYPE_CHOICES = (
         (VIETORIS_RIPS_FILTRATION, 'Vietoris Rips Filtration'),
-        (CLIQUE_WEIGHTED_RANK_FILTRATION, 'Clique Weighted Rank Filtration'),
+        (CLIQUE_WEIGHTED_RANK_FILTRATION, 'Clique Weight Rank Filtration'),
     )
 
     filtration_type = models.CharField(
