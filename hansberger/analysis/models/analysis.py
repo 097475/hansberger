@@ -232,7 +232,7 @@ class MapperAnalysis(Analysis):
         mapper = kmapper.KeplerMapper()
         mycover = kmapper.Cover(n_cubes=self.cover_n_cubes, perc_overlap=self.cover_perc_overlap)
         mynerve = kmapper.GraphNerve(min_intersection=self.graph_nerve_min_intersection)
-        original_data = original_matrix if self.use_original_data else None
+        original_data = original_matrix.transpose() if self.use_original_data else None
         projection = self.projection if self.projection != 'knn_distance_n' else 'knn_distance_' + str(self.knn_n_value)
         projected_data = mapper.fit_transform(distance_matrix, projection=projection,
                                               scaler=MapperAnalysis.scalers[self.scaler], distance_matrix=False)
