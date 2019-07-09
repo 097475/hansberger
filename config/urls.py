@@ -10,12 +10,16 @@ urlpatterns = [
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
     ),
+    path("contact/", TemplateView.as_view(template_name="pages/contact.html"), name="contact"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("hansberger.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
+    path("research/", include("research.urls")),
+    path("research/<slug:research_slug>/datasets/", include("datasets.urls")),
+    path("research/<slug:research_slug>/analysis/", include("analysis.urls"))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

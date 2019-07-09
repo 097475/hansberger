@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Window List{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{analysis.research.slug}}/">
+        Research: {{analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{analysis.research.slug}}/analysis/{{analysis.slug}}">
+        Analysis: {{analysis.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item active">
+          <a class="nav-link" href="../">Back</a>
+        </li>
+    </ul>
+  </div>
+{% endblock topbar %}
+{% block content %}
+<div class="container">
+  <h2>Windows</h2>
+
+  <div class="list-group">
+    {% for window in windows %}
+        <a href="{% url 'analysis:window-detail' window.analysis.research.slug window.analysis.slug window.slug %}" class="list-group-item">
+            <h4 class="list-group-item-heading">{{ window.name }} - {{ window.creation_date }}</h4>
+       </a>
+    {% endfor %}
+  </div>
+  {# .... **Now the pagination section** .... #}
+    {% if is_paginated %}
+        <div class="pagination">
+            <span class="page-links">
+                {% if page_obj.has_previous %}
+                    <a class="btn btn-link btn-light btn-sm"  href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+                <span class="page-current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+                {% if page_obj.has_next %}
+                    <a class="btn btn-link btn-light btn-sm" href="?page={{ page_obj.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

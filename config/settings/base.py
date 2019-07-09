@@ -4,6 +4,10 @@ Base settings to build other settings files upon.
 
 import environ
 
+ASGI_APPLICATION = 'hansberger.routing.application'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
+
 ROOT_DIR = (
     environ.Path(__file__) - 3
 )  # (hansberger/config/settings/base.py - 3 = hansberger/)
@@ -65,6 +69,7 @@ DJANGO_APPS = [
     "django.contrib.admin",
 ]
 THIRD_PARTY_APPS = [
+    "channels",
     "crispy_forms",
     "allauth",
     "allauth.account",
@@ -73,10 +78,19 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     "hansberger.users.apps.UsersAppConfig",
+    "hansberger.research.apps.ResearchConfig",
+    "hansberger.datasets.apps.DatasetsConfig",
+    "hansberger.analysis.apps.AnalysisConfig"
     # Your stuff: custom apps go here
 ]
+
+DEBUG_TOOLBAR_PANELS = (
+    'debug_toolbar.panels.timer.TimerDebugPanel',
+    'pympler.panels.MemoryPanel',
+    )
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = INSTALLED_APPS + ['pympler']
 
 # MIGRATIONS
 # ------------------------------------------------------------------------------
@@ -201,7 +215,7 @@ CSRF_COOKIE_HTTPONLY = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-browser-xss-filter
 SECURE_BROWSER_XSS_FILTER = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#x-frame-options
-X_FRAME_OPTIONS = "DENY"
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # EMAIL
 # ------------------------------------------------------------------------------

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}New Mappern Analysis from Precomputed Distance Matrices{% endblock %}
+{% block css %}
+{{ block.super }}
+<style>
+.box{
+    display: none;
+    width: 100%;
+    }
+      
+a:hover + .box,.box:hover{
+    display: block;
+    position: relative;
+    z-index: 100;
+    }    
+</style>
+{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{research.slug}}/">
+        Research: {{research.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="nav navbar-nav ml-auto">
+    <li class="nav-item active">
+        <a class="nav-link" href="../../">Back</a>
+      </li>
+  </ul>
+</div>
+{% endblock topbar %}
+{% block content %}
+{% crispy form form.helper %}
+<button id="submit_button" class='btn btn-success' onclick="request_progress()">Submit</button>
+<div id="popup" style="display:none; cursor: default"> 
+    <div id="domMessage"></div>
+    <button id="abort" onclick="request_abort()">Abort</button> 
+</div> 
+{% endblock %}
+{% block javascript %}
+{{ block.super }}
+ <!-- include BlockUI -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.js"></script>
+<script>
+    function hideKnnValue(projection){
+                if(projection.value == 'knn_distance_n'){
+                    document.getElementById("div_id_knn_n_value").style.display = "block";
+                }else{
+                    document.getElementById("div_id_knn_n_value").style.display = "none";
+                }
+            }
+        
+        document.getElementById("id_projection").setAttribute("onchange", "hideKnnValue(this)")
+        document.getElementById("id_projection").setAttribute("onclick", "hideKnnValue(this)")
+        document.getElementById("div_id_knn_n_value").style.display = "none";
+    
+    // invoke blockUI as needed -->
+    $($(document).on('click', '#submit_button', function() {
+        $.blockUI({ message: $('#popup') });
+       document.getElementById("analysis_form").submit();
+    }));
+
+    var analysisSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/analysis/');
+
+    analysisSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var status = data['status'];
+        var limit = data['limit'];
+        if(status == 0 && limit == 0){
+            document.getElementById("domMessage").innerHTML = "Loading...";
+        }else{
+            document.getElementById("domMessage").innerHTML = "Processing window "+status+"/"+limit;
+        }
+    };
+
+    analysisSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    function request_status(){
+        analysisSocket.send(JSON.stringify({
+            'signal': 'status'
+        }));
+    }
+
+    function request_progress(){
+        setInterval(request_status, 1000);
+    }
+
+    function request_abort(){
+        analysisSocket.send(JSON.stringify({
+            'signal': 'kill'
+        }));
+    }
+</script>
+{% endblock javascript %}
