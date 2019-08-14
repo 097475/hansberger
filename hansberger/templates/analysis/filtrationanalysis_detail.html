@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} {{ analysis.name }} | {{ analysis.research.name }}{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{analysis.research.slug}}/">
+        Research: {{analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{analysis.research.slug}}/analysis/{{analysis.slug}}">
+        Analysis: {{analysis.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item active">
+            <a class="nav-link" href="windows/">Results</a>
+        </li>
+      <li class="nav-item active">
+            <a class="nav-link" href="entropy_download/">Download entropy results</a>
+      </li>
+      <li class="nav-item active">
+          <a class="nav-link" href="bottleneck/">Calculate Bottleneck Distance</a>
+      </li>              
+      <li class="nav-item active">
+        <a class="nav-link" href="delete/">Delete</a>
+      </li>
+      <li class="nav-item active">
+          <a class="nav-link" href="../">Back</a>
+        </li>
+    </ul>
+  </div>
+{% endblock topbar %}
+{% block content %}
+      <h1>{{ analysis.name }}</h1>
+      {% if analysis.description %}
+        <p>{{ analysis.description }}</p>
+      {% endif %}
+      <p>
+        Research: <a href="/research/{{analysis.research.slug}}/">{{analysis.research.name}} <i class="fas fa-external-link-alt fa-sm"></i></a> <br>
+        {% if analysis.dataset %}
+        Dataset: <a href="/research/{{analysis.research.slug}}/datasets/{{analysis.dataset.slug}}/">{{analysis.dataset.name}} <i class="fas fa-external-link-alt fa-sm"></i></a> <br>
+        {% endif %}
+        Analysis Type: {{analysis.get_type}} </br>
+        {% if analysis.filtration_type %}
+        Filtration Type: 
+        {% if analysis.filtration_type == "VRF" %}
+        Vietoris-Rips Filtration
+        {% elif analysis.filtration_type == "CWRF" %}
+        Clique Weight Rank Filtration
+        {% endif %}
+        </br>
+        {% endif %}
+        {% if analysis.window_size %}
+        Window size: {{analysis.window_size}} </br>
+        Window overlap: {{analysis.window_overlap}} </br>
+        Windows: {{analysis.get_window_number}} </br>
+        {% endif %}
+        {% if analysis.distance_matrix_metric %}
+        Distance matrix metric: {{analysis.distance_matrix_metric}} </br>
+        {% endif %}
+        <h4>Ripser.ripser parameters:</h4>
+        <p>
+        maxdim: {{analysis.max_homology_dimension}} </br>
+        thresh: {{analysis.max_distances_considered}} </br>
+        coeff: {{analysis.coeff}} </br>
+        do_cocycles: {{analysis.do_cocycles}} </br>
+        n_perm: {{analysis.n_perm}} </br>
+        </p>
+      </p>
+      <h4 id="entropy">Entropy graph:</h4>
+      <div class="tab">
+        <button class="tablinks" id="default_tab" onclick="openEntropyGraph(event, 'normalized')">Normalized entropy graph</button>
+        <button class="tablinks" onclick="openEntropyGraph(event, 'unnormalized')">Unnormalized entropy graph</button>
+      </div>
+      <!-- Tab content -->
+      <div id="normalized" class="tabcontent">
+        <div id="fig_container" width=100%>
+          {{ analysis.entropy_normalized_graph|safe }}
+        </div>
+      </div>
+
+      <div id="unnormalized" class="tabcontent">
+        <div id="fig_container" width=100%>
+          {{ analysis.entropy_unnormalized_graph|safe }}
+        </div>
+      </div>
+{% endblock content %}
+{% block javascript %}
+{{ block.super }}
+<script>
+document.getElementById("default_tab").click();
+function openEntropyGraph(evt, type) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(type).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+</script>
+{% endblock javascript %}

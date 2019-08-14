@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Add new Text Dataset{% endblock %}
+{% block sidebar %}
+<li>
+  <a href="/research/{{research.slug}}/">
+      Research: {{research.slug}}
+  </a>
+</li>
+{% endblock sidebar %}
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+  <ul class="nav navbar-nav ml-auto">
+    <li class="nav-item active">
+        <a class="nav-link" href="../../">Back</a>
+      </li>
+  </ul>
+</div>
+{% endblock topbar %}
+{% block content %}
+
+<form method="post" enctype="multipart/form-data" action="{% url 'datasets:text-dataset-create' research.slug %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" class='btn btn-success' value="Add">
+</form>
+
+{% endblock %}

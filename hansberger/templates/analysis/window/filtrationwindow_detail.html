@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Window {{ window.name }} | {{ window.analysis.name }}{% endblock %}
+{% block sidebar %}
+<li>
+    <a href="/research/{{window.analysis.research.slug}}/">
+        Research: {{window.analysis.research.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{window.analysis.research.slug}}/analysis/{{window.analysis.slug}}">
+        Analysis: {{window.analysis.slug}}
+    </a>
+</li>
+<li>
+    <a href="/research/{{window.analysis.research.slug}}/analysis/{{window.analysis.slug}}/windows/{{window.slug}}">
+        Window: {{window.slug}}
+    </a>
+</li>
+{% endblock sidebar %}
+{% block topbar %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item active">
+          <a class="nav-link" href="ripser_download/">Download result</a>
+        </li>
+      <li class="nav-item active">
+            <a class="nav-link" href="bottleneck/">Calculate Bottleneck Distance</a>
+        </li>
+      <li class="nav-item active">
+            <a class="nav-link" href="../">Back</a>
+        </li>
+    </ul>
+  </div>
+{% endblock topbar %}
+{% block content %}
+<div class="container">
+
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>Window {{ window.name }}</h2>
+      {% if window.analysis.description %}
+        <p>{{ window.analysis.description }}</p>
+      {% endif %}
+      <p>
+          {% if window.start == None and window.end == None%}
+             This window is part of an analysis with precomputed distance matrices
+          {% else %}
+             Window starts at position (inclusive): {{window.start}}</br>
+             Window ends at position (non-inclusive): {{window.end}}</br>
+          {% endif %}
+      </p>
+      <h4>Persistence Diagram:</h4>
+      <div id="fig_container">
+        {{ window.diagram| safe }}
+      </div>
+      <h4>Entropy</h4>
+      <div id="entropy">
+        <h6>Normalized entropy:</h6>
+        <p id="normalized"></p>
+        <h6>Unnormalized entropy:</h6>
+        <p id="unnormalized"></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+{% block javascript %}
+{{ block.super }}
+<script>
+  var entropy_n = JSON.parse('{{ window.result_entropy_normalized|safe }}');
+  var entropy_u = JSON.parse('{{ window.result_entropy_unnormalized|safe }}');
+  entropy_norm_p=document.getElementById("normalized")
+  entropy_unorm_p=document.getElementById("unnormalized")
+  for (var key in entropy_n) {
+    if (entropy_n.hasOwnProperty(key)) {
+      entropy_norm_p.innerHTML += key + ": " + entropy_n[key] +"<br>";
+        }
+  }
+  for (var key in entropy_u) {
+    if (entropy_u.hasOwnProperty(key)) {
+      entropy_unorm_p.innerHTML += key + ": " + entropy_u[key] +"<br>";
+        }
+  }
+</script>
+{% endblock javascript %}

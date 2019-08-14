@@ -1,1 +1,37 @@
 {% extends "base.html" %}
+{% block title %}About{% endblock title %}
+{% block topbar %}
+{% endblock topbar %}
+{% block content %}
+<h1 class="display-3">About</h1>
+<p>
+    HansBerger is a local web application built with the Python web framework Django.
+    HansBerger implements an automatized pipeline which simplifies Topological 
+    Data Analysis (TDA) by providing an easy to use interface for various operations 
+    data analysis and data visualization.
+</p>
+<p>
+    The application functionalities are:
+</p>
+<ul>
+    <li><p>Visualization of text, CSV and EDF datasets</p></li>
+    <li><p>Upload of precomputed distance matrices</p></li>
+    <li><p>Vietoris-Rips Filtration with Ripser</p></li>
+    <li><p>Clique Weight Rank Filtration with Ripser</p></li>
+    <li><p>MAPPER algorithm with Kepler Mapper</p></li>
+    <li><p>Computation of entropy values of a persistence diagram</p></li>
+    <li><p>Computation of bottleneck distance between persistence diagrams with Persim</p></li>
+    <li><p>Saving of results to a relational database</p></li>
+</ul>
+<p>
+    The name of the application, HansBerger, is a reference to the homonym german psychiatrist,
+    known for having recorded the first brain waves and for the invention of electroencephalography.
+    Berger worked in many fields of research: neurology, brain circulation, psychology. His main contribute
+    to medicine was the research on electrical activity in the brain and the discovery of EEG.
+    The first recording of human brain waves, performed by Berger, was carried out using an instrument which he 
+    called "electroencephalograph", producing a graphic representation called "electroencephalogram".
+</p>
+<p>
+For additional information, see the <a class="btn btn-link" href="https://github.com/097475/hansberger">Github repository</a>
+</p>
+{% endblock content %}
