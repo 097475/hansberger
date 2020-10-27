@@ -24,7 +24,7 @@ constantly==15.1.0
 coreapi==2.3.3
 coreschema==0.0.4
 coverage==4.5.3
-cryptography==2.7
+cryptography==3.2
 cycler==0.10.0
 Cython==0.29.7
 daphne==2.3.0
